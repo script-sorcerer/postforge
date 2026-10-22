@@ -14,6 +14,7 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 - **Write only in `Drafts/`.** Read everything else; never change a Topic, the Voice guide, Channel rules or the Fact sheet.
 - **Never move a Draft to `ready`.** Only the Owner does.
+- **Never change an Owner edit.** Text between `%% owner %%` and `%% /owner %%` is the Owner's: no Pass, revision or hook swap may change, move or remove it or its markers, and you never edit `owner_edits` or run `scripts/vault_check.py --seal`, except for a hook swap the Owner asks for (see "Switching hooks"). The Vault check fails a Draft whose Owner blocks no longer match `owner_edits` (`owner-edits`).
 - **Never touch an existing Draft** past `drafting` except to run its Editor loop (Step 4) or to swap a hook when the Owner asks (see "Switching hooks"). `/write` writes only missing or unfinished Drafts, so a rerun is safe.
 
 ## Step 1: Load and gate
@@ -68,12 +69,12 @@ Every `in-review` Draft goes through the Editor before the Owner sees it. The ch
    Set `editor_rounds: N` and `editor_score: <the score>` in the frontmatter.
 3. **Decide.**
    - `Verdict: pass`: the loop ends. The Draft stays `in-review` for the Owner.
-   - `Verdict: revise` and N is 1: set `status: revising`. Revise the Post text and the hooks from the remarks, then rerun the `voice`, `humanize` and `channel-fit` Passes on them. Leave `passes` as it is: it records each Pass once. Set `status: in-review`, run the Vault check until it passes, and go back to 1.
+   - `Verdict: revise` and N is 1: set `status: revising`. Revise the Post text and the hooks from the remarks, leaving every Owner block as it is (a remark starting `Owner edit:` is for the Owner only: record it, do not apply it), then rerun the `voice`, `humanize` and `channel-fit` Passes on them. Leave `passes` as it is: it records each Pass once. Set `status: in-review`, run the Vault check until it passes, and go back to 1.
    - `Verdict: revise` and N is 2: the loop ends anyway. The Draft stays `in-review` and goes to the Owner with the remarks. The Vault check fails any Draft with more than two Editor rounds.
 
 Never set `status: ready`, whatever the score: only the Owner does. No Draft is left at `revising` when you hand over.
 
-> Placeholder: Owner edits arrive with ticket 10. The Editor will leave a comment instead of changing a part the Owner edited.
+If the Draft holds Owner blocks, hand the Editor the Post text and hooks with their `%% owner %%` markers in place, so it can tell the Owner's words apart.
 
 ## The Draft note
 
@@ -128,10 +129,10 @@ Copy `attachments` from the Topic. The Draft must link to its Topic in `topic`; 
 
 When the Owner says "use hook 2" (or similar) for a Draft:
 
-1. Replace the opening hook of the Post text with alternative 2, adjusting the next sentence only if it no longer follows.
+1. Replace the opening hook of the Post text with alternative 2, adjusting the next sentence only if it no longer follows (never one inside an Owner block). The Owner chose it, so wrap the new hook in `%% owner %%` ... `%% /owner %%` and run `scripts/vault_check.py --seal "<draft path>"`: this is the one time you seal, because the Owner asked for this change.
 2. Put the replaced hook in the callout as alternative 2, so both alternatives stay available.
 3. Rerun the `channel-fit` Pass on the Draft (rules, then the Vault check). Leave `passes` as it is.
 
 ## Step 5: Hand over
 
-Tell the Owner which Drafts you wrote, with their paths, each Draft's Editor score and rounds, and which Topics or Channels you skipped and why. They edit Drafts in Obsidian or by prompt, and set `status: ready` when a Draft is good to go.
+Tell the Owner which Drafts you wrote, with their paths, each Draft's Editor score and rounds, and which Topics or Channels you skipped and why. They edit Drafts by hand in Obsidian or with `/revise`, and set `status: ready` themselves when a Draft is good to go.

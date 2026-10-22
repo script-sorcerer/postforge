@@ -1,5 +1,6 @@
 """Feed fixture Vaults to the Vault check and assert its verdicts."""
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -64,7 +65,21 @@ BROKEN = {
     "topic-drafts-duplicate": ("Topics/Road capacity explained.md", "topic-drafts"),
     "reddit-subreddit": ("Drafts/Road capacity explained - reddit.md", "reddit-subreddit"),
     "reddit-title": ("Drafts/Road capacity explained - reddit.md", "reddit-title"),
+    "owner-edits": ("Drafts/Road capacity explained - x.md", "owner-edits"),
 }
+
+
+def test_seal_records_owner_edits_and_leaves_other_frontmatter(tmp_path):
+    """A block-style owner_edits (as Obsidian's Properties panel writes it) is replaced; nothing else moves."""
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "owner-edits", vault)
+    draft = vault / "Drafts" / "Road capacity explained - x.md"
+    draft.write_text(draft.read_text().replace("owner_edits: [o71d89536]\n", "owner_edits:\n  - o71d89536\n"))
+    others = [line for line in draft.read_text().splitlines() if "owner_edits" not in line and "- o" not in line]
+    assert run_check(vault)[0] == 1
+    subprocess.run([sys.executable, str(SCRIPT), "--seal", str(draft)], check=True, capture_output=True)
+    assert run_check(vault) == (0, [])
+    assert [line for line in draft.read_text().splitlines() if "owner_edits" not in line] == others
 
 
 @pytest.mark.parametrize("fixture", BROKEN)

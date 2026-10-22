@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] `/revise` applies the Owner's prompt to the named Draft and marks the change as an Owner edit
-- [ ] A hand edit in Obsidian can be marked as an Owner edit
-- [ ] The Editor leaves a comment instead of changing an Owner-edited part
-- [ ] The Vault check fails a Draft where an Owner-edited part was changed by a Role
-- [ ] No Role sets a Draft to ready; only the Owner does
-- [ ] Fixtures cover the Owner-edit rule
+- [x] `/revise` applies the Owner's prompt to the named Draft and marks the change as an Owner edit
+- [x] A hand edit in Obsidian can be marked as an Owner edit
+- [x] The Editor leaves a comment instead of changing an Owner-edited part
+- [x] The Vault check fails a Draft where an Owner-edited part was changed by a Role
+- [x] No Role sets a Draft to ready; only the Owner does
+- [x] Fixtures cover the Owner-edit rule

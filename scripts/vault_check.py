@@ -8,6 +8,7 @@ note and every Channel rules note in the Vault and reports each rule it breaks.
 Exits 1 on any violation, 0 when the Vault is clean.
 
 Usage: scripts/vault_check.py [VAULT]   (default: this repository; needs uv)
+       scripts/vault_check.py --seal NOTE   (the Owner only: record NOTE's Owner edits)
 
 The schema (folders, required fields, lifecycles, Rubrics, Channels, Topic
 sections, Passes) is the tables at the top. To add a rule: write a
@@ -17,6 +18,7 @@ underscores turned into hyphens.
 """
 
 import datetime
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -71,6 +73,11 @@ PASSES = ["angle", "hooks", "draft", "voice", "humanize", "channel-fit"]
 POST_TEXT_END = re.compile(r"^(> \[!|## )", re.MULTILINE)
 # Editor loop: at most this many Editor rounds per Draft, then it goes to the Owner whatever the score.
 MAX_EDITOR_ROUNDS = 2
+
+# Owner edit: text between these Obsidian comment markers. `--seal <note>` records each block's
+# fingerprint in the note's `owner_edits`; only the Owner (by hand or through /revise) seals.
+OWNER_BLOCK = re.compile(r"%% owner %%(.*?)%% /owner %%", re.DOTALL)
+OWNER_MARKER = re.compile(r"%% /?owner %%")
 
 # The Project's GitHub repository is private: no note may link to it or its issues.
 REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github` field
@@ -374,7 +381,7 @@ def check_draft_passes(note):
 def post_text(note):
     """The Post text of a Draft: the body after the frontmatter, up to the Hook alternatives
     callout or the first `## ` heading, stripped."""
-    body = FRONTMATTER.sub("", note["text"], count=1)
+    body = OWNER_MARKER.sub("", FRONTMATTER.sub("", note["text"], count=1))  # markers are never posted
     return POST_TEXT_END.split(body, maxsplit=1)[0].strip()
 
 
@@ -467,6 +474,34 @@ def check_reddit_title(note):
     return []
 
 
+def owner_fingerprints(text):
+    """One fingerprint per Owner block in the note body. The `o` prefix keeps YAML from reading it as a number."""
+    body = FRONTMATTER.sub("", text.replace("\r\n", "\n"), count=1)
+    return ["o" + hashlib.sha256(block.strip().encode()).hexdigest()[:8] for block in OWNER_BLOCK.findall(body)]
+
+
+def check_owner_edits(note):
+    """A Role changed, removed or added an Owner block unless the fingerprints still match."""
+    if kind_of(note) != "draft":
+        return []
+    sealed = note["fm"].get("owner_edits") or []
+    if [str(s) for s in (sealed if isinstance(sealed, list) else [sealed])] == owner_fingerprints(note["text"]):
+        return []
+    return ["an Owner-edited part no longer matches owner_edits; if you changed it yourself, run scripts/vault_check.py --seal on this note"]
+
+
+def seal(path):
+    """Rewrite only the `owner_edits` key (flow or block list) of the note at `path`."""
+    text = path.read_text(encoding="utf-8")
+    match = FRONTMATTER.match(text)
+    if not match:
+        raise SystemExit(f"{path}: no YAML frontmatter block")
+    prints = owner_fingerprints(text)
+    fm = re.sub(r"^owner_edits:.*\n(?:[ \t]*- .*\n)*", "", match.group(1), flags=re.MULTILINE)
+    path.write_text(text[: match.start(1)] + fm + f"owner_edits: [{', '.join(prints)}]\n" + text[match.end(1):], encoding="utf-8")
+    return prints
+
+
 RULES = [
     check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
     check_fact_sheet, check_rubric, check_rejection_reason, check_topic_channels, check_topic_sections,
@@ -474,7 +509,7 @@ RULES = [
     check_trend_scan_date, check_digest_trend_scan,
     check_draft_topic, check_draft_passes, check_draft_length,
     check_private_repo_link, check_editor_rounds,
-    check_topic_drafts, check_reddit_subreddit, check_reddit_title,
+    check_topic_drafts, check_reddit_subreddit, check_reddit_title, check_owner_edits,
 ]
 
 
@@ -498,6 +533,10 @@ def check_vault(vault):
 
 
 def main(argv):
+    if len(argv) == 3 and argv[1] == "--seal":
+        prints = seal(Path(argv[2]))
+        print(f"Sealed {len(prints)} Owner edit(s) in {argv[2]}.")
+        return 0
     vault = Path(argv[1]) if len(argv) > 1 else Path(__file__).resolve().parent.parent
     if not vault.is_dir():
         print(f"Vault not found: {vault}", file=sys.stderr)

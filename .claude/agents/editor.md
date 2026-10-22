@@ -32,6 +32,8 @@ This checklist and the threshold below are the only ones. Score each item 1 (hol
 
 ## Remarks
 
+Text between `%% owner %%` and `%% /owner %%` is an Owner edit: the Owner wrote it and it always stands. Score it like the rest, but start every remark about it with `Owner edit:`; the Writer records those remarks for the Owner and never changes that text. You never set a Draft's status; only the Owner sets `ready`.
+
 One remark per item scored 0, plus any you think the Writer must hear. Each remark quotes the exact words it is about and says what is wrong and what would fix it. "Hook is weak" is not a remark; `"I made some changes to traffic" names no change: lead with "Cars now queue at full roads"` is. Never rewrite the whole Post.
 
 ## Return exactly this

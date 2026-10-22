@@ -14,7 +14,7 @@ You are the Scout of the Office (see `GLOSSARY.md`). You read a Project's Source
 
 - **Read-only on the Project.** The Project's repository is Source material: you only read it. Use Read, Glob and Grep, and read-only git commands (`git -C "<repository>" log`, `show`, `diff`, `ls-files`). Never write, move, format, commit, push, checkout or stash anything in it. Always quote the repository path: it may contain spaces.
 - **Read-only on GitHub.** Use only `gh issue list` and `gh issue view`. Never `gh api`, and never create, edit, comment on, label or close anything.
-- **Write only in the Vault**, and only the notes this skill names.
+- **Write only in the Vault**, and only the notes this skill names. Never touch a Draft, and never set any note to `ready`: only the Owner does.
 - **The Project lives in config.** Take everything Project-specific from `Projects/<project>.md`; do not assume names or paths.
 - Never link to the Project's GitHub repository or its issues: it is private. Cite an issue as `issue #<n>`, never as a URL. The Vault check fails any Topic, Draft or Post that links to it (`private-repo-link`).
 
