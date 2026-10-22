@@ -1,21 +1,22 @@
+#!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
 # dependencies = ["pyyaml"]
 # ///
-"""Vault check: reads every Topic, Draft, Post and Fact sheet note and every
-Channel rules note in the Vault and reports each rule it breaks. Exits 1 on
-any violation, 0 when the Vault is clean.
+"""Vault check: reads every Topic, Draft, Post, Fact sheet, Digest and Trend scan
+note and every Channel rules note in the Vault and reports each rule it breaks.
+Exits 1 on any violation, 0 when the Vault is clean.
 
-Usage: uv run scripts/vault_check.py [VAULT]   (default: this repository)
+Usage: scripts/vault_check.py [VAULT]   (default: this repository; needs uv)
 
-The schema (folders, required fields, lifecycles, Rubrics, Passes) is the
-tables at the top. To add a rule: write a `check_<name>(note)` function
-returning a list of messages and add it to the RULES list above check_vault. The rule is reported as `<name>` with
+The schema (folders, required fields, lifecycles, Rubrics, Channels, Topic
+sections, Passes) is the tables at the top. To add a rule: write a
+`check_<name>(note)` function returning a list of messages and add it to the
+RULES list above check_vault. The rule is reported as `<name>` with
 underscores turned into hyphens.
 """
 
 import datetime
-import functools
 import re
 import sys
 from pathlib import Path
@@ -33,7 +34,8 @@ REQUIRED_FIELDS = {
     "draft": ["kind", "status", "project", "topic", "channel", "language"],
     "post": ["kind", "status", "project", "topic", "channel", "language"],
     "fact-sheet": ["kind", "status", "project"],  # one per Project, approved only by the Owner
-    "digest": ["kind", "project", "date", "topics"],  # `topics` links each Topic note, best first
+    # `topics` links each Topic note, best first; `trend_scan` links the Trend scan it built on.
+    "digest": ["kind", "project", "date", "topics", "trend_scan"],
     "trend-scan": ["kind", "date"],
 }
 
@@ -54,6 +56,12 @@ RUBRICS = [
     "Before / After", "By the numbers", "Player challenge",
 ]
 
+# Channels in iteration 1: a Topic's `channels` may name only these.
+CHANNELS = ["x", "reddit", "linkedin"]
+
+# Every Topic note body carries these `## ` sections (the Scout's Topic template).
+TOPIC_SECTIONS = ["Angle", "Why now", "Source material", "Shot list"]
+
 # A Digest's `trend_scan` may be at most this many days older than the Digest.
 TREND_SCAN_MAX_AGE_DAYS = 14
 
@@ -67,21 +75,33 @@ MAX_EDITOR_ROUNDS = 2
 # The Project's GitHub repository is private: no note may link to it or its issues.
 REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github` field
 
+# Filled by check_vault: notes by (top folder, note name) for wiki-link lookups, and the
+# frontmatter of each valid Channel rules note by `channel`.
+VAULT_NOTES = {}
+CHANNEL_RULES = {}
+
 FRONTMATTER = re.compile(r"\A---\r?\n(.*?)^---\s*$", re.DOTALL | re.MULTILINE)
 
 
 def read_note(path):
-    """Return {path, fm, error}: fm is the frontmatter dict, or None with an error."""
-    match = FRONTMATTER.match(path.read_text(encoding="utf-8"))
+    """Return {path, text, fm, error}: fm is the frontmatter dict, or None with an error."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return {"path": path, "text": "", "fm": None, "error": "file is not UTF-8 text"}
+    note = {"path": path, "text": text, "fm": None, "error": None}
+    match = FRONTMATTER.match(text)
     if not match:
-        return {"path": path, "fm": None, "error": "no YAML frontmatter block"}
+        return note | {"error": "no YAML frontmatter block"}
     try:
         fm = yaml.safe_load(match.group(1))
     except yaml.YAMLError as e:
-        return {"path": path, "fm": None, "error": f"invalid YAML: {e.problem}"}
+        # ReaderError (a control character) has no `problem`; its text spans lines.
+        problem = getattr(e, "problem", None) or str(e).splitlines()[0]
+        return note | {"error": f"invalid YAML: {problem}"}
     if not isinstance(fm, dict):
-        return {"path": path, "fm": None, "error": "frontmatter is not a mapping"}
-    return {"path": path, "fm": fm, "error": None}
+        return note | {"error": "frontmatter is not a mapping"}
+    return note | {"fm": fm}
 
 
 def kind_of(note):
@@ -148,15 +168,44 @@ def check_rejection_reason(note):
     return []
 
 
+def check_topic_channels(note):
+    channels = note["fm"].get("channels") if kind_of(note) == "topic" else None
+    if channels is None:
+        return []  # a missing channels list is reported by required-fields
+    if not isinstance(channels, list):
+        return [f"channels {channels!r} must be a list of {', '.join(CHANNELS)}"]
+    unknown = [c for c in channels if c not in CHANNELS]
+    return [f"channels {unknown} are not among {', '.join(CHANNELS)}"] if unknown else []
+
+
+def check_topic_sections(note):
+    if kind_of(note) != "topic":
+        return []
+    missing = [h for h in TOPIC_SECTIONS if not re.search(rf"^## {re.escape(h)}[ \t]*$", note["text"], re.MULTILINE)]
+    return [f"topic has no {', '.join(f'## {h}' for h in missing)} section"] if missing else []
+
+
+def link_name(link):
+    """The note name a wiki link points to: no brackets, alias, #heading or folder path."""
+    return str(link).strip("[]").split("|")[0].split("#")[0].split("/")[-1]
+
+
+def linked_note(folder, link):
+    """The note `link` names anywhere under the Vault's `folder`, or None."""
+    # shortcut: two notes of one name in different subfolders resolve to the last; Obsidian would ask.
+    return VAULT_NOTES.get((folder, link_name(link)))
+
+
+def digest_links(note):
+    topics = note["fm"].get("topics")
+    return topics if isinstance(topics, list) else []
+
+
 def digest_topics(note):
     """Return (Topic frontmatters found, links with no Topic note) for a Digest note."""
-    links = note["fm"].get("topics") or []
-    topics_dir = note["path"].parent.parent / "Topics"
     found, missing = [], []
-    for link in links:
-        name = str(link).strip("[]").split("|")[0].split("/")[-1]
-        path = topics_dir / f"{name}.md"
-        topic = read_note(path) if path.is_file() else None
+    for link in digest_links(note):
+        topic = linked_note("Topics", link)
         if topic and topic["fm"]:
             found.append(topic["fm"])
         else:
@@ -167,21 +216,37 @@ def digest_topics(note):
 def check_digest_links(note):
     if kind_of(note) != "digest":
         return []
+    topics = note["fm"].get("topics")
+    if topics is not None and not isinstance(topics, list):
+        return [f"topics {topics!r} must be a list of Topic links"]
     return [f"topic {link} has no note in Topics/" for link in digest_topics(note)[1]]
 
 
 def check_digest_size(note):
+    if kind_of(note) != "digest" or not isinstance(note["fm"].get("topics"), list):
+        return []  # a missing or malformed list is reported by required-fields or digest-links
+    count = len(note["fm"]["topics"])
+    return [] if 5 <= count <= 8 else [f"digest holds {count} topics, expected 5 to 8"]
+
+
+def check_digest_ranks(note):
+    """Ranks run 1..N, best first, in the order of the Digest's `topics` list."""
     if kind_of(note) != "digest":
         return []
-    count = len(note["fm"].get("topics") or [])
-    return [] if 5 <= count <= 8 else [f"digest holds {count} topics, expected 5 to 8"]
+    found, missing = digest_topics(note)
+    if missing or not found:
+        return []  # a broken link is reported by digest-links
+    ranks = [t.get("rank") for t in found]
+    if ranks == list(range(1, len(found) + 1)):
+        return []
+    return [f"ranks {ranks} in topics order must run 1 to {len(found)}"]
 
 
 def check_digest_rubrics(note):
     if kind_of(note) != "digest":
         return []
     rubrics = [t.get("rubric") for t in digest_topics(note)[0]]
-    crowded = sorted({r for r in rubrics if r and rubrics.count(r) > 2})
+    crowded = sorted({r for r in rubrics if isinstance(r, str) and rubrics.count(r) > 2})
     return [f"more than two topics of rubric {r!r}" for r in crowded]
 
 
@@ -217,10 +282,8 @@ def check_trend_scan_date(note):
 def check_digest_trend_scan(note):
     link = note["fm"].get("trend_scan") if kind_of(note) == "digest" else None
     if not link:
-        return []  # optional: Digests written before the Trend scan have none
-    name = str(link).strip("[]").split("|")[0].split("/")[-1]
-    path = note["path"].parent.parent / "Trend scans" / f"{name}.md"
-    scan = read_note(path) if path.is_file() else None
+        return []  # a missing trend_scan is reported by required-fields
+    scan = linked_note("Trend scans", link)
     if not scan or not scan["fm"]:
         return [f"trend_scan {link} has no note in Trend scans/"]
     digest_date, scan_date = as_date(note["fm"].get("date")), as_date(scan["fm"].get("date"))
@@ -247,20 +310,20 @@ def check_channel_rules(note):
     text = fm.get("text")
     if not isinstance(text, dict) or not is_count(text.get("max_length")):
         problems.append("text.max_length must be a positive integer")
-    media = fm.get("media")
-    if not isinstance(media, dict) or not media:
-        problems.append("media must map each media type to its limits")
+    attachments = fm.get("attachments")
+    if not isinstance(attachments, dict) or not attachments:
+        problems.append("attachments must map each Attachment type to its limits")
     else:
-        for name, limits in media.items():
+        for name, limits in attachments.items():
             limits = limits if isinstance(limits, dict) else {}
             formats = limits.get("formats")
             size = limits.get("max_size_mb")
             if not is_count(limits.get("max_count")):
-                problems.append(f"media.{name}.max_count must be a positive integer")
+                problems.append(f"attachments.{name}.max_count must be a positive integer")
             if not (isinstance(formats, list) and formats and all(isinstance(f, str) for f in formats)):
-                problems.append(f"media.{name}.formats must be a non-empty list")
+                problems.append(f"attachments.{name}.formats must be a non-empty list")
             if isinstance(size, bool) or not isinstance(size, (int, float)) or size <= 0:
-                problems.append(f"media.{name}.max_size_mb must be a positive number")
+                problems.append(f"attachments.{name}.max_size_mb must be a positive number")
     hashtags = fm.get("hashtags")
     if not isinstance(hashtags, dict) or not is_count(hashtags.get("max"), minimum=0):
         problems.append("hashtags.max must be a non-negative integer")
@@ -268,32 +331,29 @@ def check_channel_rules(note):
 
 
 def load_channel_rules(vault):
-    """Return ({channel: frontmatter} for each valid Channel rules note, violation lines)."""
-    rules, violations = {}, []
-    for path in sorted((vault / CHANNEL_RULES_FOLDER).glob("*.md")):
+    """Return ({channel: frontmatter} for each valid Channel rules note, violation lines,
+    number of Channel rules notes read)."""
+    rules, seen, violations = {}, {}, []
+    paths = sorted((vault / CHANNEL_RULES_FOLDER).rglob("*.md"))
+    for path in paths:
         note = read_note(path)
         problems = check_frontmatter(note) + check_channel_rules(note)
+        channel = note["fm"].get("channel") if note["fm"] else None
+        if isinstance(channel, str) and channel in seen:
+            problems.append(f"channel {channel!r} is already defined in {seen[channel].relative_to(vault)}")
+        elif isinstance(channel, str):
+            seen[channel] = path
         violations += [f"{path.relative_to(vault)}: [channel-rules] {p}" for p in problems]
         if not problems:
-            rules[note["fm"]["channel"]] = note["fm"]
-    return rules, violations
-
-
-def draft_vault(note):
-    """The Vault holding a Draft note: the folder above its `Drafts` ancestor."""
-    return next((p.parent for p in note["path"].parents if p.name == "Drafts"), note["path"].parent.parent)
-
-
-def link_name(link):
-    return str(link).strip("[]").split("|")[0].split("/")[-1]
+            rules[channel] = note["fm"]
+    return rules, violations, len(paths)
 
 
 def check_draft_topic(note):
     topic = note["fm"].get("topic") if kind_of(note) == "draft" else None
     if not topic:
         return []  # a missing topic is reported by required-fields
-    path = draft_vault(note) / "Topics" / f"{link_name(topic)}.md"
-    linked = read_note(path) if path.is_file() else None
+    linked = linked_note("Topics", topic)
     if linked and kind_of(linked) == "topic":
         return []
     return [f"topic {topic} has no Topic note in Topics/"]
@@ -311,15 +371,10 @@ def check_draft_passes(note):
     return []
 
 
-@functools.cache
-def channel_limits(vault):
-    return load_channel_rules(vault)[0]
-
-
-def post_text(path):
+def post_text(note):
     """The Post text of a Draft: the body after the frontmatter, up to the Hook alternatives
     callout or the first `## ` heading, stripped."""
-    body = FRONTMATTER.sub("", path.read_text(encoding="utf-8"), count=1)
+    body = FRONTMATTER.sub("", note["text"], count=1)
     return POST_TEXT_END.split(body, maxsplit=1)[0].strip()
 
 
@@ -327,11 +382,11 @@ def check_draft_length(note):
     if kind_of(note) != "draft":
         return []
     # shortcut: a Draft whose Channel has no rules note is not length-checked; add a rule once every Channel has one.
-    rules = channel_limits(draft_vault(note)).get(note["fm"].get("channel"))
+    rules = CHANNEL_RULES.get(note["fm"].get("channel"))
     if not rules:
         return []
     # URLs count as written: stricter than X, which counts each as 23 characters.
-    length = len(post_text(note["path"]))
+    length = len(post_text(note))
     limit = rules["text"]["max_length"]
     return [] if length <= limit else [f"post text is {length} characters, {rules['channel']} allows {limit}"]
 
@@ -344,7 +399,7 @@ def load_repo_slugs(vault):
 def check_private_repo_link(note):
     if kind_of(note) not in ("topic", "draft", "post"):
         return []
-    text = note["path"].read_text(encoding="utf-8")
+    text = note["text"]
     # [/:] covers https and ssh remotes; the slug may end in .git, /issues/91, ) or end of line.
     return [
         f"links to the private repository {slug}"
@@ -364,8 +419,8 @@ def check_editor_rounds(note):
 
 RULES = [
     check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
-    check_fact_sheet, check_rubric, check_rejection_reason,
-    check_digest_links, check_digest_size, check_digest_rubrics, check_digest_promotional,
+    check_fact_sheet, check_rubric, check_rejection_reason, check_topic_channels, check_topic_sections,
+    check_digest_links, check_digest_size, check_digest_ranks, check_digest_rubrics, check_digest_promotional,
     check_trend_scan_date, check_digest_trend_scan,
     check_draft_topic, check_draft_passes, check_draft_length,
     check_private_repo_link, check_editor_rounds,
@@ -375,16 +430,20 @@ RULES = [
 def check_vault(vault):
     """Return (notes checked, list of 'note: [rule] message' lines)."""
     REPO_SLUGS[:] = load_repo_slugs(vault)
+    channel_rules, channel_violations, channel_count = load_channel_rules(vault)
+    CHANNEL_RULES.clear()
+    CHANNEL_RULES.update(channel_rules)
     paths = sorted(p for folder in NOTE_FOLDERS for p in (vault / folder).rglob("*.md"))
+    notes = [read_note(p) for p in paths]
+    VAULT_NOTES.clear()
+    VAULT_NOTES.update({(n["path"].relative_to(vault).parts[0], n["path"].stem): n for n in notes})
     violations = []
-    for path in paths:
-        note = read_note(path)
+    for note in notes:
         for rule in RULES:
             name = rule.__name__.removeprefix("check_").replace("_", "-")
             for message in rule(note):
-                violations.append(f"{path.relative_to(vault)}: [{name}] {message}")
-    channel_rules, channel_violations = load_channel_rules(vault)
-    return len(paths) + len(channel_rules), violations + channel_violations
+                violations.append(f"{note['path'].relative_to(vault)}: [{name}] {message}")
+    return len(paths) + channel_count, violations + channel_violations
 
 
 def main(argv):

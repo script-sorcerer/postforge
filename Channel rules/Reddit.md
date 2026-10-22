@@ -6,8 +6,8 @@ checked: 2026-10-22
 text:
   max_length: 40000  # self-post body
   max_title_length: 300
-mixed_media: false
-media:  # one Post holds ONE media type: an image gallery, or 1 GIF, or 1 video; never mixed
+mixed_attachments: false
+attachments:  # one Post holds ONE Attachment type: an image gallery, or 1 GIF, or 1 video; never mixed
   image: {max_count: 20, formats: [jpg, png], max_size_mb: 20}
   gif: {max_count: 1, formats: [gif], max_size_mb: 100}
   video: {max_count: 1, formats: [mp4, mov], max_size_mb: 1024}
@@ -61,4 +61,4 @@ Hold the store-player subreddits (MobileGaming, AndroidGaming, iosgaming) until 
 - Title and body limits (third-party, no official Reddit page found): <https://typecount.com/blog/reddit-post-character-limit>
 - Image 20 MB and GIF 100 MB from Reddit's native image hosting launch: <https://searchenginejournal.com/reddit-breaks-imgur-releases-image-uploading-tool/164888>
 - Video 1 GB: <https://help.postpone.app/en/scheduling-posts/submitting-image-video-posts-to-reddit>
-- Media types per subreddit vary: <https://info.bundle.social/api-reference/limits>
+- Attachment types per subreddit vary: <https://info.bundle.social/api-reference/limits>

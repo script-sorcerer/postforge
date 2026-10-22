@@ -43,10 +43,10 @@ Create the Draft note first, with `status: drafting` and an empty `passes` list.
 
 1. **`angle`**: read the Topic note in full (Angle, Why now, Source material, Shot list) and its Source material if needed. Fix the one idea of the Post and who it is for, in one sentence. Write it under `## Writer notes`.
 2. **`hooks`**: write three different opening lines for that idea. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below).
-3. **`draft`**: write the Post text in the Channel's register from the Voice guide. X: short, one idea, one or two sentences, leads with the thing itself, media first.
+3. **`draft`**: write the Post text in the Channel's register from the Voice guide. X: short, one idea, one or two sentences, leads with the thing itself, Attachment first.
 4. **`voice`**: check the Draft against every section of the Voice guide (who is speaking, tone, register, AI stance, never publish) and fix what breaks it. Check the hook alternatives too.
 5. **`humanize`**: remove every banned word and pattern the Voice guide lists, in the Post text and the alternatives.
-6. **`channel-fit`**: apply the Channel rules note: length, hashtags, media, etiquette. Then set `status: in-review`, record the Pass, and run `uv run scripts/vault_check.py`. Fix every violation in this Draft and run it again until it passes.
+6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation in this Draft and run it again until it passes.
 
 ## Step 4: Editor loop
 

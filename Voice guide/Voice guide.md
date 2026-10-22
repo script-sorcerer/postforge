@@ -24,7 +24,7 @@ The Writer's Voice Pass checks every Draft against this note; the Humanize Pass 
 
 ## Register per Channel
 
-- **X**: short. One idea, one or two sentences, media first. Reads like a note to other developers.
+- **X**: short. One idea, one or two sentences, Attachment first. Reads like a note to other developers.
 - **Reddit**: modest and not self-promotional. A lesson or a moment shared with peers; the game is context, not the pitch. Follow each subreddit's rules (see [[Channel rules/Reddit]]).
 - **LinkedIn**: reflective, with a takeaway. What I tried, what happened, what I learned that another builder can use. Still first person, still no corporate tone.
 
@@ -56,7 +56,7 @@ Remove or rewrite on sight.
 
 - Code beyond short snippets (a few lines that illustrate one point).
 - Mechanics, features or content not yet announced. Check the Fact sheet's `shown_publicly` list; if it is not there, it stays out.
-- The game's name, until the Owner sets `public_name` in the Fact sheet. Until then: "my traffic game" or similar.
+- The game's name, until the Owner sets `public_name` in the Fact sheet. Until then: "my traffic puzzle game".
 - Links to the private repository, its issues, commits or pull requests, or screenshots that show them.
 - Anything about other people (testers, players, collaborators) without their consent, and any private data.
 - Release dates, prices or platform deals the Owner has not announced.

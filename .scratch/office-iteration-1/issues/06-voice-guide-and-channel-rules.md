@@ -11,4 +11,6 @@
 - [x] The Reddit note lists the chosen subreddits
 - [x] The Vault check takes Channel limits from these notes, not from its own code
 
+## Comments
+
 Note: Voice guide and Channel rules drafted by an agent; the Owner approved them as drafted (`status: approved` in each note).

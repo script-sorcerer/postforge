@@ -4,7 +4,7 @@ channel: x
 status: proposed
 text:
   max_length: 280
-media:
+attachments:
   image: {formats: [jpg, png], max_size_mb: 5}
 hashtags:
   max: 1

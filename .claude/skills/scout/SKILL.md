@@ -82,7 +82,7 @@ Rules for the Fact sheet:
 - Leave `public_name` empty unless the sources show the name is already public. While it is empty, the Office says "my traffic puzzle game" (or the Project's equivalent), never the working name.
 - Leave `shown_publicly` empty: the repository cannot tell what the Owner has posted. Ask the Owner instead.
 
-Then run `uv run scripts/vault_check.py` and fix any violation in the Fact sheet. Stop and ask the Owner to:
+Then run `scripts/vault_check.py` and fix any violation in the Fact sheet. Stop and ask the Owner to:
 
 1. read `Fact sheets/<project>.md` and correct anything wrong;
 2. fill `public_name` if the game already has a public name;
@@ -131,8 +131,8 @@ Every Digest builds on a Trend scan: what is current outside the Project, so Top
    Sources that failed or areas with nothing found.
    ```
 
-4. **Refresh the subreddit rules** in `Channel rules/Reddit.md` while you are on each subreddit: read its rules (`https://www.reddit.com/r/<subreddit>/about/rules.json`, else the sidebar or a search) and update its row in the subreddits table (self-promotion, flair, frequency, allowed media) and the Etiquette section where it changed. Set `checked:` in the frontmatter to today, but only if you could read every subreddit's rules; otherwise keep the old date and say which ones you could not read. You may tighten a frontmatter limit when a rule demands it. Never loosen one, never edit the `subreddits` list, and never change `status`: tell the Owner what changed and what you would loosen or add, and let them decide.
-5. Run `uv run scripts/vault_check.py` and fix any violation in the Trend scan.
+4. **Refresh the subreddit rules** in `Channel rules/Reddit.md` while you are on each subreddit: read its rules (`https://www.reddit.com/r/<subreddit>/about/rules.json`, else the sidebar or a search) and update its row in the subreddits table (self-promotion, flair, frequency, allowed Attachments) and the Etiquette section where it changed. Set `checked:` in the frontmatter to today, but only if you could read every subreddit's rules; otherwise keep the old date and say which ones you could not read. You may tighten a frontmatter limit when a rule demands it. Never loosen one, never edit the `subreddits` list, and never change `status`: tell the Owner what changed and what you would loosen or add, and let them decide.
+5. Run `scripts/vault_check.py` and fix any violation in the Trend scan.
 
 Topics may cite the Trend scan in their "Why now" with `[[<YYYY-MM-DD> Trend scan]]`, and the Digest links it in `trend_scan`.
 
@@ -229,6 +229,6 @@ One line per Topic: rank, title, Rubric, Channels, needs media.
 
 ## Step 7: Check, move the position, hand over
 
-1. Run `uv run scripts/vault_check.py` and fix every violation in the notes you wrote.
+1. Run `scripts/vault_check.py` and fix every violation in the notes you wrote.
 2. Only once it passes, set `last_read_commit: <target>` and `last_read_date: <today>` in `Projects/<project>.md`. Never move the position before the Digest is written: a failed run would lose commits.
 3. Tell the Owner the Digest is ready, with its path and the Trend scan's path (new or reused), plus any subreddit rule changes from Step 4. In each Topic note they set `status` to `approved`, `rejected` (and fill `reason` with one line) or `parked`, and may first edit `channels` or the Angle. Only the Owner changes a Topic's status.

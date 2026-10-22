@@ -15,3 +15,12 @@ promotional: true
 ## Source material
 - `issue #91` Localizable event text
 - github.com/script-sorcerer/traffic_jam2 is another repository
+
+## Angle
+The one point the Post makes.
+
+## Why now
+It just landed.
+
+## Shot list
+None

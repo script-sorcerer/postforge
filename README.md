@@ -22,7 +22,7 @@ Open this repository in Obsidian as its own Vault (ADR 0001). Its folders:
 
 Topic, Draft and Post notes carry YAML frontmatter (`kind`, `status`, `project`, `language`, plus `rubric` and `channels` on a Topic, `topic` and `channel` on a Draft or Post, `published_url` on a published Post).
 
-A Topic also carries `rank`, `needs_media`, `promotional`, a one-line `reason` once the Owner rejects it, and `previously_parked` (a link to the parked Topic it brings back, or empty); its `rubric` is one of the eleven Rubrics. A Digest carries `kind: digest`, `project`, `date` and `topics`, the links to its Topic notes, best first, and `trend_scan`, the link to the Trend scan it built on (at most 14 days older than the Digest).
+A Topic also carries `rank`, `needs_media`, `promotional`, a one-line `reason` once the Owner rejects it, and `previously_parked` (a link to the parked Topic it brings back, or empty); its `rubric` is one of the eleven Rubrics, its `channels` each one of `x`, `reddit`, `linkedin`, and its body has the sections `## Angle`, `## Why now`, `## Source material` and `## Shot list`. A Digest carries `kind: digest`, `project`, `date` and `topics`, the links to its Topic notes, best first (their `rank`s run 1 to N in that order), and `trend_scan`, the link to the Trend scan it built on (at most 14 days older than the Digest).
 
 A Trend scan (`Trend scans/<YYYY-MM-DD> Trend scan.md`) carries `kind: trend-scan`, `date` (ISO) and `sources` (URLs).
 
@@ -32,7 +32,7 @@ A Fact sheet carries `kind: fact-sheet`, `status` (`proposed`, then `approved` b
 
 A Draft also carries `passes`, the Writer's Passes in the order they ran (`angle`, `hooks`, `draft`, `voice`, `humanize`, `channel-fit`); all six once it leaves `drafting`. Its `topic` must link to an existing Topic note. Its body holds the Post text, then an `> [!note]- Alternative hooks` callout and `## Writer notes`. The Post text is the body up to the first line starting with `> [!` or `## `; the Vault check measures it against the Channel's `text.max_length` (URLs count as written, stricter than X's 23). After the Editor loop a Draft also carries `editor_rounds` (at most 2), `editor_score` and one `## Editor review N` section per round.
 
-Each Channel rules note carries the Channel's limits in frontmatter (`channel`, `text.max_length`, `media.<type>` with `max_count`, `formats` and `max_size_mb`, `hashtags.max`); the Vault check reads limits from there and reports a note missing any of them under `channel-rules`.
+Each Channel rules note carries the Channel's limits in frontmatter (`channel`, `text.max_length`, `attachments.<type>` with `max_count`, `formats` and `max_size_mb`, `hashtags.max`); the Vault check reads limits from there and reports a note missing any of them under `channel-rules`.
 
 ## Commands
 
@@ -44,8 +44,8 @@ Each Channel rules note carries the Channel's limits in frontmatter (`channel`, 
 Needs [uv](https://docs.astral.sh/uv/). Check the whole Vault, or a Vault at another path:
 
 ```sh
-uv run scripts/vault_check.py
-uv run scripts/vault_check.py path/to/vault
+scripts/vault_check.py
+scripts/vault_check.py path/to/vault
 ```
 
 It fails any Topic, Draft or Post that links to a Project's `github` repository (`private-repo-link`): that repository is private. It prints each violation as `note: [rule] message` and exits non-zero on any violation.

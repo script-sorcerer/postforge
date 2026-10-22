@@ -8,7 +8,7 @@ topics:
   - "[[Lane change bug]]"
   - "[[Ten thousand cars]]"
   - "[[Agents wrote the road graph]]"
-  - "[[Which district first]]"
+  - "[[Which district first#Angle]]"
 ---
 
 # Digest 2026-10-22: traffic_jam

@@ -11,3 +11,15 @@ promotional: false
 ---
 
 # No reason
+
+## Angle
+The one point the Post makes.
+
+## Why now
+It just landed.
+
+## Source material
+- `abc1234` A commit
+
+## Shot list
+None

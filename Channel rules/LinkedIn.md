@@ -5,8 +5,8 @@ status: approved
 checked: 2026-10-22
 text:
   max_length: 3000  # the feed cuts after about 210 characters on desktop, 140 on mobile
-mixed_media: false
-media:  # one Post holds ONE media type: images, or 1 video, or 1 document; never mixed
+mixed_attachments: false
+attachments:  # one Post holds ONE Attachment type: images, or 1 video, or 1 document; never mixed
   image: {max_count: 20, formats: [jpg, png], max_size_mb: 5}
   video: {max_count: 1, formats: [mp4, mov], max_size_mb: 5120}
   document: {max_count: 1, formats: [pdf], max_size_mb: 100}
@@ -27,7 +27,7 @@ The frontmatter holds the limits the Vault check reads. Change them there.
 | Images | Up to 20, JPG / PNG, 5 MB each | Platform (size per third-party guides) |
 | Video | 1, MP4 / MOV, up to 5 GB, 3 seconds to 15 minutes | Platform (third-party guides) |
 | Document (carousel) | 1 PDF, up to 100 MB, 300 pages | Platform (third-party guides) |
-| Mixing | One media type per Post | Platform |
+| Mixing | One Attachment type per Post | Platform |
 | Hashtags | At most 3 | House rule |
 | Alt text | Every image has alt text | House rule |
 

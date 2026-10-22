@@ -19,9 +19,9 @@ def run_check(vault):
     return result.returncode, violations
 
 
-@pytest.mark.parametrize("vault", [FIXTURES / "valid", ROOT], ids=["valid-fixture", "real-vault"])
-def test_clean_vault_passes(vault):
-    assert run_check(vault) == (0, [])
+# The real Vault is checked by running the script directly, not here: Owner edits must not fail the code tests.
+def test_clean_vault_passes():
+    assert run_check(FIXTURES / "valid") == (0, [])
 
 
 # fixture folder -> (note, rule it must be reported under)
@@ -47,13 +47,20 @@ BROKEN = {
     "draft-topic": ("Drafts/Missing topic.md", "draft-topic"),
     "draft-passes": ("Drafts/Passes out of order.md", "draft-passes"),
     "draft-length": ("Drafts/Too long.md", "draft-length"),
-
-
     "private-repo-link": ("Topics/Event factory.md", "private-repo-link"),
     "editor-rounds": ("Drafts/Three rounds.md", "editor-rounds"),
     "required-fields-trend-scan": ("Trend scans/No date.md", "required-fields"),
     "trend-scan-date": ("Trend scans/Undated.md", "trend-scan-date"),
     "digest-trend-scan": ("Digests/2026-10-22 traffic_jam.md", "digest-trend-scan"),
+    "required-fields-digest": ("Digests/2026-10-22 traffic_jam.md", "required-fields"),
+    "frontmatter-reader-error": ("Topics/Control character.md", "frontmatter"),
+    "frontmatter-encoding": ("Topics/Latin-1.md", "frontmatter"),
+    "digest-rubric-list": ("Topics/Topic 1.md", "rubric"),
+    "digest-topics-list": ("Digests/2026-10-22 traffic_jam.md", "digest-links"),
+    "digest-ranks": ("Digests/2026-10-22 traffic_jam.md", "digest-ranks"),
+    "topic-sections": ("Topics/No shot list.md", "topic-sections"),
+    "topic-channels": ("Topics/Unknown channel.md", "topic-channels"),
+    "channel-rules-duplicate": ("Channel rules/X.md", "channel-rules"),
 }
 
 
