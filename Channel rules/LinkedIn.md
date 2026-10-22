@@ -1,7 +1,7 @@
 ---
 kind: channel-rules
 channel: linkedin
-status: proposed  # awaiting Owner approval
+status: approved
 checked: 2026-10-22
 text:
   max_length: 3000  # the feed cuts after about 210 characters on desktop, 140 on mobile
@@ -15,9 +15,6 @@ hashtags:
 ---
 
 # Channel rules: LinkedIn
-
-> [!warning] Proposal, awaiting Owner approval
-> Drafted by an agent. The Owner confirms the limits and house rules before the Writer uses them.
 
 ## Limits
 

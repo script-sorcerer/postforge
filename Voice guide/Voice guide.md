@@ -1,13 +1,10 @@
 ---
 kind: voice-guide
-status: proposed  # awaiting Owner approval
-owner_approved: false
+status: approved
+owner_approved: true
 ---
 
 # Voice guide
-
-> [!warning] Proposal, awaiting Owner approval
-> Drafted by an agent from the spec. The Owner edits and approves it before the Writer uses it (ticket 07). When approved, set `status: approved` and `owner_approved: true`.
 
 The Writer's Voice Pass checks every Draft against this note; the Humanize Pass applies its banned words and patterns; the Editor scores against both.
 

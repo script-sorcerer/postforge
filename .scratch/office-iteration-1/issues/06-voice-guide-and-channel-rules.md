@@ -6,9 +6,9 @@
 
 **Status:** ready-for-human
 
-- [ ] The Voice guide covers every point above and the Owner has approved it
+- [x] The Voice guide covers every point above and the Owner has approved it
 - [x] X, Reddit and LinkedIn each have a Channel rules note with the fields above
 - [x] The Reddit note lists the chosen subreddits
 - [x] The Vault check takes Channel limits from these notes, not from its own code
 
-Note: Voice guide and Channel rules drafted by an agent as a proposal (`status: proposed` in each note). Awaiting Owner approval of the Voice guide, the limits and house rules, and the subreddit list.
+Note: Voice guide and Channel rules drafted by an agent; the Owner approved them as drafted (`status: approved` in each note).

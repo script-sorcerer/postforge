@@ -1,7 +1,7 @@
 ---
 kind: channel-rules
 channel: x
-status: proposed  # awaiting Owner approval
+status: approved
 checked: 2026-10-22
 text:
   max_length: 280  # non-Premium account; Premium allows far more, but we write for 280
@@ -15,9 +15,6 @@ hashtags:
 ---
 
 # Channel rules: X
-
-> [!warning] Proposal, awaiting Owner approval
-> Drafted by an agent. The Owner confirms the limits and house rules before the Writer uses them.
 
 ## Limits
 
