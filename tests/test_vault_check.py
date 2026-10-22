@@ -45,6 +45,9 @@ BROKEN = {
     "digest-promotional": ("Digests/2026-10-22 traffic_jam.md", "digest-promotional"),
     "channel-rules": ("Channel rules/X.md", "channel-rules"),
     "private-repo-link": ("Topics/Event factory.md", "private-repo-link"),
+    "required-fields-trend-scan": ("Trend scans/No date.md", "required-fields"),
+    "trend-scan-date": ("Trend scans/Undated.md", "trend-scan-date"),
+    "digest-trend-scan": ("Digests/2026-10-22 traffic_jam.md", "digest-trend-scan"),
 }
 
 

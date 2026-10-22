@@ -13,6 +13,7 @@ messages and append it to RULES. The rule is reported as `<name>` with
 underscores turned into hyphens.
 """
 
+import datetime
 import re
 import sys
 from pathlib import Path
@@ -191,6 +192,54 @@ RULES += [
     check_rubric, check_rejection_reason,
     check_digest_links, check_digest_size, check_digest_rubrics, check_digest_promotional,
 ]
+
+
+# Trend scan: the Scout's dated note on what is current outside the Project.
+# A Digest may link the Trend scan it built on (`trend_scan`); it must be at most 14 days older.
+NOTE_FOLDERS.append("Trend scans")
+REQUIRED_FIELDS["trend-scan"] = ["kind", "date"]
+LIFECYCLES["trend-scan"] = []  # a Trend scan has no status; it goes stale by date
+TREND_SCAN_MAX_AGE_DAYS = 14
+
+
+def as_date(value):
+    """Return a date from YAML's date, datetime or ISO string, else None."""
+    if isinstance(value, datetime.datetime):
+        return value.date()
+    if isinstance(value, datetime.date):
+        return value
+    try:
+        return datetime.date.fromisoformat(str(value))
+    except ValueError:
+        return None
+
+
+def check_trend_scan_date(note):
+    value = note["fm"].get("date") if kind_of(note) == "trend-scan" else None
+    if value is None or as_date(value):
+        return []  # a missing date is reported by required-fields
+    return [f"date {value!r} is not an ISO date (YYYY-MM-DD)"]
+
+
+def check_digest_trend_scan(note):
+    link = note["fm"].get("trend_scan") if kind_of(note) == "digest" else None
+    if not link:
+        return []  # optional: Digests written before the Trend scan have none
+    name = str(link).strip("[]").split("|")[0].split("/")[-1]
+    path = note["path"].parent.parent / "Trend scans" / f"{name}.md"
+    scan = read_note(path) if path.is_file() else None
+    if not scan or not scan["fm"]:
+        return [f"trend_scan {link} has no note in Trend scans/"]
+    digest_date, scan_date = as_date(note["fm"].get("date")), as_date(scan["fm"].get("date"))
+    if not (digest_date and scan_date):
+        return []  # an unreadable date is reported on its own note
+    age = (digest_date - scan_date).days
+    if age > TREND_SCAN_MAX_AGE_DAYS:
+        return [f"trend_scan {link} is {age} days older than the digest, at most {TREND_SCAN_MAX_AGE_DAYS} allowed"]
+    return []
+
+
+RULES += [check_trend_scan_date, check_digest_trend_scan]
 
 
 # Channel rules notes carry the Channel's limits in frontmatter; the check reads them from there.

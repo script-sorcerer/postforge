@@ -93,7 +93,48 @@ End the run there.
 
 ## Step 4: Trend scan
 
-> Placeholder: the Trend scan arrives with ticket 05. Skip this step for now.
+Every Digest builds on a Trend scan: what is current outside the Project, so Topics can ride live discussions and dates. A Trend scan is shared by all Projects.
+
+1. **Reuse or replace.** Look in `Trend scans/` for the newest note. If its `date` is at most 14 days before today, reuse it and go to Step 5. Otherwise it is stale: never use it, write a new one. The Vault check fails a Digest whose Trend scan is more than 14 days older than the Digest.
+2. **Scan the web** with WebSearch and WebFetch. Cover the four areas:
+   - **Hot threads** in the chosen subreddits (the `subreddits` list in `Channel rules/Reddit.md`): the top posts of the past week, e.g. `https://www.reddit.com/r/<subreddit>/top.json?t=week&limit=10`. What do people discuss, ask, show, complain about?
+   - **Meme formats** current among game developers and players (r/IndieDev, r/gamedev, X): the format, how it works, an example.
+   - **Gaming and mobile news**: platform and store changes (App Store, Google Play), notable releases, industry events relevant to a mobile indie game.
+   - **Calendar hooks** for the next two weeks: weekly ones such as #ScreenshotSaturday, #WIPWednesday, #IndieDevHour and #MadeWithUnreal (check the weekday each runs), plus events, game jams, festivals and holidays.
+
+   Reddit often blocks unsigned fetches. If a source fails, fall back to WebSearch, and list what failed under Gaps. Never invent a thread, meme or date: write only what a source shows, and give its URL.
+3. **Write** `Trend scans/<YYYY-MM-DD> Trend scan.md` (today's date):
+
+   ```markdown
+   ---
+   kind: trend-scan
+   date: <YYYY-MM-DD>
+   sources:                 # every URL you drew on
+     - https://...
+   ---
+
+   # Trend scan <YYYY-MM-DD>
+
+   ## Hot threads
+   Per subreddit: thread title, what it is about, why it matters for the Project, URL.
+
+   ## Meme formats
+   Format, how it works, one example URL.
+
+   ## Gaming and mobile news
+   Item, date, one line on its relevance, URL.
+
+   ## Calendar hooks
+   Hook or event, the date(s) in the next two weeks, the Channel it fits.
+
+   ## Gaps
+   Sources that failed or areas with nothing found.
+   ```
+
+4. **Refresh the subreddit rules** in `Channel rules/Reddit.md` while you are on each subreddit: read its rules (`https://www.reddit.com/r/<subreddit>/about/rules.json`, else the sidebar or a search) and update its row in the subreddits table (self-promotion, flair, frequency, allowed media) and the Etiquette section where it changed. Set `checked:` in the frontmatter to today, but only if you could read every subreddit's rules; otherwise keep the old date and say which ones you could not read. You may tighten a frontmatter limit when a rule demands it. Never loosen one, never edit the `subreddits` list, and never change `status`: tell the Owner what changed and what you would loosen or add, and let them decide.
+5. Run `uv run scripts/vault_check.py` and fix any violation in the Trend scan.
+
+Topics may cite the Trend scan in their "Why now" with `[[<YYYY-MM-DD> Trend scan]]`, and the Digest links it in `trend_scan`.
 
 ## Step 5: Read the Source material
 
@@ -155,7 +196,7 @@ attachments: []
 The one point the Post makes and for whom.
 
 ## Why now
-Why this belongs in this Digest: the change that just landed, a date, a hook.
+Why this belongs in this Digest: the change that just landed, a date, a hook. Cite a trend or hook from the Trend scan as `[[<YYYY-MM-DD> Trend scan]]`.
 
 ## Source material
 - `<short hash>` <commit subject>
@@ -175,6 +216,7 @@ kind: digest
 project: "[[<project>]]"
 date: <YYYY-MM-DD>
 commits: <last_read_commit or "start">..<target>
+trend_scan: "[[<YYYY-MM-DD> Trend scan]]"   # the Trend scan from Step 4
 topics:
   - "[[<title of rank 1>]]"
   - "[[<title of rank 2>]]"
@@ -189,4 +231,4 @@ One line per Topic: rank, title, Rubric, Channels, needs media.
 
 1. Run `uv run scripts/vault_check.py` and fix every violation in the notes you wrote.
 2. Only once it passes, set `last_read_commit: <target>` and `last_read_date: <today>` in `Projects/<project>.md`. Never move the position before the Digest is written: a failed run would lose commits.
-3. Tell the Owner the Digest is ready, with its path. In each Topic note they set `status` to `approved`, `rejected` (and fill `reason` with one line) or `parked`, and may first edit `channels` or the Angle. Only the Owner changes a Topic's status.
+3. Tell the Owner the Digest is ready, with its path and the Trend scan's path (new or reused), plus any subreddit rule changes from Step 4. In each Topic note they set `status` to `approved`, `rejected` (and fill `reason` with one line) or `parked`, and may first edit `channels` or the Angle. Only the Owner changes a Topic's status.
