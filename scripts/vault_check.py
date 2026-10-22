@@ -579,7 +579,7 @@ def check_topic_drafts(note):
             messages.append(f"approved topic has {drafts} drafts for {channel}, expected one")
         elif written and not any(f.get("channel") == channel for f in linked):
             messages.append(f"approved topic has no draft for {channel}")
-    stale = sorted({str(f.get("channel")) for f in linked if f.get("channel") not in fm["channels"]})
+    stale = sorted({str(f.get("channel")) for f in linked if f.get("channel") and f.get("channel") not in fm["channels"]})
     messages += [f"approved topic has a draft or post for {c}, which it does not list in channels" for c in stale]
     return messages
 
@@ -622,7 +622,7 @@ def check_owner_edits(note):
     """A Role changed, removed or added an Owner block unless the fingerprints still match."""
     if kind_of(note) != "draft":
         return []
-    # shortcut: deleting an Owner block together with its owner_edits entry passes; only the history shows it.
+    # shortcut: deleting an Owner block together with its owner_edits entry passes; only git history shows it.
     sealed = note["fm"].get("owner_edits") or []
     if [str(s) for s in (sealed if isinstance(sealed, list) else [sealed])] == owner_fingerprints(note["text"]):
         return []

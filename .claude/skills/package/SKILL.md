@@ -44,7 +44,7 @@ topic: "[[<topic title>]]"
 draft: "[[<topic title> - <channel>]]"
 channel: x
 language: en
-subreddit: gamedev      # Reddit only: copied from the Draft
+subreddit: "<subreddit>"  # Reddit only: copied from the Draft
 title: "<title>"        # Reddit only: copied from the Draft
 attachments:            # upload order
   - file: "[[Attachments/<file>]]"
