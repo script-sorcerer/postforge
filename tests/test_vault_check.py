@@ -35,6 +35,7 @@ BROKEN = {
     "status-draft": ("Drafts/Wrong status.md", "status"),
     "status-post": ("Posts/Wrong status.md", "status"),
     "published-link": ("Posts/No link.md", "published-link"),
+    "channel-rules": ("Channel rules/X.md", "channel-rules"),
 }
 
 

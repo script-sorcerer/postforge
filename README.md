@@ -22,6 +22,8 @@ Open this repository in Obsidian as its own Vault (ADR 0001). Its folders:
 
 Topic, Draft and Post notes carry YAML frontmatter (`kind`, `status`, `project`, `language`, plus `rubric` and `channels` on a Topic, `topic` and `channel` on a Draft or Post, `published_url` on a published Post).
 
+Each Channel rules note carries the Channel's limits in frontmatter (`channel`, `text.max_length`, `media.<type>` with `max_count`, `formats` and `max_size_mb`, `hashtags.max`); the Vault check reads limits from there and reports a note missing any of them under `channel-rules`.
+
 ## Vault check
 
 Needs [uv](https://docs.astral.sh/uv/). Check the whole Vault, or a Vault at another path:
