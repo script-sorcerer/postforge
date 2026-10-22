@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Topics can cite issues and their discussion, local files and Owner notes as Source material
-- [ ] All access to traffic_jam and its GitHub repository is read-only
-- [ ] A rejected or published story does not reappear in a later Digest
-- [ ] A parked Topic can reappear, marked as previously parked
-- [ ] Topics never link to the private repository or its issues
+- [x] Topics can cite issues and their discussion, local files and Owner notes as Source material
+- [x] All access to traffic_jam and its GitHub repository is read-only
+- [x] A rejected or published story does not reappear in a later Digest
+- [x] A parked Topic can reappear, marked as previously parked
+- [x] Topics never link to the private repository or its issues

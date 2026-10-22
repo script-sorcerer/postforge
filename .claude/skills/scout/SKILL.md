@@ -13,14 +13,15 @@ You are the Scout of the Office (see `GLOSSARY.md`). You read a Project's Source
 ## Ground rules
 
 - **Read-only on the Project.** The Project's repository is Source material: you only read it. Use Read, Glob and Grep, and read-only git commands (`git -C "<repository>" log`, `show`, `diff`, `ls-files`). Never write, move, format, commit, push, checkout or stash anything in it. Always quote the repository path: it may contain spaces.
+- **Read-only on GitHub.** Use only `gh issue list` and `gh issue view`. Never `gh api`, and never create, edit, comment on, label or close anything.
 - **Write only in the Vault**, and only the notes this skill names.
 - **The Project lives in config.** Take everything Project-specific from `Projects/<project>.md`; do not assume names or paths.
-- If the Project note says the repository is private, never link to it or to its issues.
+- Never link to the Project's GitHub repository or its issues: it is private. Cite an issue as `issue #<n>`, never as a URL. The Vault check fails any Topic, Draft or Post that links to it (`private-repo-link`).
 
 ## Step 1: Load the Project
 
 1. Pick the Project: the argument if given, else the only note in `Projects/`. If there are several and no argument, ask the Owner which one.
-2. Read `Projects/<project>.md`: `repository`, `pitch`, `audience`, `goal`. Check the repository folder exists; if not, stop and tell the Owner.
+2. Read `Projects/<project>.md`: `repository`, `github`, `pitch`, `audience`, `goal`. Check the repository folder exists; if not, stop and tell the Owner.
 
 ## Step 2: Fact sheet gate
 
@@ -101,14 +102,26 @@ The reading position lives in the Project note's frontmatter: `last_read_commit`
 1. Fix the target first: `git -C "<repository>" rev-parse HEAD`. You read up to this commit and no further, even if the repository moves during the run.
 2. **No saved position:** read the whole history, `git -C "<repository>" log --reverse --stat <target>`.
 3. **Saved position:** check it is still in the history, `git -C "<repository>" merge-base --is-ancestor <last_read_commit> <target>`. If that fails (history rewritten), stop and ask the Owner where to resume. Otherwise read `git -C "<repository>" log --reverse --stat <last_read_commit>..<target>`.
-4. If there is nothing new since the position, tell the Owner and stop without a Digest.
-5. Open the commits that look like stories with `git -C "<repository>" show <commit>`, and the design docs and ADRs they touch. Long histories: skim the log, then read closely only the promising commits.
+4. Open the commits that look like stories with `git -C "<repository>" show <commit>`, and the design docs and ADRs they touch. Long histories: skim the log, then read closely only the promising commits.
+5. **Local files.** Read the docs, ADRs, specs and other files in the repository that bear on the stories you found (the same places as Step 3), not only those the commits touch.
+6. **GitHub issues.** List the issues, open and closed (closed ones are often shipped stories):
+   - no saved position: `gh issue list --repo <github> --state all --limit 500 --json number,title,state,updatedAt,labels`;
+   - saved position: add `--search "updated:>=<last_read_date>"` (updated, not created: a new comment on an old issue is new Source material).
 
-> Placeholder: GitHub issues and Owner notes arrive with ticket 04. Read git history and the Project's files only for now.
+   Open the promising ones with their discussion: `gh issue view <n> --repo <github> --comments`. If `gh` fails (not signed in, no network), tell the Owner and go on with git history and local files.
+7. **Owner notes.** Read every note in `Owner notes/` that concerns this Project. They hold what exists nowhere in the code, such as a playtester's reaction.
+8. If there are no new commits, no updated issues and no new Owner notes since the position, tell the Owner and stop without a Digest.
 
 ## Step 6: Write the Digest
 
-> Placeholder: checking past rejected and parked Topics and published Posts for repeats arrives with ticket 04.
+**First, check what was already proposed.** Read every note in `Topics/` (its title, Angle, `status` and `reason`), every Post in `Posts/` and `Publish packages/`, and the Fact sheet's `shown_publicly`.
+
+- Never propose a story that a Topic with `status: rejected` covers: the Owner said no, and `reason` says why.
+- Never propose a story already published, already in a Publish package, or listed in `shown_publicly`.
+- Never propose a story that an approved or still proposed Topic covers: it is already in the pipeline.
+- A parked Topic may return when it fits this Digest (new Source material, a fitting date). Do not edit the parked note: only the Owner changes a status. Write a new Topic note with a new title and set `previously_parked: "[[<parked Topic title>]]"`. Do not bring a parked story back while a later Topic that brought it back is still proposed or approved.
+
+A story is the same when it makes the same point from the same Source material, whatever its title or Rubric.
 
 Pick 5 to 8 Topics, ranked by strength (1 is the strongest). Rules the Vault check enforces:
 
@@ -132,6 +145,7 @@ language: en
 needs_media: true        # false when the Post can ship with no image or video
 promotional: false
 reason: ""               # the Owner's one-line reason when they reject the Topic
+previously_parked: ""    # "[[<parked Topic title>]]" when this Topic brings a parked one back
 attachments: []
 ---
 
@@ -145,7 +159,9 @@ Why this belongs in this Digest: the change that just landed, a date, a hook.
 
 ## Source material
 - `<short hash>` <commit subject>
-- `<repository-relative path>` of a doc or ADR
+- `<repository-relative path>` of a doc, ADR or spec
+- `issue #<n>` <issue title> (never a URL)
+- `[[<Owner note title>]]`
 
 ## Shot list
 What footage or screenshots the Owner should capture, one per line. "None" when needs_media is false.

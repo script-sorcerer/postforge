@@ -44,6 +44,7 @@ BROKEN = {
     "digest-rubrics": ("Digests/2026-10-22 traffic_jam.md", "digest-rubrics"),
     "digest-promotional": ("Digests/2026-10-22 traffic_jam.md", "digest-promotional"),
     "channel-rules": ("Channel rules/X.md", "channel-rules"),
+    "private-repo-link": ("Topics/Event factory.md", "private-repo-link"),
 }
 
 

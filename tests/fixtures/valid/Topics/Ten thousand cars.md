@@ -11,3 +11,7 @@ promotional: true
 ---
 
 # Ten thousand cars
+
+## Source material
+- `issue #91` Localizable event text
+- github.com/script-sorcerer/traffic_jam2 is another repository
