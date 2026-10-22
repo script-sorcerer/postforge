@@ -2,9 +2,9 @@
 # requires-python = ">=3.10"
 # dependencies = ["pyyaml"]
 # ///
-"""Vault check: reads every Topic, Draft and Post note and every Channel rules
-note in the Vault and reports each rule it breaks. Exits 1 on any violation,
-0 when the Vault is clean.
+"""Vault check: reads every Topic, Draft, Post and Fact sheet note and every
+Channel rules note in the Vault and reports each rule it breaks. Exits 1 on
+any violation, 0 when the Vault is clean.
 
 Usage: uv run scripts/vault_check.py [VAULT]   (default: this repository)
 
@@ -90,6 +90,27 @@ def check_published_link(note):
 
 
 RULES = [check_frontmatter, check_kind, check_required_fields, check_status, check_published_link]
+
+
+# Fact sheet: one per Project, proposed by the Scout, approved only by the Owner.
+NOTE_FOLDERS.append("Fact sheets")
+REQUIRED_FIELDS["fact-sheet"] = ["kind", "status", "project"]
+LIFECYCLES["fact-sheet"] = ["proposed", "approved"]
+
+
+def check_fact_sheet(note):
+    """public_name may be empty until the name is public; the key must still be there."""
+    if kind_of(note) != "fact-sheet":
+        return []
+    fm, messages = note["fm"], []
+    if not isinstance(fm.get("public_name", 0), (str, type(None))):
+        messages.append("public_name is missing or not text (leave it empty until the name is public)")
+    if not isinstance(fm.get("shown_publicly", 0), (list, type(None))):
+        messages.append("shown_publicly is missing or not a list")
+    return messages
+
+
+RULES.append(check_fact_sheet)
 
 
 # Channel rules notes carry the Channel's limits in frontmatter; the check reads them from there.

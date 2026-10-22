@@ -58,8 +58,8 @@ Remove or rewrite on sight.
 ## Never publish
 
 - Code beyond short snippets (a few lines that illustrate one point).
-- Mechanics, features or content not yet announced. Check the Fact sheet's record of what has been shown publicly; if it is not there, it stays out.
-- The game's name, until the Owner records it as public in the Fact sheet. Until then: "my traffic game" or similar.
+- Mechanics, features or content not yet announced. Check the Fact sheet's `shown_publicly` list; if it is not there, it stays out.
+- The game's name, until the Owner sets `public_name` in the Fact sheet. Until then: "my traffic game" or similar.
 - Links to the private repository, its issues, commits or pull requests, or screenshots that show them.
 - Anything about other people (testers, players, collaborators) without their consent, and any private data.
 - Release dates, prices or platform deals the Owner has not announced.
