@@ -51,6 +51,9 @@ BROKEN = {
 
     "private-repo-link": ("Topics/Event factory.md", "private-repo-link"),
     "editor-rounds": ("Drafts/Three rounds.md", "editor-rounds"),
+    "required-fields-trend-scan": ("Trend scans/No date.md", "required-fields"),
+    "trend-scan-date": ("Trend scans/Undated.md", "trend-scan-date"),
+    "digest-trend-scan": ("Digests/2026-10-22 traffic_jam.md", "digest-trend-scan"),
 }
 
 

@@ -1,0 +1,17 @@
+---
+kind: topic
+status: parked
+project: "[[traffic_jam]]"
+rank: 3
+rubric: By the numbers
+channels: [x, reddit]
+language: en
+needs_media: false
+promotional: true
+---
+
+# Ten thousand cars
+
+## Source material
+- `issue #91` Localizable event text
+- github.com/script-sorcerer/traffic_jam2 is another repository

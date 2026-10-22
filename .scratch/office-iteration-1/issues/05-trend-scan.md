@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Each `/scout` run writes a dated Trend scan note before the Digest
-- [ ] The Trend scan covers the four areas listed above
-- [ ] Topics can cite the Trend scan
-- [ ] A Trend scan older than two weeks is treated as stale and replaced, not reused
-- [ ] Subreddit rules in the Reddit Channel rules are refreshed during the scan
+- [x] Each `/scout` run writes a dated Trend scan note before the Digest
+- [x] The Trend scan covers the four areas listed above
+- [x] Topics can cite the Trend scan
+- [x] A Trend scan older than two weeks is treated as stale and replaced, not reused
+- [x] Subreddit rules in the Reddit Channel rules are refreshed during the scan
