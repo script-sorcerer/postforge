@@ -72,6 +72,11 @@ POST_TEXT_END = re.compile(r"^(> \[!|## )", re.MULTILINE)
 # Editor loop: at most this many Editor rounds per Draft, then it goes to the Owner whatever the score.
 MAX_EDITOR_ROUNDS = 2
 
+# Publish package: Attachment types whose files need alt text, and the folder each Post status
+# lives in (the Owner moves a published Post to Posts/, the history of published Posts).
+ALT_TEXT_TYPES = ["image", "gif"]
+POST_FOLDERS = {"ready": "Publish packages", "published": "Posts"}
+
 # The Project's GitHub repository is private: no note may link to it or its issues.
 REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github` field
 
@@ -79,6 +84,7 @@ REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github
 # frontmatter of each valid Channel rules note by `channel`.
 VAULT_NOTES = {}
 CHANNEL_RULES = {}
+VAULT_ROOT = []  # filled by check_vault: Attachment paths are relative to it
 
 FRONTMATTER = re.compile(r"\A---\r?\n(.*?)^---\s*$", re.DOTALL | re.MULTILINE)
 
@@ -417,6 +423,102 @@ def check_editor_rounds(note):
     return [f"editor_rounds {rounds!r} must be a whole number from 0 to {MAX_EDITOR_ROUNDS}"]
 
 
+def check_post_folder(note):
+    status = note["fm"].get("status") if kind_of(note) == "post" else None
+    folder = POST_FOLDERS.get(status)
+    if not folder or note["path"].relative_to(VAULT_ROOT[0]).parts[0] == folder:
+        return []
+    return [f"{status} post belongs in {folder}/"]
+
+
+def package_attachments(note):
+    """The Attachment entries ({file, alt}) of a ready Publish package, else []. Published Posts
+    are not checked: their video files stay out of git, so a fresh clone lacks them."""
+    if kind_of(note) != "post" or note["fm"].get("status") != "ready":
+        return []
+    entries = note["fm"].get("attachments")
+    return entries if isinstance(entries, list) else []
+
+
+def attachment_path(entry):
+    """The file a `file: "[[Attachments/x.png]]"` entry names, relative to the Vault root."""
+    return VAULT_ROOT[0] / str(entry["file"]).strip("[]").split("|")[0]
+
+
+def typed_attachments(note):
+    """Return (Channel rules, [(entry, Attachment type or None)]) for a ready Publish package whose
+    Channel has rules; the type is the Channel's Attachment type whose formats hold the file's extension."""
+    rules = CHANNEL_RULES.get(note["fm"].get("channel")) if note["fm"] else None
+    entries = [e for e in package_attachments(note) if isinstance(e, dict) and e.get("file")]
+    if not rules or not entries:
+        return rules, []
+    typed = []
+    for entry in entries:
+        ext = attachment_path(entry).suffix.lower().lstrip(".")
+        ext = {"jpeg": "jpg"}.get(ext, ext)
+        typed.append((entry, next((t for t, lim in rules["attachments"].items() if ext in lim["formats"]), None)))
+    return rules, typed
+
+
+def check_attachment_files(note):
+    if kind_of(note) != "post" or note["fm"].get("status") != "ready":
+        return []
+    entries = note["fm"].get("attachments")
+    if entries is not None and not isinstance(entries, list):
+        return [f"attachments {entries!r} must be a list of {{file, alt}} entries"]
+    messages = []
+    for entry in entries or []:
+        if not (isinstance(entry, dict) and entry.get("file")):
+            messages.append(f"attachment {entry!r} has no file")
+        elif not attachment_path(entry).is_file():
+            messages.append(f"attachment {entry['file']} has no file on disk")
+    return messages
+
+
+def check_attachment_format(note):
+    rules, typed = typed_attachments(note)
+    return [f"attachment {e['file']} is not a format {rules['channel']} allows" for e, t in typed if t is None]
+
+
+def check_attachment_count(note):
+    rules, typed = typed_attachments(note)
+    types = [t for _, t in typed if t]
+    return [
+        f"{types.count(t)} {t} attachments, {rules['channel']} allows {rules['attachments'][t]['max_count']}"
+        for t in sorted(set(types))
+        if types.count(t) > rules["attachments"][t]["max_count"]
+    ]
+
+
+def check_attachment_size(note):
+    rules, typed = typed_attachments(note)
+    messages = []
+    for entry, kind in typed:
+        path = attachment_path(entry)
+        if kind and path.is_file():  # a missing file is reported by attachment-files
+            size_mb, limit = path.stat().st_size / 1_000_000, rules["attachments"][kind]["max_size_mb"]
+            if size_mb > limit:
+                messages.append(f"attachment {entry['file']} is {size_mb:.3f} MB, {rules['channel']} allows {limit} MB")
+    return messages
+
+
+def check_alt_text(note):
+    _, typed = typed_attachments(note)
+    return [
+        f"attachment {e['file']} has no alt text"
+        for e, t in typed
+        if t in ALT_TEXT_TYPES and not (isinstance(e.get("alt"), str) and e["alt"].strip())
+    ]
+
+
+def check_mixed_attachments(note):
+    rules, typed = typed_attachments(note)
+    types = sorted({t for _, t in typed if t})
+    if rules and rules.get("mixed_attachments") is False and len(types) > 1:
+        return [f"attachments mix {', '.join(types)}; {rules['channel']} allows one Attachment type per Post"]
+    return []
+
+
 RULES = [
     check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
     check_fact_sheet, check_rubric, check_rejection_reason, check_topic_channels, check_topic_sections,
@@ -424,12 +526,15 @@ RULES = [
     check_trend_scan_date, check_digest_trend_scan,
     check_draft_topic, check_draft_passes, check_draft_length,
     check_private_repo_link, check_editor_rounds,
+    check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,
+    check_attachment_size, check_alt_text, check_mixed_attachments,
 ]
 
 
 def check_vault(vault):
     """Return (notes checked, list of 'note: [rule] message' lines)."""
     REPO_SLUGS[:] = load_repo_slugs(vault)
+    VAULT_ROOT[:] = [vault]
     channel_rules, channel_violations, channel_count = load_channel_rules(vault)
     CHANNEL_RULES.clear()
     CHANNEL_RULES.update(channel_rules)
