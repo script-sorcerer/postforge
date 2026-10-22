@@ -3,7 +3,7 @@ kind: topic
 status: proposed
 project: "[[traffic_jam]]"
 rank: 3
-rubric: Gameplay moment
+rubric: [Devlog]
 channels: [x, reddit]
 language: en
 needs_media: false

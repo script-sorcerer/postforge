@@ -55,7 +55,6 @@ BROKEN = {
     "required-fields-digest": ("Digests/2026-10-22 traffic_jam.md", "required-fields"),
     "frontmatter-reader-error": ("Topics/Control character.md", "frontmatter"),
     "frontmatter-encoding": ("Topics/Latin-1.md", "frontmatter"),
-    "digest-rubric-list": ("Topics/Topic 1.md", "rubric"),
     "digest-topics-list": ("Digests/2026-10-22 traffic_jam.md", "digest-links"),
     "digest-ranks": ("Digests/2026-10-22 traffic_jam.md", "digest-ranks"),
     "topic-sections": ("Topics/No shot list.md", "topic-sections"),
@@ -71,3 +70,14 @@ def test_broken_vault_fails_naming_note_and_rule(fixture):
     assert code == 1
     assert len(violations) == 1, violations
     assert violations[0].startswith(f"{note}: [{rule}] ")
+
+
+def test_list_rubrics_are_reported_not_crashed_on():
+    """Three Topics share the list rubric [Devlog]: digest-rubrics must skip it, not crash."""
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), str(FIXTURES / "digest-rubric-list")], capture_output=True, text=True
+    )
+    violations = [line for line in result.stdout.splitlines() if ": [" in line]
+    assert "Traceback" not in result.stderr
+    assert result.returncode == 1
+    assert len(violations) == 3 and all(": [rubric] " in v for v in violations), violations
