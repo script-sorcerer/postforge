@@ -5,6 +5,7 @@ status: proposed  # awaiting Owner approval
 checked: 2026-10-22
 text:
   max_length: 3000  # the feed cuts after about 210 characters on desktop, 140 on mobile
+mixed_media: false
 media:  # one Post holds ONE media type: images, or 1 video, or 1 document; never mixed
   image: {max_count: 20, formats: [jpg, png], max_size_mb: 5}
   video: {max_count: 1, formats: [mp4, mov], max_size_mb: 5120}

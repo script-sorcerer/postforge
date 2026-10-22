@@ -5,6 +5,7 @@ status: proposed  # awaiting Owner approval
 checked: 2026-10-22
 text:
   max_length: 280  # non-Premium account; Premium allows far more, but we write for 280
+mixed_media: false
 media:  # one Post holds ONE media type: up to 4 images, or 1 GIF, or 1 video; never mixed
   image: {max_count: 4, formats: [jpg, png, webp], max_size_mb: 5}
   gif: {max_count: 1, formats: [gif], max_size_mb: 15}

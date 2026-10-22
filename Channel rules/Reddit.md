@@ -6,6 +6,7 @@ checked: 2026-10-22
 text:
   max_length: 40000  # self-post body
   max_title_length: 300
+mixed_media: false
 media:  # one Post holds ONE media type: an image gallery, or 1 GIF, or 1 video; never mixed
   image: {max_count: 20, formats: [jpg, png], max_size_mb: 20}
   gif: {max_count: 1, formats: [gif], max_size_mb: 100}
