@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] `/scout` reads git history only after the saved reading position and then moves the position forward
-- [ ] With no saved position it reads the whole history
-- [ ] The Digest holds 5 to 8 Topics, ranked, each with every field listed above
-- [ ] The Owner can set approved, rejected with reason, or parked on each Topic in Obsidian
-- [ ] The Vault check fails a Digest with fewer than 5 or more than 8 Topics, more than two Topics of one Rubric, or promotional Topics above a third
-- [ ] Fixtures cover each Digest rule
+- [x] `/scout` reads git history only after the saved reading position and then moves the position forward
+- [x] With no saved position it reads the whole history
+- [x] The Digest holds 5 to 8 Topics, ranked, each with every field listed above
+- [x] The Owner can set approved, rejected with reason, or parked on each Topic in Obsidian
+- [x] The Vault check fails a Digest with fewer than 5 or more than 8 Topics, more than two Topics of one Rubric, or promotional Topics above a third
+- [x] Fixtures cover each Digest rule

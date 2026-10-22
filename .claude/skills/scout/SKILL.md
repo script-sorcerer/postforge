@@ -90,6 +90,87 @@ Then run `uv run scripts/vault_check.py` and fix any violation in the Fact sheet
 
 End the run there.
 
-## Step 4: Digest (approved Fact sheet only)
+## Step 4: Trend scan
 
-> Placeholder: Digest writing arrives with ticket 03 (first Digest from git history). Until then, tell the Owner the Fact sheet is approved but the Scout cannot write a Digest yet, and stop.
+> Placeholder: the Trend scan arrives with ticket 05. Skip this step for now.
+
+## Step 5: Read the Source material
+
+The reading position lives in the Project note's frontmatter: `last_read_commit` (full hash) and `last_read_date` (ISO date). Both empty means no Digest was written yet.
+
+1. Fix the target first: `git -C "<repository>" rev-parse HEAD`. You read up to this commit and no further, even if the repository moves during the run.
+2. **No saved position:** read the whole history, `git -C "<repository>" log --reverse --stat <target>`.
+3. **Saved position:** check it is still in the history, `git -C "<repository>" merge-base --is-ancestor <last_read_commit> <target>`. If that fails (history rewritten), stop and ask the Owner where to resume. Otherwise read `git -C "<repository>" log --reverse --stat <last_read_commit>..<target>`.
+4. If there is nothing new since the position, tell the Owner and stop without a Digest.
+5. Open the commits that look like stories with `git -C "<repository>" show <commit>`, and the design docs and ADRs they touch. Long histories: skim the log, then read closely only the promising commits.
+
+> Placeholder: GitHub issues and Owner notes arrive with ticket 04. Read git history and the Project's files only for now.
+
+## Step 6: Write the Digest
+
+> Placeholder: checking past rejected and parked Topics and published Posts for repeats arrives with ticket 04.
+
+Pick 5 to 8 Topics, ranked by strength (1 is the strongest). Rules the Vault check enforces:
+
+- at most two Topics of one Rubric;
+- promotional Topics (those that ask for a follow, a pre-registration or a wishlist, or mainly sell the game) at most a third of the Digest;
+- every Rubric is one of exactly: Devlog, Design decision, Gameplay moment, Building with AI agents, Ask the audience, How-to, Humor / Meme, Bug of the week, Before / After, By the numbers, Player challenge. Spread Topics across them.
+
+Every Topic must agree with the Fact sheet and keep out what it lists under "Not public yet". Channels in iteration 1: `x`, `reddit`, `linkedin`.
+
+Write one note per Topic, `Topics/<title>.md` (the title must be a valid file name and unique in `Topics/`):
+
+```markdown
+---
+kind: topic
+status: proposed
+project: "[[<project>]]"
+rank: 1
+rubric: Design decision
+channels: [x, reddit, linkedin]
+language: en
+needs_media: true        # false when the Post can ship with no image or video
+promotional: false
+reason: ""               # the Owner's one-line reason when they reject the Topic
+attachments: []
+---
+
+# <title>
+
+## Angle
+The one point the Post makes and for whom.
+
+## Why now
+Why this belongs in this Digest: the change that just landed, a date, a hook.
+
+## Source material
+- `<short hash>` <commit subject>
+- `<repository-relative path>` of a doc or ADR
+
+## Shot list
+What footage or screenshots the Owner should capture, one per line. "None" when needs_media is false.
+```
+
+Then the Digest, `Digests/<YYYY-MM-DD> <project>.md`, listing the Topics best first:
+
+```markdown
+---
+kind: digest
+project: "[[<project>]]"
+date: <YYYY-MM-DD>
+commits: <last_read_commit or "start">..<target>
+topics:
+  - "[[<title of rank 1>]]"
+  - "[[<title of rank 2>]]"
+---
+
+# Digest <YYYY-MM-DD>: <project>
+
+One line per Topic: rank, title, Rubric, Channels, needs media.
+```
+
+## Step 7: Check, move the position, hand over
+
+1. Run `uv run scripts/vault_check.py` and fix every violation in the notes you wrote.
+2. Only once it passes, set `last_read_commit: <target>` and `last_read_date: <today>` in `Projects/<project>.md`. Never move the position before the Digest is written: a failed run would lose commits.
+3. Tell the Owner the Digest is ready, with its path. In each Topic note they set `status` to `approved`, `rejected` (and fill `reason` with one line) or `parked`, and may first edit `channels` or the Angle. Only the Owner changes a Topic's status.

@@ -37,6 +37,12 @@ BROKEN = {
     "published-link": ("Posts/No link.md", "published-link"),
     "status-fact-sheet": ("Fact sheets/Wrong status.md", "status"),
     "fact-sheet": ("Fact sheets/No public name.md", "fact-sheet"),
+    "rubric": ("Topics/Bad rubric.md", "rubric"),
+    "rejection-reason": ("Topics/No reason.md", "rejection-reason"),
+    "digest-links": ("Digests/2026-10-22 traffic_jam.md", "digest-links"),
+    "digest-size": ("Digests/2026-10-22 traffic_jam.md", "digest-size"),
+    "digest-rubrics": ("Digests/2026-10-22 traffic_jam.md", "digest-rubrics"),
+    "digest-promotional": ("Digests/2026-10-22 traffic_jam.md", "digest-promotional"),
 }
 
 

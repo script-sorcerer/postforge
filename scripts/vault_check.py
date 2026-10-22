@@ -112,6 +112,86 @@ def check_fact_sheet(note):
 RULES.append(check_fact_sheet)
 
 
+# Digest: a ranked batch of Topics. Its `topics` list links each Topic note, best first.
+NOTE_FOLDERS.append("Digests")
+REQUIRED_FIELDS["digest"] = ["kind", "project", "date", "topics"]
+LIFECYCLES["digest"] = []  # a Digest has no status; its Topics carry the Owner's verdicts
+REQUIRED_FIELDS["topic"] += ["rank", "needs_media", "promotional"]
+
+RUBRICS = [
+    "Devlog", "Design decision", "Gameplay moment", "Building with AI agents",
+    "Ask the audience", "How-to", "Humor / Meme", "Bug of the week",
+    "Before / After", "By the numbers", "Player challenge",
+]
+
+
+def check_rubric(note):
+    rubric = note["fm"].get("rubric") if kind_of(note) == "topic" else None
+    if rubric is None or rubric in RUBRICS:
+        return []  # a missing rubric is reported by required-fields
+    return [f"rubric {rubric!r} is not one of {', '.join(RUBRICS)}"]
+
+
+def check_rejection_reason(note):
+    fm = note["fm"]
+    if kind_of(note) == "topic" and fm.get("status") == "rejected" and not fm.get("reason"):
+        return ["rejected topic has no reason"]
+    return []
+
+
+def digest_topics(note):
+    """Return (Topic frontmatters found, links with no Topic note) for a Digest note."""
+    links = note["fm"].get("topics") or []
+    topics_dir = note["path"].parent.parent / "Topics"
+    found, missing = [], []
+    for link in links:
+        name = str(link).strip("[]").split("|")[0].split("/")[-1]
+        path = topics_dir / f"{name}.md"
+        topic = read_note(path) if path.is_file() else None
+        if topic and topic["fm"]:
+            found.append(topic["fm"])
+        else:
+            missing.append(str(link))
+    return found, missing
+
+
+def check_digest_links(note):
+    if kind_of(note) != "digest":
+        return []
+    return [f"topic {link} has no note in Topics/" for link in digest_topics(note)[1]]
+
+
+def check_digest_size(note):
+    if kind_of(note) != "digest":
+        return []
+    count = len(note["fm"].get("topics") or [])
+    return [] if 5 <= count <= 8 else [f"digest holds {count} topics, expected 5 to 8"]
+
+
+def check_digest_rubrics(note):
+    if kind_of(note) != "digest":
+        return []
+    rubrics = [t.get("rubric") for t in digest_topics(note)[0]]
+    crowded = sorted({r for r in rubrics if r and rubrics.count(r) > 2})
+    return [f"more than two topics of rubric {r!r}" for r in crowded]
+
+
+def check_digest_promotional(note):
+    if kind_of(note) != "digest":
+        return []
+    topics = digest_topics(note)[0]
+    promo = sum(1 for t in topics if t.get("promotional") is True)
+    if 3 * promo <= len(topics):
+        return []
+    return [f"{promo} of {len(topics)} topics are promotional, at most a third allowed"]
+
+
+RULES += [
+    check_rubric, check_rejection_reason,
+    check_digest_links, check_digest_size, check_digest_rubrics, check_digest_promotional,
+]
+
+
 def check_vault(vault):
     """Return (notes checked, list of 'note: [rule] message' lines)."""
     paths = sorted(p for folder in NOTE_FOLDERS for p in (vault / folder).rglob("*.md"))

@@ -6,6 +6,9 @@ access: read-only
 pitch: "A mobile traffic puzzle game for iOS and Android: an authored city of roads and districts whose traffic the player keeps flowing."
 audience: "Mobile puzzle players; indie and solo game developers; people curious about building games with AI agents."
 goal: "Followers and pre-registration for the mobile release."
+# Reading position, moved forward by the Scout after each Digest. Empty: read the whole history.
+last_read_commit: ""
+last_read_date: ""
 ---
 
 # traffic_jam
