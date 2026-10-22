@@ -335,6 +335,22 @@ def check_private_repo_link(note):
 RULES.append(check_private_repo_link)
 
 
+# Editor loop: at most two Editor rounds per Draft, then it goes to the Owner whatever the score.
+MAX_EDITOR_ROUNDS = 2
+
+
+def check_editor_rounds(note):
+    if kind_of(note) != "draft" or "editor_rounds" not in note["fm"]:
+        return []
+    rounds = note["fm"]["editor_rounds"]
+    if is_count(rounds, minimum=0) and rounds <= MAX_EDITOR_ROUNDS:
+        return []
+    return [f"editor_rounds {rounds!r} must be a whole number from 0 to {MAX_EDITOR_ROUNDS}"]
+
+
+RULES.append(check_editor_rounds)
+
+
 def check_vault(vault):
     """Return (notes checked, list of 'note: [rule] message' lines)."""
     REPO_SLUGS[:] = load_repo_slugs(vault)

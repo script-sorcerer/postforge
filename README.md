@@ -28,14 +28,14 @@ The Project note holds `github` (the repository's `owner/name` slug, read with `
 
 A Fact sheet carries `kind: fact-sheet`, `status` (`proposed`, then `approved` by the Owner), `project`, `public_name` (empty until the name is public) and `shown_publicly` (a list).
 
-A Draft also carries `passes`, the Writer's Passes in the order they ran (`angle`, `hooks`, `draft`, `voice`, `humanize`, `channel-fit`); all six once it leaves `drafting`. Its `topic` must link to an existing Topic note. Its body holds the Post text, then an `> [!note]- Alternative hooks` callout and `## Writer notes`. The Post text is the body up to the first line starting with `> [!` or `## `; the Vault check measures it against the Channel's `text.max_length` (URLs count as written, stricter than X's 23).
+A Draft also carries `passes`, the Writer's Passes in the order they ran (`angle`, `hooks`, `draft`, `voice`, `humanize`, `channel-fit`); all six once it leaves `drafting`. Its `topic` must link to an existing Topic note. Its body holds the Post text, then an `> [!note]- Alternative hooks` callout and `## Writer notes`. The Post text is the body up to the first line starting with `> [!` or `## `; the Vault check measures it against the Channel's `text.max_length` (URLs count as written, stricter than X's 23). After the Editor loop a Draft also carries `editor_rounds` (at most 2), `editor_score` and one `## Editor review N` section per round.
 
 Each Channel rules note carries the Channel's limits in frontmatter (`channel`, `text.max_length`, `media.<type>` with `max_count`, `formats` and `max_size_mb`, `hashtags.max`); the Vault check reads limits from there and reports a note missing any of them under `channel-rules`.
 
 ## Commands
 
 - `/scout`: the Scout (`.claude/skills/scout/`). On the first run it builds the Project's Fact sheet and stops for approval; it writes no Digest until the Fact sheet is approved. After that it writes a Digest of 5 to 8 Topics from the git history since its reading position, the GitHub issues and their discussion (read-only `gh`), the Project's local docs and the Owner notes. It skips stories already rejected, published or in the pipeline, and may bring a parked Topic back as a new note marked `previously_parked`.
-- `/write`: the Writer (`.claude/skills/write/`). Turns every approved Topic into one Draft per target Channel (X for now) through the six Passes, then runs the Vault check. Say "use hook 2" on a Draft to swap in an alternative hook.
+- `/write`: the Writer (`.claude/skills/write/`). Turns every approved Topic into one Draft per target Channel (X for now) through the six Passes, then runs the Vault check. Each Draft then goes through the Editor (`.claude/agents/editor.md`, a fresh subagent per review, which holds the checklist and pass threshold): below the threshold it goes back to the Writer, and after at most two rounds it comes to the Owner at `in-review` with the Editor's remarks. Say "use hook 2" on a Draft to swap in an alternative hook.
 
 ## Vault check
 

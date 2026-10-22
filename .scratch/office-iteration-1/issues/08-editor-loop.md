@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] The Editor runs in a fresh context on every review
-- [ ] Each review records a checklist score and specific remarks in the Draft
-- [ ] A Draft below the threshold returns to the Writer
-- [ ] No Draft gets more than two Editor rounds; after the second it goes to the Owner with remarks
-- [ ] The Draft's status moves through in-review and revising as the loop runs
+- [x] The Editor runs in a fresh context on every review
+- [x] Each review records a checklist score and specific remarks in the Draft
+- [x] A Draft below the threshold returns to the Writer
+- [x] No Draft gets more than two Editor rounds; after the second it goes to the Owner with remarks
+- [x] The Draft's status moves through in-review and revising as the loop runs

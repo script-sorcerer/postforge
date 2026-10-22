@@ -14,7 +14,7 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 - **Write only in `Drafts/`.** Read everything else; never change a Topic, the Voice guide, Channel rules or the Fact sheet.
 - **Never move a Draft to `ready`.** Only the Owner does.
-- **Never touch an existing Draft** past `drafting` except to swap a hook when the Owner asks (see "Switching hooks"). `/write` writes only missing or unfinished Drafts, so a rerun is safe.
+- **Never touch an existing Draft** past `drafting` except to run its Editor loop (Step 4) or to swap a hook when the Owner asks (see "Switching hooks"). `/write` writes only missing or unfinished Drafts, so a rerun is safe.
 
 ## Step 1: Load and gate
 
@@ -32,7 +32,8 @@ Channels in this version: `x` only.
 A unit of work is one approved Topic and one Channel:
 
 - the Topic note in `Topics/` has `status: approved` and the Channel in `channels`;
-- `Drafts/<topic title> - <channel>.md` does not exist yet, or still has `status: drafting` (an interrupted run): then resume after the last Pass in its `passes`.
+- `Drafts/<topic title> - <channel>.md` does not exist yet, or still has `status: drafting` (an interrupted run): then resume after the last Pass in its `passes`;
+- or the Draft's Editor loop is unfinished (an interrupted run): it has `status: revising`, or `status: in-review` with no `## Editor review` yet, or `status: in-review` whose last Editor review says `Verdict: revise` while `editor_rounds` is below 2. Resume it at Step 4.
 
 Leave every other Topic alone: proposed, rejected and parked Topics get no Draft, and neither does a Channel the Topic does not list. If there is no work, tell the Owner and stop.
 
@@ -47,7 +48,31 @@ Create the Draft note first, with `status: drafting` and an empty `passes` list.
 5. **`humanize`**: remove every banned word and pattern the Voice guide lists, in the Post text and the alternatives.
 6. **`channel-fit`**: apply the Channel rules note: length, hashtags, media, etiquette. Then set `status: in-review`, record the Pass, and run `uv run scripts/vault_check.py`. Fix every violation in this Draft and run it again until it passes.
 
-> Placeholder: the Editor loop arrives with ticket 08. It runs here, after Channel fit, on each `in-review` Draft. The Editor reads only the Post text and the Alternative hooks, never the Writer notes.
+## Step 4: Editor loop
+
+Every `in-review` Draft goes through the Editor before the Owner sees it. The checklist and the pass threshold live only in `.claude/agents/editor.md`; you do not score the Draft yourself.
+
+1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks. No file path, no Writer notes, no earlier reviews.
+2. **Record the review.** Let N be this review's number: `editor_rounds` plus 1, or 1 if the Draft has no `editor_rounds` yet. Append to the end of the Draft:
+
+   ```markdown
+   ## Editor review N
+
+   Score: <score>/8. Verdict: <pass|revise>.
+   Checklist: <the Editor's checklist line>
+
+   - <each remark, as the Editor wrote it>
+   ```
+
+   Set `editor_rounds: N` and `editor_score: <the score>` in the frontmatter.
+3. **Decide.**
+   - `Verdict: pass`: the loop ends. The Draft stays `in-review` for the Owner.
+   - `Verdict: revise` and N is 1: set `status: revising`. Revise the Post text and the hooks from the remarks, then rerun the `voice`, `humanize` and `channel-fit` Passes on them. Leave `passes` as it is: it records each Pass once. Set `status: in-review`, run the Vault check until it passes, and go back to 1.
+   - `Verdict: revise` and N is 2: the loop ends anyway. The Draft stays `in-review` and goes to the Owner with the remarks. The Vault check fails any Draft with more than two Editor rounds.
+
+Never set `status: ready`, whatever the score: only the Owner does. No Draft is left at `revising` when you hand over.
+
+> Placeholder: Owner edits arrive with ticket 10. The Editor will leave a comment instead of changing a part the Owner edited.
 
 ## The Draft note
 
@@ -63,6 +88,8 @@ channel: x
 language: en
 passes: [angle, hooks, draft, voice, humanize, channel-fit]
 attachments: []
+editor_rounds: 1
+editor_score: 7
 ---
 
 <Post text: the chosen hook, then the rest of the Post. Nothing else.>
@@ -75,11 +102,18 @@ attachments: []
 ## Writer notes
 
 Angle: <the one idea and who it is for>.
+
+## Editor review 1
+
+Score: 7/8. Verdict: pass.
+Checklist: 1=1 2=1 3=0 4=1 5=1 6=1 7=1 8=1
+
+- <remark>
 ```
 
 **The Post text** is the body after the frontmatter, up to the first line that starts with `> [!` (a callout) or `## ` (a heading), with surrounding blank lines stripped. It is what gets posted and what the Vault check measures against the Channel's `text.max_length` (URLs count in full, which is stricter than X's 23 per link). So the Post text never holds a heading or a callout, and the Draft has no `# Title` line. The Alternative hooks callout and the Writer notes do not count.
 
-Copy `attachments` from the Topic. The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist.
+Copy `attachments` from the Topic. The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist. `editor_rounds`, `editor_score` and the `## Editor review N` sections appear once the Editor loop runs; each review is appended after the previous one.
 
 ## Switching hooks
 
@@ -89,6 +123,6 @@ When the Owner says "use hook 2" (or similar) for a Draft:
 2. Put the replaced hook in the callout as alternative 2, so both alternatives stay available.
 3. Rerun the `channel-fit` Pass on the Draft (rules, then the Vault check). Leave `passes` as it is.
 
-## Step 4: Hand over
+## Step 5: Hand over
 
-Tell the Owner which Drafts you wrote, with their paths, and which Topics or Channels you skipped and why. They edit Drafts in Obsidian or by prompt, and set `status: ready` when a Draft is good to go.
+Tell the Owner which Drafts you wrote, with their paths, each Draft's Editor score and rounds, and which Topics or Channels you skipped and why. They edit Drafts in Obsidian or by prompt, and set `status: ready` when a Draft is good to go.

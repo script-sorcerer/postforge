@@ -7,6 +7,8 @@ channel: x
 language: en
 passes: [angle, hooks, draft, voice, humanize, channel-fit]
 attachments: []
+editor_rounds: 2
+editor_score: 6
 ---
 
 Every road in my traffic game now has a capacity. Past it, cars queue at the junction instead of overlapping. Small rule, and the whole map started to feel like a city. https://example.com/a-very-long-link-that-x-counts-as-twenty-three-characters-only
@@ -19,3 +21,15 @@ Every road in my traffic game now has a capacity. Past it, cars queue at the jun
 ## Writer notes
 
 Angle: one rule, big change in feel. The Post text above is under 280 characters; this section and the callout do not count.
+
+## Editor review 1
+
+Score: 5/8. Verdict: revise.
+
+- Concrete: "the whole map started to feel like a city" is vague; say what the player sees.
+
+## Editor review 2
+
+Score: 6/8. Verdict: revise. Handed to the Owner after the second round.
+
+- Hook: "Every road in my traffic game now has a capacity" states the change but not why it matters.

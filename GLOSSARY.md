@@ -23,7 +23,7 @@ The Role that turns an approved Topic into Drafts.
 _Avoid_: copywriter, author
 
 **Editor**:
-The Role that checks a Draft against the Voice guide and the Channel rules, and revises it.
+The Role that scores a Draft against a fixed checklist built on the Voice guide and the Channel rules, and writes specific remarks; the Writer revises from them.
 _Avoid_: reviewer, critic
 
 **Packager**:
