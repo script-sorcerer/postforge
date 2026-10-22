@@ -35,6 +35,8 @@ BROKEN = {
     "status-draft": ("Drafts/Wrong status.md", "status"),
     "status-post": ("Posts/Wrong status.md", "status"),
     "published-link": ("Posts/No link.md", "published-link"),
+    "status-fact-sheet": ("Fact sheets/Wrong status.md", "status"),
+    "fact-sheet": ("Fact sheets/No public name.md", "fact-sheet"),
 }
 
 

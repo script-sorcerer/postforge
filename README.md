@@ -22,6 +22,12 @@ Open this repository in Obsidian as its own Vault (ADR 0001). Its folders:
 
 Topic, Draft and Post notes carry YAML frontmatter (`kind`, `status`, `project`, `language`, plus `rubric` and `channels` on a Topic, `topic` and `channel` on a Draft or Post, `published_url` on a published Post).
 
+A Fact sheet carries `kind: fact-sheet`, `status` (`proposed`, then `approved` by the Owner), `project`, `public_name` (empty until the name is public) and `shown_publicly` (a list).
+
+## Commands
+
+- `/scout`: the Scout (`.claude/skills/scout/`). On the first run it builds the Project's Fact sheet and stops for approval; it writes no Digest until the Fact sheet is approved.
+
 ## Vault check
 
 Needs [uv](https://docs.astral.sh/uv/). Check the whole Vault, or a Vault at another path:
