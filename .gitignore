@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Obsidian: per-device UI state and trash
+.obsidian/workspace*.json
+.obsidian/cache
+.trash/
+
+# Claude Code: personal settings
+.claude/settings.local.json
+
+# Secrets
+.env
+.env.*
+
+# Video Attachments stay on disk but out of git (see ADR 0001); switch to Git LFS if they must be versioned
+*.mp4
+*.mov
+*.webm
+*.mkv
