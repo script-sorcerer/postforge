@@ -519,6 +519,56 @@ def check_mixed_attachments(note):
     return []
 
 
+def check_topic_drafts(note):
+    """An approved Topic has exactly one Draft per Channel it lists; a Publish package or
+    Post for the Channel stands in for a Draft already packaged."""
+    fm = note["fm"]
+    if kind_of(note) != "topic" or fm.get("status") != "approved" or not isinstance(fm.get("channels"), list):
+        return []
+    linked = [
+        n["fm"] for n in VAULT_NOTES.values()
+        if kind_of(n) in ("draft", "post") and n["fm"].get("topic") and link_name(n["fm"]["topic"]) == note["path"].stem
+    ]
+    messages = []
+    for channel in fm["channels"]:
+        drafts = sum(1 for f in linked if f.get("kind") == "draft" and f.get("channel") == channel)
+        if drafts > 1:
+            messages.append(f"approved topic has {drafts} drafts for {channel}, expected one")
+        elif not any(f.get("channel") == channel for f in linked):
+            messages.append(f"approved topic has no draft for {channel}")
+    return messages
+
+
+def reddit_draft_rules(note):
+    """The Reddit Channel rules for a Reddit Draft, else None."""
+    if kind_of(note) != "draft" or note["fm"].get("channel") != "reddit":
+        return None
+    # shortcut: with no Reddit rules note the subreddit and title go unchecked, as in draft-length.
+    return CHANNEL_RULES.get("reddit")
+
+
+def check_reddit_subreddit(note):
+    rules = reddit_draft_rules(note)
+    if not rules:
+        return []
+    listed = rules.get("subreddits") or []
+    subreddit = note["fm"].get("subreddit")
+    return [] if subreddit in listed else [f"subreddit {subreddit!r} is not one of {', '.join(map(str, listed))}"]
+
+
+def check_reddit_title(note):
+    rules = reddit_draft_rules(note)
+    if not rules:
+        return []
+    title = note["fm"].get("title")
+    if not isinstance(title, str) or not title.strip():
+        return ["reddit draft has no title"]
+    limit = rules["text"].get("max_title_length")
+    if is_count(limit) and len(title) > limit:
+        return [f"title is {len(title)} characters, reddit allows {limit}"]
+    return []
+
+
 RULES = [
     check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
     check_fact_sheet, check_rubric, check_rejection_reason, check_topic_channels, check_topic_sections,
@@ -526,6 +576,7 @@ RULES = [
     check_trend_scan_date, check_digest_trend_scan,
     check_draft_topic, check_draft_passes, check_draft_length,
     check_private_repo_link, check_editor_rounds,
+    check_topic_drafts, check_reddit_subreddit, check_reddit_title,
     check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,
     check_attachment_size, check_alt_text, check_mixed_attachments,
 ]

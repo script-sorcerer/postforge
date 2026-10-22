@@ -3,7 +3,7 @@ kind: topic
 status: approved
 project: "[[traffic_jam]]"
 rubric: Design decision
-channels: [x, reddit, linkedin]
+channels: [x]
 language: en
 rank: 1
 needs_media: true

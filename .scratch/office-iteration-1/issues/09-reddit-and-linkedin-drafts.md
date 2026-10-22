@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] An approved Topic targeting several Channels gets exactly one Draft per Channel
-- [ ] Reddit Drafts name their subreddit and follow its rules
-- [ ] LinkedIn Drafts follow the LinkedIn register
-- [ ] The Vault check fails an approved Topic missing a Draft for one of its Channels, or with two Drafts for one Channel
-- [ ] Fixtures cover both failure cases
+- [x] An approved Topic targeting several Channels gets exactly one Draft per Channel
+- [x] Reddit Drafts name their subreddit and follow its rules
+- [x] LinkedIn Drafts follow the LinkedIn register
+- [x] The Vault check fails an approved Topic missing a Draft for one of its Channels, or with two Drafts for one Channel
+- [x] Fixtures cover both failure cases
