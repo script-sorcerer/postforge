@@ -43,6 +43,7 @@ BROKEN = {
     "digest-size": ("Digests/2026-10-22 traffic_jam.md", "digest-size"),
     "digest-rubrics": ("Digests/2026-10-22 traffic_jam.md", "digest-rubrics"),
     "digest-promotional": ("Digests/2026-10-22 traffic_jam.md", "digest-promotional"),
+    "channel-rules": ("Channel rules/X.md", "channel-rules"),
 }
 
 

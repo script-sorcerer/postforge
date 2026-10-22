@@ -2,8 +2,9 @@
 # requires-python = ">=3.10"
 # dependencies = ["pyyaml"]
 # ///
-"""Vault check: reads every Topic, Draft, Post and Fact sheet note in the Vault and reports
-each rule it breaks. Exits 1 on any violation, 0 when the Vault is clean.
+"""Vault check: reads every Topic, Draft, Post and Fact sheet note and every
+Channel rules note in the Vault and reports each rule it breaks. Exits 1 on
+any violation, 0 when the Vault is clean.
 
 Usage: uv run scripts/vault_check.py [VAULT]   (default: this repository)
 
@@ -192,6 +193,57 @@ RULES += [
 ]
 
 
+# Channel rules notes carry the Channel's limits in frontmatter; the check reads them from there.
+CHANNEL_RULES_FOLDER = "Channel rules"
+
+
+def is_count(value, minimum=1):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= minimum
+
+
+def check_channel_rules(note):
+    """Each Channel rules note must carry machine-readable limits."""
+    fm = note["fm"]
+    if fm is None:
+        return []  # reported by frontmatter
+    problems = []
+    if not isinstance(fm.get("channel"), str) or not fm["channel"]:
+        problems.append("channel is missing")
+    text = fm.get("text")
+    if not isinstance(text, dict) or not is_count(text.get("max_length")):
+        problems.append("text.max_length must be a positive integer")
+    media = fm.get("media")
+    if not isinstance(media, dict) or not media:
+        problems.append("media must map each media type to its limits")
+    else:
+        for name, limits in media.items():
+            limits = limits if isinstance(limits, dict) else {}
+            formats = limits.get("formats")
+            size = limits.get("max_size_mb")
+            if not is_count(limits.get("max_count")):
+                problems.append(f"media.{name}.max_count must be a positive integer")
+            if not (isinstance(formats, list) and formats and all(isinstance(f, str) for f in formats)):
+                problems.append(f"media.{name}.formats must be a non-empty list")
+            if isinstance(size, bool) or not isinstance(size, (int, float)) or size <= 0:
+                problems.append(f"media.{name}.max_size_mb must be a positive number")
+    hashtags = fm.get("hashtags")
+    if not isinstance(hashtags, dict) or not is_count(hashtags.get("max"), minimum=0):
+        problems.append("hashtags.max must be a non-negative integer")
+    return problems
+
+
+def load_channel_rules(vault):
+    """Return ({channel: frontmatter} for each valid Channel rules note, violation lines)."""
+    rules, violations = {}, []
+    for path in sorted((vault / CHANNEL_RULES_FOLDER).glob("*.md")):
+        note = read_note(path)
+        problems = check_frontmatter(note) + check_channel_rules(note)
+        violations += [f"{path.relative_to(vault)}: [channel-rules] {p}" for p in problems]
+        if not problems:
+            rules[note["fm"]["channel"]] = note["fm"]
+    return rules, violations
+
+
 def check_vault(vault):
     """Return (notes checked, list of 'note: [rule] message' lines)."""
     paths = sorted(p for folder in NOTE_FOLDERS for p in (vault / folder).rglob("*.md"))
@@ -202,7 +254,8 @@ def check_vault(vault):
             name = rule.__name__.removeprefix("check_").replace("_", "-")
             for message in rule(note):
                 violations.append(f"{path.relative_to(vault)}: [{name}] {message}")
-    return len(paths), violations
+    channel_rules, channel_violations = load_channel_rules(vault)
+    return len(paths) + len(channel_rules), violations + channel_violations
 
 
 def main(argv):
