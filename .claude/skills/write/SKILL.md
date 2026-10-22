@@ -14,7 +14,7 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 - **Write only in `Drafts/`.** Read everything else; never change a Topic, the Voice guide, Channel rules or the Fact sheet.
 - **Never move a Draft to `ready`.** Only the Owner does.
-- **Never touch an existing Draft** except to swap a hook when the Owner asks (see "Switching hooks"). `/write` writes only Drafts that do not exist yet, so a rerun is safe.
+- **Never touch an existing Draft** past `drafting` except to swap a hook when the Owner asks (see "Switching hooks"). `/write` writes only missing or unfinished Drafts, so a rerun is safe.
 
 ## Step 1: Load and gate
 
@@ -32,7 +32,7 @@ Channels in this version: `x` only.
 A unit of work is one approved Topic and one Channel:
 
 - the Topic note in `Topics/` has `status: approved` and the Channel in `channels`;
-- `Drafts/<topic title> - <channel>.md` does not exist yet.
+- `Drafts/<topic title> - <channel>.md` does not exist yet, or still has `status: drafting` (an interrupted run): then resume after the last Pass in its `passes`.
 
 Leave every other Topic alone: proposed, rejected and parked Topics get no Draft, and neither does a Channel the Topic does not list. If there is no work, tell the Owner and stop.
 
@@ -47,7 +47,7 @@ Create the Draft note first, with `status: drafting` and an empty `passes` list.
 5. **`humanize`**: remove every banned word and pattern the Voice guide lists, in the Post text and the alternatives.
 6. **`channel-fit`**: apply the Channel rules note: length, hashtags, media, etiquette. Then set `status: in-review`, record the Pass, and run `uv run scripts/vault_check.py`. Fix every violation in this Draft and run it again until it passes.
 
-> Placeholder: the Editor loop arrives with ticket 08. It runs here, after Channel fit, on each `in-review` Draft.
+> Placeholder: the Editor loop arrives with ticket 08. It runs here, after Channel fit, on each `in-review` Draft. The Editor reads only the Post text and the Alternative hooks, never the Writer notes.
 
 ## The Draft note
 
@@ -77,7 +77,7 @@ attachments: []
 Angle: <the one idea and who it is for>.
 ```
 
-**The Post text** is the body after the frontmatter, up to the first line that starts with `> [!` (a callout) or `## ` (a heading), with surrounding blank lines stripped. It is what gets posted and what the Vault check measures against the Channel's `text.max_length`; on X every URL counts as 23 characters. So the Post text never holds a heading or a callout, and the Draft has no `# Title` line. The Alternative hooks callout and the Writer notes do not count.
+**The Post text** is the body after the frontmatter, up to the first line that starts with `> [!` (a callout) or `## ` (a heading), with surrounding blank lines stripped. It is what gets posted and what the Vault check measures against the Channel's `text.max_length` (URLs count in full, which is stricter than X's 23 per link). So the Post text never holds a heading or a callout, and the Draft has no `# Title` line. The Alternative hooks callout and the Writer notes do not count.
 
 Copy `attachments` from the Topic. The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist.
 

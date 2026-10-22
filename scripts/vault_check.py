@@ -249,12 +249,11 @@ def load_channel_rules(vault):
 PASSES = ["angle", "hooks", "draft", "voice", "humanize", "channel-fit"]
 # The Post text ends at the first callout (the Hook alternatives) or `## ` heading (Writer notes).
 POST_TEXT_END = re.compile(r"^(> \[!|## )", re.MULTILINE)
-URL = re.compile(r"https?://\S+")
 
 
 def draft_vault(note):
     """The Vault holding a Draft note: the folder above its `Drafts` ancestor."""
-    return next(p.parent for p in note["path"].parents if p.name == "Drafts")
+    return next((p.parent for p in note["path"].parents if p.name == "Drafts"), note["path"].parent.parent)
 
 
 def link_name(link):
@@ -303,9 +302,8 @@ def check_draft_length(note):
     rules = channel_limits(draft_vault(note)).get(note["fm"].get("channel"))
     if not rules:
         return []
-    # X counts every URL as 23 characters; the other Channels count URLs as written.
-    text = post_text(note["path"])
-    length = len(URL.sub("x" * 23, text)) if rules["channel"] == "x" else len(text)
+    # URLs count as written: stricter than X, which counts each as 23 characters.
+    length = len(post_text(note["path"]))
     limit = rules["text"]["max_length"]
     return [] if length <= limit else [f"post text is {length} characters, {rules['channel']} allows {limit}"]
 
