@@ -8,8 +8,9 @@ any violation, 0 when the Vault is clean.
 
 Usage: uv run scripts/vault_check.py [VAULT]   (default: this repository)
 
-To add a rule: write a `check_<name>(note)` function returning a list of
-messages and append it to RULES. The rule is reported as `<name>` with
+The schema (folders, required fields, lifecycles, Rubrics, Passes) is the
+tables at the top. To add a rule: write a `check_<name>(note)` function
+returning a list of messages and add it to the RULES list above check_vault. The rule is reported as `<name>` with
 underscores turned into hyphens.
 """
 
@@ -21,20 +22,50 @@ from pathlib import Path
 
 import yaml
 
-# Folders holding notes with a lifecycle. Publish packages are Posts not yet published.
-NOTE_FOLDERS = ["Topics", "Drafts", "Publish packages", "Posts"]
+# Folders holding checked notes. Publish packages are Posts not yet published.
+NOTE_FOLDERS = ["Topics", "Drafts", "Publish packages", "Posts", "Fact sheets", "Digests", "Trend scans"]
+# Channel rules notes carry each Channel's limits in frontmatter; see load_channel_rules.
+CHANNEL_RULES_FOLDER = "Channel rules"
 
+# kind -> fields every note of that kind must fill.
 REQUIRED_FIELDS = {
-    "topic": ["kind", "status", "project", "rubric", "channels", "language"],
+    "topic": ["kind", "status", "project", "rubric", "channels", "language", "rank", "needs_media", "promotional"],
     "draft": ["kind", "status", "project", "topic", "channel", "language"],
     "post": ["kind", "status", "project", "topic", "channel", "language"],
+    "fact-sheet": ["kind", "status", "project"],  # one per Project, approved only by the Owner
+    "digest": ["kind", "project", "date", "topics"],  # `topics` links each Topic note, best first
+    "trend-scan": ["kind", "date"],
 }
 
+# kind -> allowed statuses. A Digest has none (its Topics carry the Owner's verdicts);
+# a Trend scan has none (it goes stale by date).
 LIFECYCLES = {
     "topic": ["proposed", "approved", "rejected", "parked"],
     "draft": ["drafting", "in-review", "revising", "ready"],
     "post": ["ready", "published"],
+    "fact-sheet": ["proposed", "approved"],
+    "digest": [],
+    "trend-scan": [],
 }
+
+RUBRICS = [
+    "Devlog", "Design decision", "Gameplay moment", "Building with AI agents",
+    "Ask the audience", "How-to", "Humor / Meme", "Bug of the week",
+    "Before / After", "By the numbers", "Player challenge",
+]
+
+# A Digest's `trend_scan` may be at most this many days older than the Digest.
+TREND_SCAN_MAX_AGE_DAYS = 14
+
+# Draft: written by the Writer through six Passes, always in this order.
+PASSES = ["angle", "hooks", "draft", "voice", "humanize", "channel-fit"]
+# The Post text ends at the first callout (the Hook alternatives) or `## ` heading (Writer notes).
+POST_TEXT_END = re.compile(r"^(> \[!|## )", re.MULTILINE)
+# Editor loop: at most this many Editor rounds per Draft, then it goes to the Owner whatever the score.
+MAX_EDITOR_ROUNDS = 2
+
+# The Project's GitHub repository is private: no note may link to it or its issues.
+REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github` field
 
 FRONTMATTER = re.compile(r"\A---\r?\n(.*?)^---\s*$", re.DOTALL | re.MULTILINE)
 
@@ -91,15 +122,6 @@ def check_published_link(note):
     return []
 
 
-RULES = [check_frontmatter, check_kind, check_required_fields, check_status, check_published_link]
-
-
-# Fact sheet: one per Project, proposed by the Scout, approved only by the Owner.
-NOTE_FOLDERS.append("Fact sheets")
-REQUIRED_FIELDS["fact-sheet"] = ["kind", "status", "project"]
-LIFECYCLES["fact-sheet"] = ["proposed", "approved"]
-
-
 def check_fact_sheet(note):
     """public_name may be empty until the name is public; the key must still be there."""
     if kind_of(note) != "fact-sheet":
@@ -110,22 +132,6 @@ def check_fact_sheet(note):
     if not isinstance(fm.get("shown_publicly", 0), (list, type(None))):
         messages.append("shown_publicly is missing or not a list")
     return messages
-
-
-RULES.append(check_fact_sheet)
-
-
-# Digest: a ranked batch of Topics. Its `topics` list links each Topic note, best first.
-NOTE_FOLDERS.append("Digests")
-REQUIRED_FIELDS["digest"] = ["kind", "project", "date", "topics"]
-LIFECYCLES["digest"] = []  # a Digest has no status; its Topics carry the Owner's verdicts
-REQUIRED_FIELDS["topic"] += ["rank", "needs_media", "promotional"]
-
-RUBRICS = [
-    "Devlog", "Design decision", "Gameplay moment", "Building with AI agents",
-    "Ask the audience", "How-to", "Humor / Meme", "Bug of the week",
-    "Before / After", "By the numbers", "Player challenge",
-]
 
 
 def check_rubric(note):
@@ -189,20 +195,6 @@ def check_digest_promotional(note):
     return [f"{promo} of {len(topics)} topics are promotional, at most a third allowed"]
 
 
-RULES += [
-    check_rubric, check_rejection_reason,
-    check_digest_links, check_digest_size, check_digest_rubrics, check_digest_promotional,
-]
-
-
-# Trend scan: the Scout's dated note on what is current outside the Project.
-# A Digest may link the Trend scan it built on (`trend_scan`); it must be at most 14 days older.
-NOTE_FOLDERS.append("Trend scans")
-REQUIRED_FIELDS["trend-scan"] = ["kind", "date"]
-LIFECYCLES["trend-scan"] = []  # a Trend scan has no status; it goes stale by date
-TREND_SCAN_MAX_AGE_DAYS = 14
-
-
 def as_date(value):
     """Return a date from YAML's date, datetime or ISO string, else None."""
     if isinstance(value, datetime.datetime):
@@ -238,13 +230,6 @@ def check_digest_trend_scan(note):
     if age > TREND_SCAN_MAX_AGE_DAYS:
         return [f"trend_scan {link} is {age} days older than the digest, at most {TREND_SCAN_MAX_AGE_DAYS} allowed"]
     return []
-
-
-RULES += [check_trend_scan_date, check_digest_trend_scan]
-
-
-# Channel rules notes carry the Channel's limits in frontmatter; the check reads them from there.
-CHANNEL_RULES_FOLDER = "Channel rules"
 
 
 def is_count(value, minimum=1):
@@ -292,12 +277,6 @@ def load_channel_rules(vault):
         if not problems:
             rules[note["fm"]["channel"]] = note["fm"]
     return rules, violations
-
-
-# Draft: written by the Writer through six Passes, always in this order.
-PASSES = ["angle", "hooks", "draft", "voice", "humanize", "channel-fit"]
-# The Post text ends at the first callout (the Hook alternatives) or `## ` heading (Writer notes).
-POST_TEXT_END = re.compile(r"^(> \[!|## )", re.MULTILINE)
 
 
 def draft_vault(note):
@@ -357,13 +336,6 @@ def check_draft_length(note):
     return [] if length <= limit else [f"post text is {length} characters, {rules['channel']} allows {limit}"]
 
 
-RULES += [check_draft_topic, check_draft_passes, check_draft_length]
-
-
-# The Project's GitHub repository is private: no note may link to it or its issues.
-REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github` field
-
-
 def load_repo_slugs(vault):
     notes = (read_note(p) for p in sorted((vault / "Projects").glob("*.md")))
     return [n["fm"]["github"] for n in notes if n["fm"] and isinstance(n["fm"].get("github"), str) and n["fm"]["github"]]
@@ -381,13 +353,6 @@ def check_private_repo_link(note):
     ]
 
 
-RULES.append(check_private_repo_link)
-
-
-# Editor loop: at most two Editor rounds per Draft, then it goes to the Owner whatever the score.
-MAX_EDITOR_ROUNDS = 2
-
-
 def check_editor_rounds(note):
     if kind_of(note) != "draft" or "editor_rounds" not in note["fm"]:
         return []
@@ -397,7 +362,14 @@ def check_editor_rounds(note):
     return [f"editor_rounds {rounds!r} must be a whole number from 0 to {MAX_EDITOR_ROUNDS}"]
 
 
-RULES.append(check_editor_rounds)
+RULES = [
+    check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
+    check_fact_sheet, check_rubric, check_rejection_reason,
+    check_digest_links, check_digest_size, check_digest_rubrics, check_digest_promotional,
+    check_trend_scan_date, check_digest_trend_scan,
+    check_draft_topic, check_draft_passes, check_draft_length,
+    check_private_repo_link, check_editor_rounds,
+]
 
 
 def check_vault(vault):
