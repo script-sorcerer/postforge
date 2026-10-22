@@ -4,7 +4,7 @@
 
 **Blocked by:** 08 (Editor loop)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `/revise` applies the Owner's prompt to the named Draft and marks the change as an Owner edit
 - [x] A hand edit in Obsidian can be marked as an Owner edit
@@ -12,3 +12,7 @@
 - [x] The Vault check fails a Draft where an Owner-edited part was changed by a Role
 - [x] No Role sets a Draft to ready; only the Owner does
 - [x] Fixtures cover the Owner-edit rule
+
+## Comments
+
+- 2026-10-22: Implemented on branch `office-iteration-1` (tip 574a8b2), reviewed (standards, spec, ponytail) and fixed. 57 tests pass; the Vault check passes on the real Vault. Acceptance on real traffic_jam data is ticket 12.

@@ -4,10 +4,14 @@
 
 **Blocked by:** 03 (First Digest from git history)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] Each `/scout` run writes a dated Trend scan note before the Digest
 - [x] The Trend scan covers the four areas listed above
 - [x] Topics can cite the Trend scan
 - [x] A Trend scan older than two weeks is treated as stale and replaced, not reused
 - [x] Subreddit rules in the Reddit Channel rules are refreshed during the scan
+
+## Comments
+
+- 2026-10-22: Implemented on branch `office-iteration-1` (tip 574a8b2), reviewed (standards, spec, ponytail) and fixed. 57 tests pass; the Vault check passes on the real Vault. Acceptance on real traffic_jam data is ticket 12.

@@ -4,7 +4,7 @@
 
 **Blocked by:** 06 (Voice guide and Channel rules), 07 (`/write` for one Channel (X))
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `/package` refuses a Draft that is not ready
 - [x] The Publish package holds final text, ordered Attachments, alt text and a missing-items list
@@ -12,3 +12,7 @@
 - [x] The Vault check fails a Publish package with a missing Attachment file, too many Attachments, a wrong format or size, or an image without alt text
 - [x] Marking a Post published with its link adds it to the history of published Posts
 - [x] Fixtures cover each Attachment rule
+
+## Comments
+
+- 2026-10-22: Implemented on branch `office-iteration-1` (tip 574a8b2), reviewed (standards, spec, ponytail) and fixed. 57 tests pass; the Vault check passes on the real Vault. Acceptance on real traffic_jam data is ticket 12.

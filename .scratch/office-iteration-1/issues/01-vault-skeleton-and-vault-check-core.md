@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] The repository opens in Obsidian as a Vault with a place for Project config, Fact sheet, Voice guide, Channel rules, Trend scans, Digests and Topics, Drafts, Publish packages, Owner notes, published Posts and Attachments
 - [x] traffic_jam is registered as a Project in config, not in any Role prompt
@@ -13,3 +13,7 @@
 - [x] Each reported violation names the note and the rule broken; any violation gives a non-zero exit
 - [x] Fixture Vaults cover one valid case and one broken case per rule, and a test run passes
 - [x] The real Vault passes the check
+
+## Comments
+
+- 2026-10-22: Implemented on branch `office-iteration-1` (tip 574a8b2), reviewed (standards, spec, ponytail) and fixed. 57 tests pass; the Vault check passes on the real Vault. Acceptance on real traffic_jam data is ticket 12.

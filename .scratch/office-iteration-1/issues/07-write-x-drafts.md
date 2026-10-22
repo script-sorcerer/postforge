@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 (First Digest from git history), 06 (Voice guide and Channel rules)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `/write` picks up every approved Topic that targets X and leaves others alone
 - [x] Each X Draft records that all six Passes ran, in order
@@ -14,3 +14,7 @@
 - [x] The Owner can switch to an alternative hook with one sentence
 
 Note: `/write` is a prompt (`.claude/skills/write/SKILL.md`); the Vault check enforces the Topic link, Pass order and X length. Voice and hook quality are checked only in the manual smoke run (ticket 12); `/write` was not run on real Topics.
+
+## Comments
+
+- 2026-10-22: Implemented on branch `office-iteration-1` (tip 574a8b2), reviewed (standards, spec, ponytail) and fixed. 57 tests pass; the Vault check passes on the real Vault. Acceptance on real traffic_jam data is ticket 12.
