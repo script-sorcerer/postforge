@@ -25,9 +25,7 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 ## Step 2: Pick the work
 
-Channels in this version: `x` only.
-
-> Placeholder: Reddit and LinkedIn arrive with ticket 09. They join the Channel list here and get their own register in the Draft Pass.
+Channels in this version: `x`, `reddit`, `linkedin`. Each approved Topic gets exactly one Draft per Channel in its `channels`; the Vault check fails an approved Topic missing a Draft for one of its Channels, or with two Drafts for one Channel. A Publish package or Post for that Channel stands in for its Draft once packaged.
 
 A unit of work is one approved Topic and one Channel:
 
@@ -43,7 +41,10 @@ Create the Draft note first, with `status: drafting` and an empty `passes` list.
 
 1. **`angle`**: read the Topic note in full (Angle, Why now, Source material, Shot list) and its Source material if needed. Fix the one idea of the Post and who it is for, in one sentence. Write it under `## Writer notes`.
 2. **`hooks`**: write three different opening lines for that idea. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below).
-3. **`draft`**: write the Post text in the Channel's register from the Voice guide. X: short, one idea, one or two sentences, leads with the thing itself, Attachment first.
+3. **`draft`**: write the Post text in the Channel's register from the Voice guide.
+   - **X**: short, one idea, one or two sentences, leads with the thing itself, Attachment first.
+   - **Reddit**: modest and not self-promotional; a lesson or a moment shared with peers, the game as context, not the pitch. First pick one `subreddit` from the `subreddits` list in `Channel rules/Reddit.md`, written exactly as listed (`gamedev`, not `r/gamedev`), whose fit and self-promotion rule suit the Topic; skip the store-player subreddits the note says to hold. Write to that subreddit's rules. Write a `title` that states what the Post shows or teaches, within `text.max_title_length`; it goes in frontmatter, not in the Post text. The three hooks are openings of the body; the title is separate.
+   - **LinkedIn**: reflective, with a takeaway: what I tried, what happened, what I learned that another builder can use. The first two lines carry the hook. Short paragraphs, hashtags (at most the Channel rules' `hashtags.max`) only at the end.
 4. **`voice`**: check the Draft against every section of the Voice guide (who is speaking, tone, register, AI stance, never publish) and fix what breaks it. Check the hook alternatives too.
 5. **`humanize`**: remove every banned word and pattern the Voice guide lists, in the Post text and the alternatives.
 6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation in this Draft and run it again until it passes.
@@ -52,7 +53,7 @@ Create the Draft note first, with `status: drafting` and an empty `passes` list.
 
 Every `in-review` Draft goes through the Editor before the Owner sees it. The checklist and the pass threshold live only in `.claude/agents/editor.md`; you do not score the Draft yourself.
 
-1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks. No file path, no Writer notes, no earlier reviews.
+1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks; for Reddit also the `subreddit` and `title`. No file path, no Writer notes, no earlier reviews.
 2. **Record the review.** Let N be this review's number: `editor_rounds` plus 1, or 1 if the Draft has no `editor_rounds` yet. Append to the end of the Draft:
 
    ```markdown
@@ -112,6 +113,14 @@ Checklist: 1=1 2=1 3=0 4=1 5=1 6=1 7=1 8=1
 ```
 
 **The Post text** is the body after the frontmatter, up to the first line that starts with `> [!` (a callout) or `## ` (a heading), with surrounding blank lines stripped. It is what gets posted and what the Vault check measures against the Channel's `text.max_length` (URLs count in full, which is stricter than X's 23 per link). So the Post text never holds a heading or a callout, and the Draft has no `# Title` line. The Alternative hooks callout and the Writer notes do not count.
+
+A Reddit Draft also carries `subreddit` (one of the Channel rules' `subreddits`, as listed) and `title` (at most `text.max_title_length` characters); the Vault check fails a Reddit Draft without either. For example:
+
+```yaml
+channel: reddit
+subreddit: gamedev
+title: "Giving every road a capacity fixed my traffic sim's feel"
+```
 
 Copy `attachments` from the Topic. The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist. `editor_rounds`, `editor_score` and the `## Editor review N` sections appear once the Editor loop runs; each review is appended after the previous one.
 

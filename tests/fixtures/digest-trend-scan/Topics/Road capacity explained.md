@@ -1,6 +1,6 @@
 ---
 kind: topic
-status: approved
+status: proposed
 project: "[[traffic_jam]]"
 rubric: Design decision
 channels: [x, reddit, linkedin]

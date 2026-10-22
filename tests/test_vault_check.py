@@ -60,6 +60,10 @@ BROKEN = {
     "topic-sections": ("Topics/No shot list.md", "topic-sections"),
     "topic-channels": ("Topics/Unknown channel.md", "topic-channels"),
     "channel-rules-duplicate": ("Channel rules/X.md", "channel-rules"),
+    "topic-drafts-missing": ("Topics/Road capacity explained.md", "topic-drafts"),
+    "topic-drafts-duplicate": ("Topics/Road capacity explained.md", "topic-drafts"),
+    "reddit-subreddit": ("Drafts/Road capacity explained - reddit.md", "reddit-subreddit"),
+    "reddit-title": ("Drafts/Road capacity explained - reddit.md", "reddit-title"),
 }
 
 
