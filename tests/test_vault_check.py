@@ -44,6 +44,11 @@ BROKEN = {
     "digest-rubrics": ("Digests/2026-10-22 traffic_jam.md", "digest-rubrics"),
     "digest-promotional": ("Digests/2026-10-22 traffic_jam.md", "digest-promotional"),
     "channel-rules": ("Channel rules/X.md", "channel-rules"),
+    "draft-topic": ("Drafts/Missing topic.md", "draft-topic"),
+    "draft-passes": ("Drafts/Passes out of order.md", "draft-passes"),
+    "draft-length": ("Drafts/Too long.md", "draft-length"),
+
+
     "private-repo-link": ("Topics/Event factory.md", "private-repo-link"),
     "required-fields-trend-scan": ("Trend scans/No date.md", "required-fields"),
     "trend-scan-date": ("Trend scans/Undated.md", "trend-scan-date"),

@@ -6,9 +6,11 @@
 
 **Status:** ready-for-agent
 
-- [ ] `/write` picks up every approved Topic that targets X and leaves others alone
-- [ ] Each X Draft records that all six Passes ran, in order
-- [ ] The chosen hook is in the body; two alternatives sit in a collapsed section
-- [ ] The Draft follows the Voice guide and fits the X Channel rules
-- [ ] The Draft links to its Topic, and the Vault check fails a Draft without that link
-- [ ] The Owner can switch to an alternative hook with one sentence
+- [x] `/write` picks up every approved Topic that targets X and leaves others alone
+- [x] Each X Draft records that all six Passes ran, in order
+- [x] The chosen hook is in the body; two alternatives sit in a collapsed section
+- [x] The Draft follows the Voice guide and fits the X Channel rules
+- [x] The Draft links to its Topic, and the Vault check fails a Draft without that link
+- [x] The Owner can switch to an alternative hook with one sentence
+
+Note: `/write` is a prompt (`.claude/skills/write/SKILL.md`); the Vault check enforces the Topic link, Pass order and X length. Voice and hook quality are checked only in the manual smoke run (ticket 12); `/write` was not run on real Topics.

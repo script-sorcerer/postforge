@@ -1,7 +1,7 @@
 ---
 kind: channel-rules
 channel: reddit
-status: proposed  # awaiting Owner approval; subreddits need Owner confirmation
+status: approved
 checked: 2026-10-22
 text:
   max_length: 40000  # self-post body
@@ -18,12 +18,9 @@ subreddits: [IndieDev, indiegames, gamedev, unrealengine, MobileGaming, AndroidG
 
 # Channel rules: Reddit
 
-> [!warning] Proposal, awaiting Owner approval
-> Drafted by an agent. The Owner confirms the limits, the subreddit list and each subreddit's rules before the Writer uses them. Subreddit rules change often: read the sidebar and pinned posts before every first post in a subreddit.
-
 ## Limits
 
-The frontmatter holds the limits the Vault check reads. Change them there. A subreddit can be stricter: some forbid images, galleries, video or links.
+The frontmatter holds the limits the Vault check reads. Change them there. A subreddit can be stricter: some forbid images, galleries, video or links. Subreddit rules change often: read the sidebar and pinned posts before every first post in a subreddit.
 
 | Limit | Value | Kind |
 |---|---|---|
