@@ -73,16 +73,23 @@ BROKEN = {
     "reddit-subreddit": ("Drafts/Road capacity explained - reddit.md", "reddit-subreddit"),
     "reddit-title": ("Drafts/Road capacity explained - reddit.md", "reddit-title"),
     "owner-edits": ("Drafts/Road capacity explained - x.md", "owner-edits"),
+    "topic-drafts-stale": ("Topics/Road capacity explained.md", "topic-drafts"),
+    "hashtags": ("Drafts/Two hashtags.md", "hashtags"),
+    "draft-length-package": ("Publish packages/Too long.md", "draft-length"),
+    "reddit-title-package": ("Publish packages/Road capacity explained - reddit.md", "reddit-title"),
+    "channel-rules-reddit": ("Channel rules/Reddit.md", "channel-rules"),
 }
 
 
-def test_seal_records_owner_edits_and_leaves_other_frontmatter(tmp_path):
-    """A block-style owner_edits (as Obsidian's Properties panel writes it) is replaced; nothing else moves."""
+# owner_edits as Obsidian's Properties panel writes it (block list), unindented, or a flow list over two lines.
+@pytest.mark.parametrize("sealed", ["owner_edits:\n  - o71d89536\n", "owner_edits:\n- o71d89536\n", "owner_edits: [o71d89536,\n  o12345678]\n"])
+def test_seal_records_owner_edits_and_leaves_other_frontmatter(tmp_path, sealed):
+    """The owner_edits key is replaced whatever its layout; nothing else moves."""
     vault = tmp_path / "vault"
     shutil.copytree(FIXTURES / "owner-edits", vault)
     draft = vault / "Drafts" / "Road capacity explained - x.md"
-    draft.write_text(draft.read_text().replace("owner_edits: [o71d89536]\n", "owner_edits:\n  - o71d89536\n"))
-    others = [line for line in draft.read_text().splitlines() if "owner_edits" not in line and "- o" not in line]
+    others = [line for line in draft.read_text().splitlines() if "owner_edits" not in line]
+    draft.write_text(draft.read_text().replace("owner_edits: [o71d89536]\n", sealed))
     assert run_check(vault)[0] == 1
     subprocess.run([sys.executable, str(SCRIPT), "--seal", str(draft)], check=True, capture_output=True)
     assert run_check(vault) == (0, [])
@@ -107,3 +114,12 @@ def test_list_rubrics_are_reported_not_crashed_on():
     assert "Traceback" not in result.stderr
     assert result.returncode == 1
     assert len(violations) == 3 and all(": [rubric] " in v for v in violations), violations
+
+
+def test_non_text_channel_and_status_are_reported_not_crashed_on():
+    """A Draft with channel [x] and a Post with status [ready] must not crash any rule."""
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), str(FIXTURES / "non-string-keys")], capture_output=True, text=True
+    )
+    assert "Traceback" not in result.stderr
+    assert result.returncode == 1

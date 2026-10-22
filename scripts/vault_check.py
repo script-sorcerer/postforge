@@ -198,9 +198,14 @@ def check_topic_sections(note):
     return [f"topic has no {', '.join(f'## {h}' for h in missing)} section"] if missing else []
 
 
+def link_target(link):
+    """The path a wiki link or embed points to: no `!`, brackets, alias or #heading."""
+    return str(link).strip().lstrip("!").strip("[]").split("|")[0].split("#")[0]
+
+
 def link_name(link):
-    """The note name a wiki link points to: no brackets, alias, #heading or folder path."""
-    return str(link).strip("[]").split("|")[0].split("#")[0].split("/")[-1]
+    """The note name a wiki link points to: its target without the folder path."""
+    return link_target(link).split("/")[-1]
 
 
 def linked_note(folder, link):
@@ -340,6 +345,12 @@ def check_channel_rules(note):
     hashtags = fm.get("hashtags")
     if not isinstance(hashtags, dict) or not is_count(hashtags.get("max"), minimum=0):
         problems.append("hashtags.max must be a non-negative integer")
+    if fm.get("channel") == "reddit":
+        subreddits = fm.get("subreddits")
+        if not (isinstance(subreddits, list) and subreddits and all(isinstance(s, str) for s in subreddits)):
+            problems.append("subreddits must be a non-empty list")
+        if not isinstance(text, dict) or not is_count(text.get("max_title_length")):
+            problems.append("text.max_title_length must be a positive integer")
     return problems
 
 
@@ -384,24 +395,44 @@ def check_draft_passes(note):
     return []
 
 
+def is_ready_package(note):
+    return kind_of(note) == "post" and note["fm"].get("status") == "ready"
+
+
+def text_rules(note):
+    """The Channel rules for a Draft or a ready Publish package, else None."""
+    channel = note["fm"].get("channel") if kind_of(note) == "draft" or is_ready_package(note) else None
+    # shortcut: a note whose Channel has no rules note goes unchecked; add a rule once every Channel has one.
+    return CHANNEL_RULES.get(channel) if isinstance(channel, str) else None
+
+
 def post_text(note):
-    """The Post text of a Draft: the body after the frontmatter, up to the Hook alternatives
+    """The Post text of a Draft or Publish package: the body after the frontmatter, up to the Hook alternatives
     callout or the first `## ` heading, stripped."""
     body = OWNER_MARKER.sub("", FRONTMATTER.sub("", note["text"], count=1))  # markers are never posted
     return POST_TEXT_END.split(body, maxsplit=1)[0].strip()
 
 
 def check_draft_length(note):
-    if kind_of(note) != "draft":
-        return []
-    # shortcut: a Draft whose Channel has no rules note is not length-checked; add a rule once every Channel has one.
-    rules = CHANNEL_RULES.get(note["fm"].get("channel"))
+    rules = text_rules(note)
     if not rules:
         return []
     # URLs count as written: stricter than X, which counts each as 23 characters.
     length = len(post_text(note))
     limit = rules["text"]["max_length"]
     return [] if length <= limit else [f"post text is {length} characters, {rules['channel']} allows {limit}"]
+
+
+# A hashtag starts a word and holds a letter first: not a URL fragment (page#top) or a number (issue #91).
+HASHTAG = re.compile(r"(?<!\S)#[^\W\d_]\w*")
+
+
+def check_hashtags(note):
+    rules = text_rules(note)
+    if not rules:
+        return []
+    count, limit = len(HASHTAG.findall(post_text(note))), rules["hashtags"]["max"]
+    return [] if count <= limit else [f"post text has {count} hashtags, {rules['channel']} allows {limit}"]
 
 
 def load_repo_slugs(vault):
@@ -432,7 +463,7 @@ def check_editor_rounds(note):
 
 def check_post_folder(note):
     status = note["fm"].get("status") if kind_of(note) == "post" else None
-    folder = POST_FOLDERS.get(status)
+    folder = POST_FOLDERS.get(status) if isinstance(status, str) else None
     if not folder or note["path"].relative_to(VAULT_ROOT[0]).parts[0] == folder:
         return []
     return [f"{status} post belongs in {folder}/"]
@@ -441,21 +472,25 @@ def check_post_folder(note):
 def package_attachments(note):
     """The Attachment entries ({file, alt}) of a ready Publish package, else []. Published Posts
     are not checked: their video files stay out of git, so a fresh clone lacks them."""
-    if kind_of(note) != "post" or note["fm"].get("status") != "ready":
-        return []
-    entries = note["fm"].get("attachments")
+    entries = note["fm"].get("attachments") if is_ready_package(note) else None
     return entries if isinstance(entries, list) else []
 
 
 def attachment_path(entry):
-    """The file a `file: "[[Attachments/x.png]]"` entry names, relative to the Vault root."""
-    return VAULT_ROOT[0] / str(entry["file"]).strip("[]").split("|")[0]
+    """The file a `file:` entry names: a path from the Vault root ("[[Attachments/x.png]]"), else
+    a shortest-path link as Obsidian writes by default ("![[x.png]]"), found under Attachments/."""
+    target = link_target(entry["file"])
+    path = VAULT_ROOT[0] / target
+    if path.is_file():
+        return path
+    # shortcut: two Attachments of one name in different subfolders resolve to the first found.
+    return next((VAULT_ROOT[0] / "Attachments").rglob(target), path)
 
 
 def typed_attachments(note):
     """Return (Channel rules, [(entry, Attachment type or None)]) for a ready Publish package whose
     Channel has rules; the type is the Channel's Attachment type whose formats hold the file's extension."""
-    rules = CHANNEL_RULES.get(note["fm"].get("channel")) if note["fm"] else None
+    rules = text_rules(note)
     entries = [e for e in package_attachments(note) if isinstance(e, dict) and e.get("file")]
     if not rules or not entries:
         return rules, []
@@ -468,13 +503,11 @@ def typed_attachments(note):
 
 
 def check_attachment_files(note):
-    if kind_of(note) != "post" or note["fm"].get("status") != "ready":
-        return []
-    entries = note["fm"].get("attachments")
+    entries = note["fm"].get("attachments") if is_ready_package(note) else None
     if entries is not None and not isinstance(entries, list):
         return [f"attachments {entries!r} must be a list of {{file, alt}} entries"]
     messages = []
-    for entry in entries or []:
+    for entry in package_attachments(note):
         if not (isinstance(entry, dict) and entry.get("file")):
             messages.append(f"attachment {entry!r} has no file")
         elif not attachment_path(entry).is_file():
@@ -500,10 +533,10 @@ def check_attachment_count(note):
 def check_attachment_size(note):
     rules, typed = typed_attachments(note)
     messages = []
-    for entry, kind in typed:
+    for entry, attachment_type in typed:
         path = attachment_path(entry)
-        if kind and path.is_file():  # a missing file is reported by attachment-files
-            size_mb, limit = path.stat().st_size / 1_000_000, rules["attachments"][kind]["max_size_mb"]
+        if attachment_type and path.is_file():  # a missing file is reported by attachment-files
+            size_mb, limit = path.stat().st_size / 1_000_000, rules["attachments"][attachment_type]["max_size_mb"]
             if size_mb > limit:
                 messages.append(f"attachment {entry['file']} is {size_mb:.3f} MB, {rules['channel']} allows {limit} MB")
     return messages
@@ -527,8 +560,10 @@ def check_mixed_attachments(note):
 
 
 def check_topic_drafts(note):
-    """An approved Topic has exactly one Draft per Channel it lists; a Publish package or
-    Post for the Channel stands in for a Draft already packaged."""
+    """An approved Topic has exactly one Draft per Channel it lists and none for a Channel it does
+    not list; a Publish package or Post for the Channel stands in for a Draft already packaged.
+    A missing Draft is reported only once /write has started the Topic and no Draft is `drafting`
+    (/write first creates one `drafting` Draft per Channel)."""
     fm = note["fm"]
     if kind_of(note) != "topic" or fm.get("status") != "approved" or not isinstance(fm.get("channels"), list):
         return []
@@ -536,29 +571,30 @@ def check_topic_drafts(note):
         n["fm"] for n in VAULT_NOTES.values()
         if kind_of(n) in ("draft", "post") and n["fm"].get("topic") and link_name(n["fm"]["topic"]) == note["path"].stem
     ]
+    written = linked and not any(f.get("kind") == "draft" and f.get("status") == "drafting" for f in linked)
     messages = []
     for channel in fm["channels"]:
         drafts = sum(1 for f in linked if f.get("kind") == "draft" and f.get("channel") == channel)
         if drafts > 1:
             messages.append(f"approved topic has {drafts} drafts for {channel}, expected one")
-        elif not any(f.get("channel") == channel for f in linked):
+        elif written and not any(f.get("channel") == channel for f in linked):
             messages.append(f"approved topic has no draft for {channel}")
+    stale = sorted({str(f.get("channel")) for f in linked if f.get("channel") not in fm["channels"]})
+    messages += [f"approved topic has a draft or post for {c}, which it does not list in channels" for c in stale]
     return messages
 
 
 def reddit_draft_rules(note):
-    """The Reddit Channel rules for a Reddit Draft, else None."""
-    if kind_of(note) != "draft" or note["fm"].get("channel") != "reddit":
-        return None
-    # shortcut: with no Reddit rules note the subreddit and title go unchecked, as in draft-length.
-    return CHANNEL_RULES.get("reddit")
+    """The Reddit Channel rules for a Reddit Draft or ready Publish package, else None."""
+    rules = text_rules(note)
+    return rules if rules and rules["channel"] == "reddit" else None
 
 
 def check_reddit_subreddit(note):
     rules = reddit_draft_rules(note)
     if not rules:
         return []
-    listed = rules.get("subreddits") or []
+    listed = rules["subreddits"]
     subreddit = note["fm"].get("subreddit")
     return [] if subreddit in listed else [f"subreddit {subreddit!r} is not one of {', '.join(map(str, listed))}"]
 
@@ -569,9 +605,9 @@ def check_reddit_title(note):
         return []
     title = note["fm"].get("title")
     if not isinstance(title, str) or not title.strip():
-        return ["reddit draft has no title"]
-    limit = rules["text"].get("max_title_length")
-    if is_count(limit) and len(title) > limit:
+        return [f"reddit {kind_of(note)} has no title"]
+    limit = rules["text"]["max_title_length"]
+    if len(title) > limit:
         return [f"title is {len(title)} characters, reddit allows {limit}"]
     return []
 
@@ -586,6 +622,7 @@ def check_owner_edits(note):
     """A Role changed, removed or added an Owner block unless the fingerprints still match."""
     if kind_of(note) != "draft":
         return []
+    # shortcut: deleting an Owner block together with its owner_edits entry passes; only the history shows it.
     sealed = note["fm"].get("owner_edits") or []
     if [str(s) for s in (sealed if isinstance(sealed, list) else [sealed])] == owner_fingerprints(note["text"]):
         return []
@@ -599,7 +636,7 @@ def seal(path):
     if not match:
         raise SystemExit(f"{path}: no YAML frontmatter block")
     prints = owner_fingerprints(text)
-    fm = re.sub(r"^owner_edits:.*\n(?:[ \t]*- .*\n)*", "", match.group(1), flags=re.MULTILINE)
+    fm = re.sub(r"^owner_edits:.*\n(?:[ \t]+.*\n|- .*\n)*", "", match.group(1), flags=re.MULTILINE)
     path.write_text(text[: match.start(1)] + fm + f"owner_edits: [{', '.join(prints)}]\n" + text[match.end(1):], encoding="utf-8")
     return prints
 
@@ -609,7 +646,7 @@ RULES = [
     check_fact_sheet, check_rubric, check_rejection_reason, check_topic_channels, check_topic_sections,
     check_digest_links, check_digest_size, check_digest_ranks, check_digest_rubrics, check_digest_promotional,
     check_trend_scan_date, check_digest_trend_scan,
-    check_draft_topic, check_draft_passes, check_draft_length,
+    check_draft_topic, check_draft_passes, check_draft_length, check_hashtags,
     check_private_repo_link, check_editor_rounds,
     check_topic_drafts, check_reddit_subreddit, check_reddit_title,
     check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,

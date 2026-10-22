@@ -12,7 +12,7 @@ editor_score: 6
 owner_edits: [oca86943f]
 ---
 
-Every road in my traffic puzzle game now has a capacity. Past it, cars queue at the junction instead of overlapping. %% owner %%Small rule, and the whole map started to feel like a city.%% /owner %% https://example.com/a-very-long-link-that-x-counts-as-twenty-three-characters-only
+Every road in my traffic puzzle game now has a capacity. Past it, cars queue at the junction instead of overlapping. %% owner %%Small rule, and the whole map started to feel like a city.%% /owner %% https://example.com/a-very-long-link-that-x-counts-as-twenty-three#chars #gamedev
 
 > [!note]- Alternative hooks
 > Say "use hook 1" or "use hook 2" to swap one into the body.

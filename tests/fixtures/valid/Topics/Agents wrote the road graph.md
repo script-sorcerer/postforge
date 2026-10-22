@@ -1,6 +1,6 @@
 ---
 kind: topic
-status: proposed
+status: approved
 project: "[[traffic_jam]]"
 rank: 4
 rubric: Building with AI agents
