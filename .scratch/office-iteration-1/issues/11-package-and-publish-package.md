@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] `/package` refuses a Draft that is not ready
-- [ ] The Publish package holds final text, ordered Attachments, alt text and a missing-items list
-- [ ] The Packager runs on the cheaper model
-- [ ] The Vault check fails a Publish package with a missing Attachment file, too many Attachments, a wrong format or size, or an image without alt text
-- [ ] Marking a Post published with its link adds it to the history of published Posts
-- [ ] Fixtures cover each Attachment rule
+- [x] `/package` refuses a Draft that is not ready
+- [x] The Publish package holds final text, ordered Attachments, alt text and a missing-items list
+- [x] The Packager runs on the cheaper model
+- [x] The Vault check fails a Publish package with a missing Attachment file, too many Attachments, a wrong format or size, or an image without alt text
+- [x] Marking a Post published with its link adds it to the history of published Posts
+- [x] Fixtures cover each Attachment rule
