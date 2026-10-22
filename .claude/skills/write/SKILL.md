@@ -26,7 +26,7 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 ## Step 2: Pick the work
 
-Channels in this version: `x`, `reddit`, `linkedin`. Each approved Topic gets exactly one Draft per Channel in its `channels`; the Vault check fails an approved Topic missing a Draft for one of its Channels, or with two Drafts for one Channel. A Publish package or Post for that Channel stands in for its Draft once packaged.
+Channels in this version: `x`, `reddit`, `linkedin`. Each approved Topic gets exactly one Draft per Channel in its `channels`; the Vault check fails an approved Topic with two Drafts for one Channel, or with a Draft or Post for a Channel it does not list, and, once the Topic has a Draft and none is `drafting`, one missing a Draft for one of its Channels. A Publish package or Post for that Channel stands in for its Draft once packaged.
 
 A unit of work is one approved Topic and one Channel:
 
@@ -38,17 +38,17 @@ Leave every other Topic alone: proposed, rejected and parked Topics get no Draft
 
 ## Step 3: Write each Draft through the Passes
 
-Create the Draft note first, with `status: drafting` and an empty `passes` list. After each Pass, rewrite the note and append that Pass's name to `passes`. Run the Passes in exactly this order; the Vault check fails a Draft whose Passes are out of order, or incomplete once it leaves `drafting`.
+Before any Pass runs on a Topic, create every missing Draft note of that Topic, one per Channel in its `channels`: frontmatter only (as in the template below), with `status: drafting` and an empty `passes` list. So the Vault check never takes a half-written Topic for a finished one. Then write each Draft in turn. After each Pass, rewrite the note and append that Pass's name to `passes`. Run the Passes in exactly this order; the Vault check fails a Draft whose Passes are out of order, or incomplete once it leaves `drafting`.
 
-1. **`angle`**: read the Topic note in full (Angle, Why now, Source material, Shot list) and its Source material if needed. Fix the one idea of the Post and who it is for, in one sentence. Write it under `## Writer notes`.
-2. **`hooks`**: write three different opening lines for that idea. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below).
+1. **`angle`**: read the Topic note in full (Angle, Why now, Source material, Shot list) and its Source material if needed. Fix the one point of the Post and who it is for, in one sentence. Write it under `## Writer notes`.
+2. **`hooks`**: write three different opening lines for that point. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below).
 3. **`draft`**: write the Post text in the Channel's register from the Voice guide.
-   - **X**: short, one idea, one or two sentences, leads with the thing itself, Attachment first.
+   - **X**: short, one point, one or two sentences, leads with the thing itself, Attachment first.
    - **Reddit**: modest and not self-promotional; a lesson or a moment shared with peers, the game as context, not the pitch. First pick one `subreddit` from the `subreddits` list in `Channel rules/Reddit.md`, written exactly as listed (`gamedev`, not `r/gamedev`), whose fit and self-promotion rule suit the Topic; skip the store-player subreddits the note says to hold. Write to that subreddit's rules. Write a `title` that states what the Post shows or teaches, within `text.max_title_length`; it goes in frontmatter, not in the Post text. The three hooks are openings of the body; the title is separate.
    - **LinkedIn**: reflective, with a takeaway: what I tried, what happened, what I learned that another builder can use. The first two lines carry the hook. Short paragraphs, hashtags (at most the Channel rules' `hashtags.max`) only at the end.
 4. **`voice`**: check the Draft against every section of the Voice guide (who is speaking, tone, register, AI stance, never publish) and fix what breaks it. Check the hook alternatives too.
 5. **`humanize`**: remove every banned word and pattern the Voice guide lists, in the Post text and the alternatives.
-6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation in this Draft and run it again until it passes.
+6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation line that names this Draft and run it again until none does. Violations in other notes are not yours to fix here: list them for the Owner in Step 5.
 
 ## Step 4: Editor loop
 
@@ -69,7 +69,7 @@ Every `in-review` Draft goes through the Editor before the Owner sees it. The ch
    Set `editor_rounds: N` and `editor_score: <the score>` in the frontmatter.
 3. **Decide.**
    - `Verdict: pass`: the loop ends. The Draft stays `in-review` for the Owner.
-   - `Verdict: revise` and N is 1: set `status: revising`. Revise the Post text and the hooks from the remarks, leaving every Owner block as it is (a remark starting `Owner edit:` is for the Owner only: record it, do not apply it), then rerun the `voice`, `humanize` and `channel-fit` Passes on them. Leave `passes` as it is: it records each Pass once. Set `status: in-review`, run the Vault check until it passes, and go back to 1.
+   - `Verdict: revise` and N is 1: set `status: revising`. Revise the Post text and the hooks from the remarks, leaving every Owner block as it is (a remark starting `Owner edit:` is for the Owner only: record it, do not apply it), then rerun the `voice`, `humanize` and `channel-fit` Passes on them. Leave `passes` as it is: it records each Pass once. Set `status: in-review`, run the Vault check until no violation line names this Draft, and go back to 1.
    - `Verdict: revise` and N is 2: the loop ends anyway. The Draft stays `in-review` and goes to the Owner with the remarks. The Vault check fails any Draft with more than two Editor rounds.
 
 Never set `status: ready`, whatever the score: only the Owner does. No Draft is left at `revising` when you hand over.
@@ -103,7 +103,7 @@ editor_score: 7
 
 ## Writer notes
 
-Angle: <the one idea and who it is for>.
+Angle: <the one point and who it is for>.
 
 ## Editor review 1
 
@@ -135,4 +135,4 @@ When the Owner says "use hook 2" (or similar) for a Draft:
 
 ## Step 5: Hand over
 
-Tell the Owner which Drafts you wrote, with their paths, each Draft's Editor score and rounds, and which Topics or Channels you skipped and why. They edit Drafts by hand in Obsidian or with `/revise`, and set `status: ready` themselves when a Draft is good to go.
+Tell the Owner which Drafts you wrote, with their paths, each Draft's Editor score and rounds, which Topics or Channels you skipped and why, and any Vault check violations in other notes. They edit Drafts by hand in Obsidian or with `/revise`, and set `status: ready` themselves when a Draft is good to go.

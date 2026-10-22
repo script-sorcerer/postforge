@@ -27,7 +27,7 @@ You are the Packager of the Office (see `GLOSSARY.md`). You turn a ready Draft i
 5. **List what is missing.** Add to `missing`, one line each:
    - every Shot list line of the Topic that no kept Attachment answers (judge by its file name and alt text), as `Shot list: <line>`; skip a Shot list that says "None";
    - `No Attachment; the Topic needs media` when the Topic has `needs_media: true` and no Attachment is kept.
-6. **Write** `Publish packages/<topic title> - <channel>.md` (template below); overwrite an existing one, it is not published yet. The body is the Draft's Post text, unchanged: the body after the frontmatter up to the first `> [!` callout or `## ` heading, stripped. Remove only the Owner-edit markers `%% owner %%` and `%% /owner %%` (they are never posted); keep the words between them.
+6. **Write** `Publish packages/<topic title> - <channel>.md` (template below); overwrite an existing one, it is not published yet. The body is the Draft's Post text, unchanged: the body after the frontmatter up to the first `> [!` callout or `## ` heading, stripped. Remove only the Owner-edit markers `%% owner %%` and `%% /owner %%` (they are never posted); keep the words between them. For Reddit, copy the Draft's `subreddit` and `title` unchanged; the Vault check fails a Reddit package without them.
 7. **Run `scripts/vault_check.py`.** Fix every violation in this Publish package that you can (a typo in a path, alt text) and run it again. A violation you cannot fix (too many Attachments, a wrong format or size, mixed types the Channel forbids) goes to the Owner: name the Attachment and the Channel rule. Never delete or convert an Attachment file.
 8. **Hand over:** the package's path, its Attachments in order, the `missing` list, and the Vault check result. If `missing` is not empty, say the package is blocked until those items are captured and added (then rerun `/package`).
 
@@ -44,6 +44,8 @@ topic: "[[<topic title>]]"
 draft: "[[<topic title> - <channel>]]"
 channel: x
 language: en
+subreddit: gamedev      # Reddit only: copied from the Draft
+title: "<title>"        # Reddit only: copied from the Draft
 attachments:            # upload order
   - file: "[[Attachments/<file>]]"
     alt: "<one sentence: what the image shows>"

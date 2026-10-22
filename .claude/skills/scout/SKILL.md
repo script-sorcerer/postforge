@@ -159,7 +159,7 @@ The reading position lives in the Project note's frontmatter: `last_read_commit`
 
 - Never propose a story that a Topic with `status: rejected` covers: the Owner said no, and `reason` says why.
 - Never propose a story already published, already in a Publish package, or listed in `shown_publicly`.
-- Never propose a story that an approved or still proposed Topic covers: it is already in the pipeline.
+- Never propose a story that an approved or still proposed Topic covers: it is already on the Owner's desk or being written.
 - A parked Topic may return when it fits this Digest (new Source material, a fitting date). Do not edit the parked note: only the Owner changes a status. Write a new Topic note with a new title and set `previously_parked: "[[<parked Topic title>]]"`. Do not bring a parked story back while a later Topic that brought it back is still proposed or approved.
 
 A story is the same when it makes the same point from the same Source material, whatever its title or Rubric.
@@ -229,6 +229,6 @@ One line per Topic: rank, title, Rubric, Channels, needs media.
 
 ## Step 7: Check, move the position, hand over
 
-1. Run `scripts/vault_check.py` and fix every violation in the notes you wrote.
-2. Only once it passes, set `last_read_commit: <target>` and `last_read_date: <today>` in `Projects/<project>.md`. Never move the position before the Digest is written: a failed run would lose commits.
-3. Tell the Owner the Digest is ready, with its path and the Trend scan's path (new or reused), plus any subreddit rule changes from Step 4. In each Topic note they set `status` to `approved`, `rejected` (and fill `reason` with one line) or `parked`, and may first edit `channels` or the Angle. Only the Owner changes a Topic's status.
+1. Run `scripts/vault_check.py` and fix every violation in the notes you wrote this run: the Fact sheet, the Trend scan, the Digest, its Topics and `Channel rules/Reddit.md`. Run it again until no violation line names one of them. Violations in other notes (a Draft, an Owner edit) are not yours: do not touch them, list them for the Owner in step 3, and go on.
+2. Only once no violation line names a note you wrote this run, set `last_read_commit: <target>` and `last_read_date: <today>` in `Projects/<project>.md`. Never move the position before the Digest is written: a failed run would lose commits.
+3. Tell the Owner the Digest is ready, with its path and the Trend scan's path (new or reused), plus any subreddit rule changes from Step 4 and any Vault check violations in notes you did not write. In each Topic note they set `status` to `approved`, `rejected` (and fill `reason` with one line) or `parked`, and may first edit `channels` or the Angle. Only the Owner changes a Topic's status.
