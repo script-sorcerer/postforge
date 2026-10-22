@@ -3,6 +3,8 @@ kind: project
 name: traffic_jam
 repository: "/Users/alexanderlos/Documents/Unreal Projects/traffic_jam"
 access: read-only
+# GitHub repository (owner/name) for issues, read with `gh`. Private: the Vault check fails any note linking to it.
+github: script-sorcerer/traffic_jam
 pitch: "A mobile traffic puzzle game for iOS and Android: an authored city of roads and districts whose traffic the player keeps flowing."
 audience: "Mobile puzzle players; indie and solo game developers; people curious about building games with AI agents."
 goal: "Followers and pre-registration for the mobile release."

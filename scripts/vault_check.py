@@ -311,8 +311,33 @@ def check_draft_length(note):
 RULES += [check_draft_topic, check_draft_passes, check_draft_length]
 
 
+# The Project's GitHub repository is private: no note may link to it or its issues.
+REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github` field
+
+
+def load_repo_slugs(vault):
+    notes = (read_note(p) for p in sorted((vault / "Projects").glob("*.md")))
+    return [n["fm"]["github"] for n in notes if n["fm"] and isinstance(n["fm"].get("github"), str) and n["fm"]["github"]]
+
+
+def check_private_repo_link(note):
+    if kind_of(note) not in ("topic", "draft", "post"):
+        return []
+    text = note["path"].read_text(encoding="utf-8")
+    # [/:] covers https and ssh remotes; the slug may end in .git, /issues/91, ) or end of line.
+    return [
+        f"links to the private repository {slug}"
+        for slug in REPO_SLUGS
+        if re.search(rf"github\.com[/:]{re.escape(slug)}(?![\w-])", text, re.IGNORECASE)
+    ]
+
+
+RULES.append(check_private_repo_link)
+
+
 def check_vault(vault):
     """Return (notes checked, list of 'note: [rule] message' lines)."""
+    REPO_SLUGS[:] = load_repo_slugs(vault)
     paths = sorted(p for folder in NOTE_FOLDERS for p in (vault / folder).rglob("*.md"))
     violations = []
     for path in paths:

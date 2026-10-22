@@ -47,6 +47,9 @@ BROKEN = {
     "draft-topic": ("Drafts/Missing topic.md", "draft-topic"),
     "draft-passes": ("Drafts/Passes out of order.md", "draft-passes"),
     "draft-length": ("Drafts/Too long.md", "draft-length"),
+
+
+    "private-repo-link": ("Topics/Event factory.md", "private-repo-link"),
 }
 
 
