@@ -51,8 +51,8 @@ def read_note(path):
 
 
 def kind_of(note):
-    fm = note["fm"]
-    return fm.get("kind") if fm and fm.get("kind") in REQUIRED_FIELDS else None
+    kind = note["fm"].get("kind") if note["fm"] else None
+    return kind if isinstance(kind, str) and kind in REQUIRED_FIELDS else None
 
 
 def check_frontmatter(note):
