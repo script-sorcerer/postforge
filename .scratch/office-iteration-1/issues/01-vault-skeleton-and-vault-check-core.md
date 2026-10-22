@@ -6,10 +6,10 @@
 
 **Status:** ready-for-agent
 
-- [ ] The repository opens in Obsidian as a Vault with a place for Project config, Fact sheet, Voice guide, Channel rules, Trend scans, Digests and Topics, Drafts, Publish packages, Owner notes, published Posts and Attachments
-- [ ] traffic_jam is registered as a Project in config, not in any Role prompt
-- [ ] The Vault check runs from the command line over the whole Vault
-- [ ] It rejects a Topic, Draft or Post note with missing required frontmatter or a status outside its lifecycle
-- [ ] Each reported violation names the note and the rule broken; any violation gives a non-zero exit
-- [ ] Fixture Vaults cover one valid case and one broken case per rule, and a test run passes
-- [ ] The real Vault passes the check
+- [x] The repository opens in Obsidian as a Vault with a place for Project config, Fact sheet, Voice guide, Channel rules, Trend scans, Digests and Topics, Drafts, Publish packages, Owner notes, published Posts and Attachments
+- [x] traffic_jam is registered as a Project in config, not in any Role prompt
+- [x] The Vault check runs from the command line over the whole Vault
+- [x] It rejects a Topic, Draft or Post note with missing required frontmatter or a status outside its lifecycle
+- [x] Each reported violation names the note and the rule broken; any violation gives a non-zero exit
+- [x] Fixture Vaults cover one valid case and one broken case per rule, and a test run passes
+- [x] The real Vault passes the check

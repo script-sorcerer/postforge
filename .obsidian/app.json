@@ -1,0 +1,10 @@
+{
+  "attachmentFolderPath": "Attachments",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "Owner notes",
+  "userIgnoreFilters": [
+    "tests/",
+    "scripts/",
+    "docs/"
+  ]
+}

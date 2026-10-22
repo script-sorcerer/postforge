@@ -18,3 +18,7 @@
 *.mov
 *.webm
 *.mkv
+
+# Python
+__pycache__/
+.pytest_cache/
