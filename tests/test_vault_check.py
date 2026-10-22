@@ -44,6 +44,9 @@ BROKEN = {
     "digest-rubrics": ("Digests/2026-10-22 traffic_jam.md", "digest-rubrics"),
     "digest-promotional": ("Digests/2026-10-22 traffic_jam.md", "digest-promotional"),
     "channel-rules": ("Channel rules/X.md", "channel-rules"),
+    "draft-topic": ("Drafts/Missing topic.md", "draft-topic"),
+    "draft-passes": ("Drafts/Passes out of order.md", "draft-passes"),
+    "draft-length": ("Drafts/Too long.md", "draft-length"),
 }
 
 

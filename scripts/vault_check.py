@@ -13,6 +13,7 @@ messages and append it to RULES. The rule is reported as `<name>` with
 underscores turned into hyphens.
 """
 
+import functools
 import re
 import sys
 from pathlib import Path
@@ -242,6 +243,74 @@ def load_channel_rules(vault):
         if not problems:
             rules[note["fm"]["channel"]] = note["fm"]
     return rules, violations
+
+
+# Draft: written by the Writer through six Passes, always in this order.
+PASSES = ["angle", "hooks", "draft", "voice", "humanize", "channel-fit"]
+# The Post text ends at the first callout (the Hook alternatives) or `## ` heading (Writer notes).
+POST_TEXT_END = re.compile(r"^(> \[!|## )", re.MULTILINE)
+URL = re.compile(r"https?://\S+")
+
+
+def draft_vault(note):
+    """The Vault holding a Draft note: the folder above its `Drafts` ancestor."""
+    return next(p.parent for p in note["path"].parents if p.name == "Drafts")
+
+
+def link_name(link):
+    return str(link).strip("[]").split("|")[0].split("/")[-1]
+
+
+def check_draft_topic(note):
+    topic = note["fm"].get("topic") if kind_of(note) == "draft" else None
+    if not topic:
+        return []  # a missing topic is reported by required-fields
+    path = draft_vault(note) / "Topics" / f"{link_name(topic)}.md"
+    linked = read_note(path) if path.is_file() else None
+    if linked and kind_of(linked) == "topic":
+        return []
+    return [f"topic {topic} has no Topic note in Topics/"]
+
+
+def check_draft_passes(note):
+    """A Draft records its Passes in order; only a drafting Draft may stop short of all six."""
+    if kind_of(note) != "draft":
+        return []
+    passes = note["fm"].get("passes") or []
+    if not isinstance(passes, list) or passes != PASSES[: len(passes)]:
+        return [f"passes {passes} are not in order {', '.join(PASSES)}"]
+    if note["fm"].get("status") != "drafting" and len(passes) < len(PASSES):
+        return [f"passes {passes} are incomplete; all of {', '.join(PASSES)} must run"]
+    return []
+
+
+@functools.cache
+def channel_limits(vault):
+    return load_channel_rules(vault)[0]
+
+
+def post_text(path):
+    """The Post text of a Draft: the body after the frontmatter, up to the Hook alternatives
+    callout or the first `## ` heading, stripped."""
+    body = FRONTMATTER.sub("", path.read_text(encoding="utf-8"), count=1)
+    return POST_TEXT_END.split(body, maxsplit=1)[0].strip()
+
+
+def check_draft_length(note):
+    if kind_of(note) != "draft":
+        return []
+    # shortcut: a Draft whose Channel has no rules note is not length-checked; add a rule once every Channel has one.
+    rules = channel_limits(draft_vault(note)).get(note["fm"].get("channel"))
+    if not rules:
+        return []
+    # X counts every URL as 23 characters; the other Channels count URLs as written.
+    text = post_text(note["path"])
+    length = len(URL.sub("x" * 23, text)) if rules["channel"] == "x" else len(text)
+    limit = rules["text"]["max_length"]
+    return [] if length <= limit else [f"post text is {length} characters, {rules['channel']} allows {limit}"]
+
+
+RULES += [check_draft_topic, check_draft_passes, check_draft_length]
 
 
 def check_vault(vault):
