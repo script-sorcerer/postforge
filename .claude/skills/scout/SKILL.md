@@ -110,7 +110,7 @@ The reading position lives in the Project note's frontmatter: `last_read_commit`
 
    Open the promising ones with their discussion: `gh issue view <n> --repo <github> --comments`. If `gh` fails (not signed in, no network), tell the Owner and go on with git history and local files.
 7. **Owner notes.** Read every note in `Owner notes/` that concerns this Project. They hold what exists nowhere in the code, such as a playtester's reaction.
-8. If there are no new commits, no updated issues and no new Owner notes since the position, tell the Owner and stop without a Digest.
+8. If there are no new commits, no updated issues and no Owner notes modified on or after `last_read_date`, tell the Owner and stop without a Digest.
 
 ## Step 6: Write the Digest
 
