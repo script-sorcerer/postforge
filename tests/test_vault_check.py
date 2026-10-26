@@ -1,5 +1,6 @@
 """Feed fixture Vaults to the Vault check and assert its verdicts."""
 
+import datetime
 import shutil
 import subprocess
 import sys
@@ -94,6 +95,11 @@ BROKEN = {
     "shorts-package-size": ("Publish packages/Queue at the junction - shorts.md", "attachment-size"),
     "shorts-package-title": ("Publish packages/Queue at the junction - shorts.md", "shorts-title"),
     "channel-rules-reddit": ("Channel rules/Reddit.md", "channel-rules"),
+    "publish-on": ("Publish packages/Lane change bug - x.md", "publish-on"),
+    "publish-on-format": ("Publish packages/Lane change bug - x.md", "publish-on"),
+    "schedule": ("Schedule/traffic_jam.md", "schedule"),
+    "schedule-slot": ("Publish packages/Lane change bug - x.md", "schedule-slot"),
+    "schedule-collision": ("Publish packages/Lane change bug again - x.md", "schedule-collision"),
 }
 
 
@@ -150,3 +156,19 @@ def test_missing_draft_for_channel_with_unapproved_rules_passes_until_approved(t
     rules.write_text(rules.read_text().replace("status: proposed", "status: approved", 1))
     code, violations = run_check(vault)
     assert code == 1 and len(violations) == 1 and "[topic-drafts] approved topic has no draft for shorts" in violations[0]
+
+
+def test_schedule_gap_is_a_warning_until_the_next_cadence_day_is_packaged(tmp_path):
+    """A ready Draft waits unpackaged while x's next cadence day is empty: warned, exit 0. A package of that
+    Channel on the next cadence day (today, with a daily cadence) fills the gap."""
+    code, lines = run_check(FIXTURES / "schedule-gap")
+    assert code == 0 and len(lines) == 1, lines
+    assert lines[0].startswith("warning: Drafts/Rush hour in one tap - x.md: [schedule-gap] ")
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "schedule-gap", vault)
+    schedule = vault / "Schedule" / "traffic_jam.md"
+    every_day = "[Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]"
+    schedule.write_text(schedule.read_text().replace("[Monday, Thursday]", every_day))
+    package = vault / "Publish packages" / "Lane change bug - x.md"
+    package.write_text(package.read_text().replace("2026-10-19", datetime.date.today().isoformat()))
+    assert run_check(vault) == (0, [])

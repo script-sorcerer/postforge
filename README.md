@@ -12,6 +12,7 @@ Open this repository in Obsidian as its own Vault (ADR 0001). Its folders:
 | `Fact sheets/` | One Fact sheet per Project |
 | `Voice guide/` | The Voice guide |
 | `Channel rules/` | One note per Channel: `X.md`, `Reddit.md`, `LinkedIn.md`, `Shorts.md` (one 9:16 video for YouTube Shorts and TikTok) |
+| `Schedule/` | One Schedule note per Project: each Channel's cadence |
 | `Trend scans/` | Dated Trend scans |
 | `Digests/`, `Topics/` | Digests and their Topic notes |
 | `Drafts/` | One Draft per Channel per approved Topic |
@@ -54,6 +55,10 @@ attachments:
 
 A Publish package (`Publish packages/<topic title> - <channel>.md`, `kind: post`, `status: ready`) holds the Post text as its body, `draft` (link), for Reddit the Draft's `subreddit` and `title`, `attachments` (the same entries, with alt text) and `missing` (one line per blocker, such as an uncaptured Shot list item). The Vault check checks each `ready` package's Post text like a Draft's (`draft-length`, `hashtags`, `reddit-subreddit`, `reddit-title`) and its Attachments against its Channel rules: file on disk (`attachment-files`), format (`attachment-format`), count per type (`attachment-count`), size (`attachment-size`), alt text on images and GIFs (`alt-text`), and one type per Post when `mixed_attachments: false` (`mixed-attachments`). A ready Shorts package also carries `title`, within its limit (`shorts-title`), and exactly one MP4, the video the Producer rendered (`shorts-video` fails one with none). The Owner uploads it by hand to YouTube Shorts and TikTok; `published_url` holds the first link and the second goes in the Post body as a line. Published Posts are not checked against disk: video files stay out of git. Once published, the Post sets `status: published`, `published_url` and `published_on` and moves to `Posts/`, the history of published Posts (`post-folder` fails a published Post left in `Publish packages/` or a ready one in `Posts/`).
 
+### Schedule
+
+A Schedule note (`Schedule/<project>.md`, `kind: schedule`, `project` link) holds the Project's `cadence`: per Channel, `per_week` and `weekdays` (weekday names, `Monday` to `Sunday`). Give each Channel its own days, so one Topic's Posts spread over the week. Every `ready` Publish package carries `publish_on`, the ISO date it goes out on (`publish-on` fails one without it or with another format). `/package` picks it: the first cadence weekday of the Channel on or after today with no other ready or published package of that Channel on it, and tells you the date; move a package by editing `publish_on`. With a Schedule note the Vault check also fails a package whose date is not a cadence weekday of its Channel, or whose Channel has no cadence (`schedule-slot`), a second ready package of one Channel on one date (`schedule-collision`, reported on the later note by path), and a malformed Schedule note or a second one for the same Project (`schedule`). It warns, without failing, about a `ready` Draft with no Publish package while its Channel's next cadence day has nothing on it (`schedule-gap`: run `/package`). Without a Schedule note only `publish_on`'s presence and format are checked. `per_week` is read but not enforced: the `weekdays` set the slots. A published Post keeps `publish_on` next to `published_on`, so you can see whether the schedule held.
+
 ### Bring your own Topic
 
 To have the Office write a story you already have in mind, copy `docs/templates/Owner Topic.md` to `Topics/<title>.md` and fill it in. It is an Owner Topic: `status: approved` and `origin: owner` from the start, with no Digest and no `rank`. Run `/write` and it is drafted like any approved Topic; the Scout reads it too, so it never proposes the same story.
@@ -66,7 +71,7 @@ The Scout, the Writer, `/revise` and the Editor run on Opus at `effort: medium` 
 - `/write`: the Writer (`.claude/skills/write/`). Turns every approved Topic into one Draft per target Channel (X, Reddit, LinkedIn, each in its register, and a Video script for Shorts) through the six Passes, then runs the Vault check. Each Draft then goes through the Editor (`.claude/agents/editor.md`, a fresh subagent per review, which holds the checklist and pass threshold): below the threshold it goes back to the Writer, and after at most two rounds it comes to the Owner at `in-review` with the Editor's remarks. Say "use hook 2" on a Draft to swap in an alternative hook (it becomes an Owner edit).
 - `/revise <draft> <prompt>`: applies your prompt, such as "shorter hook, no emoji", to one Draft (`.claude/skills/revise/`), marks the change as an Owner edit and seals it. It never changes `status`.
 - `/produce <draft>`: the Producer (`.claude/skills/produce/`, ADR 0002; no fixed model, add `--model <model>` to pick one). Takes a `ready` Shorts Draft, stops and lists the Shot list lines whose footage is not in `Attachments/` yet, else builds a HyperFrames Composition under `Attachments/video/<topic title>/` from the house template `docs/templates/shorts-composition/` and the beat table, checks it, looks at one frame per beat and opens it in the HyperFrames desktop app for your review. Edit it there by hand if you like, then `/produce <draft> render` renders it once (locally, free) to `Attachments/<topic title> - shorts.mp4` and sets it as the Draft's Attachment. `/produce <draft> --fresh` rebuilds the Composition from the Script, discarding your app edits. The Composition is committed; the MP4 is not. Setup and quota rules: `docs/producer-setup.md`.
-- `/package <draft>`: the Packager (`.claude/skills/package/`, on Sonnet). Refuses a Draft that is not `ready`; writes its Publish package with the Attachments in order, alt text and the `missing` list, then runs the Vault check. After you publish by hand, `/package published <publish package> <link>` records the link and moves the Post to `Posts/`.
+- `/package <draft>`: the Packager (`.claude/skills/package/`, on Sonnet). Refuses a Draft that is not `ready`; writes its Publish package with the Attachments in order, alt text, the `missing` list and `publish_on` (the next free slot of the Channel's Schedule; it tells you the date), then runs the Vault check. After you publish by hand, `/package published <publish package> <link>` records the link and moves the Post to `Posts/`.
 
 ## Vault check
 
@@ -77,7 +82,7 @@ scripts/vault_check.py
 scripts/vault_check.py path/to/vault
 ```
 
-It fails any Topic, Draft or Post that links to a Project's `github` repository (`private-repo-link`): that repository is private. It prints each violation as `note: [rule] message` and exits non-zero on any violation.
+It fails any Topic, Draft or Post that links to a Project's `github` repository (`private-repo-link`): that repository is private. It prints each violation as `note: [rule] message` and exits non-zero on any violation. A warning (`schedule-gap`) prints as `warning: note: [rule] message` and does not fail the check.
 
 Run the tests (fixture Vaults live in `tests/fixtures/`, one folder per broken rule):
 

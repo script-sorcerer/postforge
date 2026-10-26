@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] A Schedule note (`kind: schedule`, `project`, `cadence` per Channel with `per_week` and `weekdays`) is read by the Vault check; a malformed one is reported under one rule
-- [ ] A ready package without `publish_on`, or with a non-ISO value, fails
-- [ ] `schedule-slot`, `schedule-collision` and `schedule-gap` each have a fixture Vault that breaks only that rule, and the valid fixture Vault gains a Schedule note and a scheduled package
-- [ ] `/package` writes `publish_on` from the next free slot and tells the Owner the date
-- [ ] `/package published` carries `publish_on` onto the Post
-- [ ] Glossary entry "Schedule"; README paragraph on scheduling
+- [x] A Schedule note (`kind: schedule`, `project`, `cadence` per Channel with `per_week` and `weekdays`) is read by the Vault check; a malformed one is reported under one rule
+- [x] A ready package without `publish_on`, or with a non-ISO value, fails
+- [x] `schedule-slot`, `schedule-collision` and `schedule-gap` each have a fixture Vault that breaks only that rule, and the valid fixture Vault gains a Schedule note and a scheduled package
+- [x] `/package` writes `publish_on` from the next free slot and tells the Owner the date
+- [x] `/package published` carries `publish_on` onto the Post
+- [x] Glossary entry "Schedule"; README paragraph on scheduling

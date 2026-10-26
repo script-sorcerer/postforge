@@ -1,6 +1,7 @@
 ---
 kind: post
 status: ready
+publish_on: 2026-10-20
 project: "[[traffic_jam]]"
 topic: "[[Queue at the junction]]"
 draft: "[[Queue at the junction - shorts]]"

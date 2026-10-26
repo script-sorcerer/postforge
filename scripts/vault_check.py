@@ -4,8 +4,9 @@
 # dependencies = ["pyyaml"]
 # ///
 """Vault check: reads every Topic, Draft, Post, Fact sheet, Digest and Trend scan
-note and every Channel rules note in the Vault and reports each rule it breaks.
-Exits 1 on any violation, 0 when the Vault is clean.
+note, every Channel rules note and every Schedule note in the Vault and reports
+each rule it breaks. Exits 1 on any violation, 0 when the Vault is clean or holds
+only warnings (rules in WARNING_RULES).
 
 Usage: scripts/vault_check.py [VAULT]   (default: this repository; needs uv)
        scripts/vault_check.py --seal NOTE   (the Owner only: record NOTE's Owner edits)
@@ -29,6 +30,12 @@ import yaml
 NOTE_FOLDERS = ["Topics", "Drafts", "Publish packages", "Posts", "Fact sheets", "Digests", "Trend scans"]
 # Channel rules notes carry each Channel's limits in frontmatter; see load_channel_rules.
 CHANNEL_RULES_FOLDER = "Channel rules"
+# Schedule notes (one per Project) carry each Channel's cadence; see load_schedules.
+SCHEDULE_FOLDER = "Schedule"
+# Rules reported as warnings: printed, but the check still passes.
+WARNING_RULES = {"schedule-gap"}
+# ISO weekday names, indexed by date.weekday(); Schedule notes may write them in any case.
+WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
 # kind -> fields every note of that kind must fill.
 REQUIRED_FIELDS = {
@@ -95,6 +102,7 @@ REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github
 # frontmatter of each valid Channel rules note by `channel`.
 VAULT_NOTES = {}
 CHANNEL_RULES = {}
+SCHEDULES = {}  # filled by check_vault: Project name -> {channel: {per_week, weekdays}}
 VAULT_ROOT = []  # filled by check_vault: Attachment paths are relative to it
 
 FRONTMATTER = re.compile(r"\A---\r?\n(.*?)^---\s*$", re.DOTALL | re.MULTILINE)
@@ -394,6 +402,49 @@ def load_channel_rules(vault):
     return rules, violations, len(paths)
 
 
+def check_schedule(note):
+    """A Schedule note: `kind: schedule`, a `project` and a `cadence` of known Channels."""
+    fm = note["fm"]
+    if fm is None:
+        return []  # reported by frontmatter
+    problems = []
+    if fm.get("kind") != "schedule":
+        problems.append(f"kind is {fm.get('kind')!r}, expected 'schedule'")
+    if not isinstance(fm.get("project"), str) or not fm["project"]:
+        problems.append("project is missing")
+    cadence = fm.get("cadence")
+    if not isinstance(cadence, dict) or not cadence:
+        return problems + ["cadence must map each Channel to its per_week and weekdays"]
+    for channel, slot in cadence.items():
+        slot = slot if isinstance(slot, dict) else {}
+        days = slot.get("weekdays")
+        if channel not in CHANNELS:
+            problems.append(f"cadence channel {channel!r} is not one of {', '.join(CHANNELS)}")
+        if not is_count(slot.get("per_week")):
+            problems.append(f"cadence.{channel}.per_week must be a positive integer")
+        if not (isinstance(days, list) and days and all(isinstance(d, str) and d.lower() in WEEKDAYS for d in days)):
+            problems.append(f"cadence.{channel}.weekdays must be a non-empty list of weekday names (Monday to Sunday)")
+    return problems
+
+
+def load_schedules(vault):
+    """Return ({project: cadence} for each valid Schedule note, violation lines, number of Schedule notes read)."""
+    schedules, seen, violations = {}, {}, []
+    paths = sorted((vault / SCHEDULE_FOLDER).rglob("*.md"))
+    for path in paths:
+        note = read_note(path)
+        problems = check_frontmatter(note) + check_schedule(note)
+        project = link_name(note["fm"]["project"]) if note["fm"] and isinstance(note["fm"].get("project"), str) else None
+        if project and project in seen:
+            problems.append(f"project {project!r} already has a Schedule in {seen[project].relative_to(vault)}")
+        elif project:
+            seen[project] = path
+        violations += [f"{path.relative_to(vault)}: [schedule] {p}" for p in problems]
+        if not problems:
+            schedules[project] = note["fm"]["cadence"]
+    return schedules, violations, len(paths)
+
+
 def check_draft_topic(note):
     topic = note["fm"].get("topic") if kind_of(note) == "draft" else None
     if not topic:
@@ -418,6 +469,72 @@ def check_draft_passes(note):
 
 def is_ready_package(note):
     return kind_of(note) == "post" and note["fm"].get("status") == "ready"
+
+
+def check_publish_on(note):
+    """A ready Publish package carries the ISO date it goes out on."""
+    if not is_ready_package(note):
+        return []
+    value = note["fm"].get("publish_on")
+    if value in (None, ""):
+        return ["ready package has no publish_on; run /package again to pick a slot"]
+    return [] if as_date(value) else [f"publish_on {value!r} is not an ISO date (YYYY-MM-DD)"]
+
+
+def package_slot(note):
+    """(project, channel, date) of a ready Publish package with a readable `publish_on`, else None."""
+    fm = note["fm"]
+    day = as_date(fm.get("publish_on")) if is_ready_package(note) and fm.get("publish_on") else None
+    if not (day and isinstance(fm.get("project"), str) and isinstance(fm.get("channel"), str)):
+        return None
+    return link_name(fm["project"]), fm["channel"], day
+
+
+def check_schedule_slot(note):
+    slot = package_slot(note)
+    cadence = SCHEDULES.get(slot[0]) if slot else None
+    if not cadence:
+        return []  # without a Schedule only publish-on applies
+    _, channel, day = slot
+    if channel not in cadence:
+        return [f"the Schedule has no cadence for {channel}"]
+    days = [d.lower() for d in cadence[channel]["weekdays"]]
+    if WEEKDAYS[day.weekday()] in days:
+        return []
+    return [f"publish_on {day} is a {WEEKDAYS[day.weekday()].title()}, {channel} goes out on {', '.join(d.title() for d in days)}"]
+
+
+def check_schedule_collision(note):
+    """Two ready packages of one Channel on one date: reported on every one after the first by path."""
+    slot = package_slot(note)
+    if not (slot and slot[0] in SCHEDULES):
+        return []
+    earlier = sorted(n["path"] for n in VAULT_NOTES.values() if package_slot(n) == slot and n["path"] < note["path"])
+    return [f"publish_on {slot[2]} is already taken by {earlier[0].relative_to(VAULT_ROOT[0])}"] if earlier else []
+
+
+def check_schedule_gap(note):
+    """A ready Draft with no Publish package while its Channel's next cadence day (on or after today) is empty."""
+    fm = note["fm"]
+    if kind_of(note) != "draft" or fm.get("status") != "ready" or not isinstance(fm.get("project"), str):
+        return []
+    project, channel, topic = link_name(fm["project"]), fm.get("channel"), link_name(fm.get("topic") or "")
+    cadence = SCHEDULES.get(project, {}).get(channel) if isinstance(channel, str) else None
+    if not cadence:
+        return []
+    posts = [
+        n["fm"] for n in VAULT_NOTES.values()
+        if kind_of(n) == "post" and n["fm"].get("channel") == channel
+        and isinstance(n["fm"].get("project"), str) and link_name(n["fm"]["project"]) == project
+    ]
+    if any(link_name(p.get("topic") or "") == topic for p in posts):
+        return []  # already packaged
+    days = {d.lower() for d in cadence["weekdays"]}
+    today = datetime.date.today()
+    nxt = next(today + datetime.timedelta(n) for n in range(7) if WEEKDAYS[(today + datetime.timedelta(n)).weekday()] in days)
+    if any(as_date(p.get("publish_on") or "") == nxt for p in posts):
+        return []
+    return [f"the next {channel} day, {nxt}, has no package while this Draft is ready; run /package on it"]
 
 
 def text_rules(note):
@@ -786,29 +903,34 @@ RULES = [
     check_private_repo_link, check_editor_rounds,
     check_topic_drafts, check_reddit_subreddit, check_reddit_title,
     check_shorts_title, check_shorts_video, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,
+    check_publish_on, check_schedule_slot, check_schedule_collision, check_schedule_gap,
     check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,
     check_attachment_size, check_alt_text, check_mixed_attachments, check_owner_edits,
 ]
 
 
 def check_vault(vault):
-    """Return (notes checked, list of 'note: [rule] message' lines)."""
+    """Return (notes checked, violation lines, warning lines), each line 'note: [rule] message'."""
     REPO_SLUGS[:] = load_repo_slugs(vault)
     VAULT_ROOT[:] = [vault]
     channel_rules, channel_violations, channel_count = load_channel_rules(vault)
     CHANNEL_RULES.clear()
     CHANNEL_RULES.update(channel_rules)
+    schedules, schedule_violations, schedule_count = load_schedules(vault)
+    SCHEDULES.clear()
+    SCHEDULES.update(schedules)
     paths = sorted(p for folder in NOTE_FOLDERS for p in (vault / folder).rglob("*.md"))
     notes = [read_note(p) for p in paths]
     VAULT_NOTES.clear()
     VAULT_NOTES.update({(n["path"].relative_to(vault).parts[0], n["path"].stem): n for n in notes})
-    violations = []
+    violations, warnings = [], []
     for note in notes:
         for rule in RULES:
             name = rule.__name__.removeprefix("check_").replace("_", "-")
             for message in rule(note):
-                violations.append(f"{note['path'].relative_to(vault)}: [{name}] {message}")
-    return len(paths) + channel_count, violations + channel_violations
+                line = f"{note['path'].relative_to(vault)}: [{name}] {message}"
+                (warnings if name in WARNING_RULES else violations).append(line)
+    return len(paths) + channel_count + schedule_count, violations + channel_violations + schedule_violations, warnings
 
 
 def main(argv):
@@ -820,13 +942,15 @@ def main(argv):
     if not vault.is_dir():
         print(f"Vault not found: {vault}", file=sys.stderr)
         return 2
-    count, violations = check_vault(vault)
+    count, violations, warnings = check_vault(vault)
     for line in violations:
         print(line)
+    for line in warnings:
+        print(f"warning: {line}")
     if violations:
-        print(f"Vault check failed: {len(violations)} violation(s) in {count} note(s).")
+        print(f"Vault check failed: {len(violations)} violation(s), {len(warnings)} warning(s) in {count} note(s).")
         return 1
-    print(f"Vault check passed: {count} note(s).")
+    print(f"Vault check passed: {count} note(s), {len(warnings)} warning(s).")
     return 0
 
 

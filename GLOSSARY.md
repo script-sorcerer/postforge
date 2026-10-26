@@ -122,6 +122,10 @@ _Avoid_: publication, entry
 A Post with everything the Owner needs to publish it by hand: final text, checked Attachments in order, and alt text.
 _Avoid_: bundle, export
 
+**Schedule**:
+A Project's cadence per Channel (how many Posts a week, on which weekdays) and the dates its Publish packages go out on. A Post "goes out" on its `publish_on`; it "is published" when the Owner records the link.
+_Avoid_: calendar, plan, queue
+
 **Channel**:
 One place a Post goes out: X, Reddit, LinkedIn, Shorts (one 9:16 video for YouTube Shorts and TikTok) or Article (long-form: dev.to for English, Habr for Russian Adaptations).
 _Avoid_: platform, network
