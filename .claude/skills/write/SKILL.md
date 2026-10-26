@@ -26,7 +26,7 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 ## Step 2: Pick the work
 
-Channels in this version: `x`, `reddit`, `linkedin`. Each approved Topic gets exactly one Draft per Channel in its `channels`; the Vault check fails an approved Topic with two Drafts for one Channel, or with a Draft or Post for a Channel it does not list, and, once the Topic has a Draft and none is `drafting`, one missing a Draft for one of its Channels. A Publish package or Post for that Channel stands in for its Draft once packaged.
+Channels in this version: `x`, `reddit`, `linkedin`, `shorts` (one 9:16 video for YouTube Shorts and TikTok; its Draft is a Video script, see "The Shorts Draft" below). Each approved Topic gets exactly one Draft per Channel in its `channels`; the Vault check fails an approved Topic with two Drafts for one Channel, or with a Draft or Post for a Channel it does not list, and, once the Topic has a Draft and none is `drafting`, one missing a Draft for one of its Channels. A Publish package or Post for that Channel stands in for its Draft once packaged.
 
 A unit of work is one approved Topic and one Channel:
 
@@ -48,10 +48,13 @@ Before any Pass runs on a Topic, create every missing Draft note of that Topic, 
    - **promise a payoff**: say what the reader gets by reading on (a fix, a number, a trick they can use);
    - **borrow weight**: lead with a real number or name from the Source material, never an invented one.
 
+   **Shorts**: a hook is the first beat's On-screen text plus the caption's first line, and it carries the payoff itself in the first two seconds: the result on screen, no setup, no "watch this". The alternatives are other first beats written the same way.
+
    Three hooks, three different levers. At least one is sensory (a scene or one concrete detail) and at least one is reader-direct (a problem the reader has, a conditional "if you...", a promise). Each leads with the thing itself. None uses a hook anti-pattern from the Voice guide's Banned words and patterns. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below). Under `## Writer notes`, record each hook's lever in one word, as `Hooks: body=<lever>, 1=<lever>, 2=<lever>` (gap, prediction, scene, payoff, weight), so the Owner sees the spread.
 3. **`draft`**: write the Post text in the Channel's register from the Voice guide.
    - **X**: short, one point, one or two sentences, leads with the thing itself, Attachment first.
    - **Reddit**: modest and not self-promotional; a lesson or a moment shared with peers, the game as context, not the pitch. First pick one `subreddit` from the `subreddits` list in `Channel rules/Reddit.md`, written exactly as listed (`gamedev`, not `r/gamedev`), whose fit and self-promotion rule suit the Topic; skip the store-player subreddits the note says to hold. Write to that subreddit's rules. Write a `title` that states what the Post shows or teaches, within `text.max_title_length`; it goes in frontmatter, not in the Post text. The three hooks are openings of the body; the title is separate.
+   - **Shorts**: a Video script (see "The Shorts Draft" below). One idea, no setup. Write the beat table from the Topic's Shot list: each beat names one captured file as an `[[Attachments/<file>]]` link (or `text` for a text-only beat), a short On-screen text, Narration (leave it empty: Shorts need no voice, and the Producer stops on a beat with narration) and its Seconds. Beat 1 carries the hook; the last beat ends on the payoff or loops into beat 1, with no end card and no fade. The Post text is the caption: the hook's words on the first line, one or two plain sentences, hashtags (at most `hashtags.max`) at the end. Write the YouTube `title` in frontmatter and under `## Title`, within `text.max_title_length`.
    - **LinkedIn**: reflective, with a takeaway: what I tried, what happened, what I learned that another builder can use. The first two lines carry the hook. Short paragraphs, hashtags (at most the Channel rules' `hashtags.max`) only at the end.
 4. **`voice`**: check the Draft against every section of the Voice guide (who is speaking, tone, register, AI stance, never publish) and fix what breaks it. Check the hook alternatives too.
 5. **`humanize`**: a minimal repair, not a rewrite. The Voice guide's Banned words and patterns is the only list; apply it to the Post text and the alternatives under this contract:
@@ -65,13 +68,13 @@ Before any Pass runs on a Topic, create every missing Draft note of that Topic, 
    - Recognise paraphrased filler by what it does, not only by the words listed: formulaic framing, stock journey sentences, moralising recap, vague praise without a measure (the Voice guide names all four).
 
    The same contract applies when you revise from an Editor remark on item 7 (Human).
-6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation line that names this Draft and run it again until none does. Violations in other notes are not yours to fix here: list them for the Owner in Step 5.
+6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. For Shorts also: keep every On-screen text short enough to sit outside the top and bottom safe bands (one line, a label, never a sentence pair), check each against `on_screen_text.max_chars_per_beat`, add up the beats' Seconds against `attachments.video.max_seconds` and write the sum to `duration_s`, and check the `title` against `text.max_title_length`. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation line that names this Draft and run it again until none does. Violations in other notes are not yours to fix here: list them for the Owner in Step 5.
 
 ## Step 4: Editor loop
 
 Every `in-review` Draft goes through the Editor before the Owner sees it. The checklist and the pass threshold live only in `.claude/agents/editor.md`; you do not score the Draft yourself.
 
-1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks; for Reddit also the `subreddit` and `title`. No file path, no Writer notes, no earlier reviews.
+1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks; for Reddit also the `subreddit` and `title`; for Shorts also the `title` and the `## Script` beat table. No file path, no Writer notes, no earlier reviews.
 2. **Record the review.** Let N be this review's number: `editor_rounds` plus 1, or 1 if the Draft has no `editor_rounds` yet. Append to the end of the Draft:
 
    ```markdown
@@ -142,6 +145,51 @@ title: "Giving every road a capacity fixed my traffic sim's feel"
 ```
 
 Copy `attachments` from the Topic. The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist. `editor_rounds`, `editor_score` and the `## Editor review N` sections appear once the Editor loop runs; each review is appended after the previous one.
+
+## The Shorts Draft
+
+A Shorts Draft is a Video script. Its Post text is the caption. After `## Writer notes` come `## Title` (the YouTube title, the same text as `title`) and `## Script`, the beat table the Producer builds the video from:
+
+```markdown
+---
+kind: draft
+status: in-review
+project: "[[<project>]]"
+topic: "[[<topic title>]]"
+channel: shorts
+language: en
+passes: [angle, hooks, draft, voice, humanize, channel-fit]
+attachments: []
+title: "One number made my traffic queue"
+duration_s: 7
+---
+
+Cars in my traffic puzzle game used to drive through each other. One capacity number per road made them queue. #indiegame
+
+> [!note]- Alternative hooks
+> Say "use hook 1" or "use hook 2" to swap one into the body.
+> 1. <alternative first beat On-screen text> / <caption first line>
+> 2. <alternative first beat On-screen text> / <caption first line>
+
+## Writer notes
+
+Angle: <the one point and who it is for>.
+Hooks: body=<lever>, 1=<lever>, 2=<lever>.
+
+## Title
+
+One number made my traffic queue
+
+## Script
+
+| # | Footage | On-screen text | Narration | Seconds |
+|---|---|---|---|---|
+| 1 | [[Attachments/queue-after.mp4]] | CARS NOW QUEUE |  | 3 |
+| 2 | [[Attachments/queue-before.mp4]] | THEY USED TO OVERLAP |  | 2 |
+| 3 | [[Attachments/queue-after.mp4]] | ONE NUMBER PER ROAD |  | 2 |
+```
+
+The columns are exactly `#`, `Footage`, `On-screen text`, `Narration`, `Seconds`. Write an aliased link inside the table as `[[Attachments/x.mp4\|label]]`. Every `Footage` link names a file from the Topic's Shot list; a file not captured yet still goes in, and the Producer lists it for the Owner. The Vault check fails a Shorts Draft with no `## Script`, fewer than two beats, a beat without Footage or Seconds, `duration_s` not equal to the beats' sum or over `attachments.video.max_seconds`, an On-screen text over `on_screen_text.max_chars_per_beat`, or no `title` or one over `text.max_title_length`. Editor reviews are appended after the Script.
 
 ## Switching hooks
 

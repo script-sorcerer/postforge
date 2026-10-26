@@ -80,6 +80,14 @@ BROKEN = {
     "draft-length-package": ("Publish packages/Too long.md", "draft-length"),
     "reddit-title-package": ("Publish packages/Road capacity explained - reddit.md", "reddit-title"),
     "channel-rules-shorts": ("Channel rules/Shorts.md", "channel-rules"),
+    "shorts-script": ("Drafts/Queue at the junction - shorts.md", "shorts-script"),
+    "shorts-script-beat": ("Drafts/Queue at the junction - shorts.md", "shorts-script"),
+    "shorts-script-footage": ("Drafts/Queue at the junction - shorts.md", "shorts-script"),
+    "shorts-script-one-beat": ("Drafts/Queue at the junction - shorts.md", "shorts-script"),
+    "shorts-duration": ("Drafts/Queue at the junction - shorts.md", "shorts-duration"),
+    "shorts-duration-limit": ("Drafts/Queue at the junction - shorts.md", "shorts-duration"),
+    "shorts-on-screen-text": ("Drafts/Queue at the junction - shorts.md", "shorts-on-screen-text"),
+    "shorts-title": ("Drafts/Queue at the junction - shorts.md", "shorts-title"),
     "channel-rules-reddit": ("Channel rules/Reddit.md", "channel-rules"),
 }
 

@@ -633,6 +633,107 @@ def check_reddit_title(note):
     return []
 
 
+def shorts_rules(note):
+    """The Shorts Channel rules for a Shorts Draft or ready Publish package, else None."""
+    rules = text_rules(note)
+    return rules if rules and rules["channel"] == "shorts" else None
+
+
+def check_shorts_title(note):
+    """A Shorts Draft or package carries the YouTube title in `title`."""
+    rules = shorts_rules(note)
+    if not rules:
+        return []
+    title = note["fm"].get("title")
+    if not isinstance(title, str) or not title.strip():
+        return [f"shorts {kind_of(note)} has no title"]
+    limit = rules["text"]["max_title_length"]
+    return [] if len(title) <= limit else [f"title is {len(title)} characters, shorts allows {limit}"]
+
+
+# A Video script's beat table: the `## Script` section, one row per beat. A cell splits on `|` unless
+# escaped (`\|`), as Obsidian writes an aliased link inside a table.
+SCRIPT_COLUMNS = ["#", "Footage", "On-screen text", "Narration", "Seconds"]
+SCRIPT_SECTION = re.compile(r"^## Script[ \t]*\n(.*?)(?=^## |\Z)", re.MULTILINE | re.DOTALL)
+TABLE_CELL = re.compile(r"(?<!\\)\|")
+
+
+def script_beats(note):
+    """The beats of a Shorts Draft's `## Script` table as dicts keyed by SCRIPT_COLUMNS, or None when
+    the Draft has no Script section."""
+    match = SCRIPT_SECTION.search(OWNER_MARKER.sub("", note["text"]))
+    if not match:
+        return None
+    rows = [
+        [c.strip() for c in TABLE_CELL.split(line.strip().strip("|"))]
+        for line in match.group(1).splitlines()
+        if line.strip().startswith("|")
+    ]
+    if not rows:
+        return []
+    header, body = rows[0], [r for r in rows[1:] if not all(set(c) <= set("-: ") for c in r)]
+    return [dict(zip(header, r)) for r in body]
+
+
+def beat_seconds(beat):
+    try:
+        seconds = float(beat.get("Seconds", ""))
+    except ValueError:
+        return None
+    return seconds if seconds > 0 else None
+
+
+def shorts_draft_beats(note):
+    """(Shorts Channel rules, beats) for a Shorts Draft whose Script parses, else (None, None)."""
+    rules = shorts_rules(note) if kind_of(note) == "draft" else None
+    return (rules, script_beats(note)) if rules else (None, None)
+
+
+def check_shorts_script(note):
+    rules, beats = shorts_draft_beats(note)
+    if not rules:
+        return []
+    if beats is None:
+        return ["shorts draft has no ## Script section"]
+    if beats and list(beats[0]) != SCRIPT_COLUMNS:
+        return [f"script table columns {list(beats[0])} must be {', '.join(SCRIPT_COLUMNS)}"]
+    if len(beats) < 2:
+        return [f"script has {len(beats)} beats, at least 2 needed"]
+    messages = []
+    for n, beat in enumerate(beats, 1):
+        if not beat.get("Footage"):
+            messages.append(f"beat {n} has no Footage (an [[Attachments/...]] link, or text)")
+        if beat_seconds(beat) is None:
+            messages.append(f"beat {n} Seconds {beat.get('Seconds', '')!r} is not a positive number")
+    return messages
+
+
+def check_shorts_duration(note):
+    rules, beats = shorts_draft_beats(note)
+    if not beats or any(beat_seconds(b) is None for b in beats):
+        return []  # a missing Script or a beat without Seconds is reported by shorts-script
+    total, stated = sum(beat_seconds(b) for b in beats), note["fm"].get("duration_s")
+    limit = rules["attachments"]["video"]["max_seconds"]
+    messages = []
+    if isinstance(stated, bool) or not isinstance(stated, (int, float)) or abs(stated - total) > 1e-6:
+        messages.append(f"duration_s {stated!r} is not the beats' sum, {total:g}")
+    if total > limit:
+        messages.append(f"beats add up to {total:g} seconds, shorts allows {limit}")
+    return messages
+
+
+def check_shorts_on_screen_text(note):
+    rules, beats = shorts_draft_beats(note)
+    if not beats:
+        return []
+    limit = rules["on_screen_text"]["max_chars_per_beat"]
+    return [
+        f"beat {n} On-screen text is {len(b.get('On-screen text', ''))} characters, shorts allows {limit}"
+        for n, b in enumerate(beats, 1)
+        if len(b.get("On-screen text", "")) > limit
+    ]
+
+
 def owner_fingerprints(text):
     """One fingerprint per Owner block in the note body. The `o` prefix keeps YAML from reading it as a number."""
     body = FRONTMATTER.sub("", text.replace("\r\n", "\n"), count=1)
@@ -670,6 +771,7 @@ RULES = [
     check_draft_topic, check_draft_passes, check_draft_length, check_hashtags,
     check_private_repo_link, check_editor_rounds,
     check_topic_drafts, check_reddit_subreddit, check_reddit_title,
+    check_shorts_title, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,
     check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,
     check_attachment_size, check_alt_text, check_mixed_attachments, check_owner_edits,
 ]
