@@ -18,6 +18,9 @@
 *.mov
 *.webm
 *.mkv
+# ...except the Vault check's test fixtures (a few bytes each)
+!tests/fixtures/**/*.mp4
+!tests/fixtures/**/*.mov
 
 # Python
 __pycache__/

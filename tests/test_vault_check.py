@@ -88,6 +88,11 @@ BROKEN = {
     "shorts-duration-limit": ("Drafts/Queue at the junction - shorts.md", "shorts-duration"),
     "shorts-on-screen-text": ("Drafts/Queue at the junction - shorts.md", "shorts-on-screen-text"),
     "shorts-title": ("Drafts/Queue at the junction - shorts.md", "shorts-title"),
+    "shorts-video": ("Publish packages/Queue at the junction - shorts.md", "shorts-video"),
+    "shorts-package-count": ("Publish packages/Queue at the junction - shorts.md", "attachment-count"),
+    "shorts-package-format": ("Publish packages/Queue at the junction - shorts.md", "attachment-format"),
+    "shorts-package-size": ("Publish packages/Queue at the junction - shorts.md", "attachment-size"),
+    "shorts-package-title": ("Publish packages/Queue at the junction - shorts.md", "shorts-title"),
     "channel-rules-reddit": ("Channel rules/Reddit.md", "channel-rules"),
 }
 

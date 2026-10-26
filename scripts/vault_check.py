@@ -651,6 +651,14 @@ def check_shorts_title(note):
     return [] if len(title) <= limit else [f"title is {len(title)} characters, shorts allows {limit}"]
 
 
+def check_shorts_video(note):
+    """A ready Shorts Publish package carries its video; two or a wrong format are reported by
+    attachment-count and attachment-format."""
+    if not (is_ready_package(note) and shorts_rules(note)) or package_attachments(note):
+        return []
+    return ["shorts package has no video; run /produce <draft> render, then /package again"]
+
+
 # A Video script's beat table: the `## Script` section, one row per beat. A cell splits on `|` unless
 # escaped (`\|`), as Obsidian writes an aliased link inside a table.
 SCRIPT_COLUMNS = ["#", "Footage", "On-screen text", "Narration", "Seconds"]
@@ -771,7 +779,7 @@ RULES = [
     check_draft_topic, check_draft_passes, check_draft_length, check_hashtags,
     check_private_repo_link, check_editor_rounds,
     check_topic_drafts, check_reddit_subreddit, check_reddit_title,
-    check_shorts_title, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,
+    check_shorts_title, check_shorts_video, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,
     check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,
     check_attachment_size, check_alt_text, check_mixed_attachments, check_owner_edits,
 ]
