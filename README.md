@@ -22,7 +22,7 @@ Open this repository in Obsidian as its own Vault (ADR 0001). Its folders:
 
 Topic, Draft and Post notes carry YAML frontmatter (`kind`, `status`, `project`, `language`, plus `rubric` and `channels` on a Topic, `topic` and `channel` on a Draft or Post, `published_url` on a published Post).
 
-A Topic also carries `rank`, `needs_media`, `promotional`, a one-line `reason` once the Owner rejects it, and `previously_parked` (a link to the parked Topic it brings back, or empty); its `rubric` is one of the eleven Rubrics, its `channels` each one of `x`, `reddit`, `linkedin`, and its body has the sections `## Angle`, `## Why now`, `## Source material` and `## Shot list`. A Digest carries `kind: digest`, `project`, `date` and `topics`, the links to its Topic notes, best first (their `rank`s run 1 to N in that order), and `trend_scan`, the link to the Trend scan it built on (at most 14 days older than the Digest).
+A Topic also carries `origin` (`scout`, the default when absent, or `owner`), `rank` (not on an Owner Topic), `needs_media`, `promotional`, a one-line `reason` once the Owner rejects it, and `previously_parked` (a link to the parked Topic it brings back, or empty); its `rubric` is one of the eleven Rubrics, its `channels` each one of `x`, `reddit`, `linkedin`, and its body has the sections `## Angle`, `## Why now`, `## Source material` and `## Shot list`. A Digest carries `kind: digest`, `project`, `date` and `topics`, the links to its Topic notes, best first (their `rank`s run 1 to N in that order), and `trend_scan`, the link to the Trend scan it built on (at most 14 days older than the Digest).
 
 A Trend scan (`Trend scans/<YYYY-MM-DD> Trend scan.md`) carries `kind: trend-scan`, `date` (ISO) and `sources` (URLs).
 
@@ -53,6 +53,10 @@ attachments:
 ```
 
 A Publish package (`Publish packages/<topic title> - <channel>.md`, `kind: post`, `status: ready`) holds the Post text as its body, `draft` (link), for Reddit the Draft's `subreddit` and `title`, `attachments` (the same entries, with alt text) and `missing` (one line per blocker, such as an uncaptured Shot list item). The Vault check checks each `ready` package's Post text like a Draft's (`draft-length`, `hashtags`, `reddit-subreddit`, `reddit-title`) and its Attachments against its Channel rules: file on disk (`attachment-files`), format (`attachment-format`), count per type (`attachment-count`), size (`attachment-size`), alt text on images and GIFs (`alt-text`), and one type per Post when `mixed_attachments: false` (`mixed-attachments`). Published Posts are not checked against disk: video files stay out of git. Once published, the Post sets `status: published`, `published_url` and `published_on` and moves to `Posts/`, the history of published Posts (`post-folder` fails a published Post left in `Publish packages/` or a ready one in `Posts/`).
+
+### Bring your own Topic
+
+To have the Office write a story you already have in mind, copy `docs/templates/Owner Topic.md` to `Topics/<title>.md` and fill it in. It is an Owner Topic: `status: approved` and `origin: owner` from the start, with no Digest and no `rank`. Run `/write` and it is drafted like any approved Topic; the Scout reads it too, so it never proposes the same story.
 
 ## Commands
 

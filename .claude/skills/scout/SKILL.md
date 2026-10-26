@@ -159,7 +159,7 @@ The reading position lives in the Project note's frontmatter: `last_read_commit`
 
 - Never propose a story that a Topic with `status: rejected` covers: the Owner said no, and `reason` says why.
 - Never propose a story already published, already in a Publish package, or listed in `shown_publicly`.
-- Never propose a story that an approved or still proposed Topic covers: it is already on the Owner's desk or being written.
+- Never propose a story that an approved or still proposed Topic covers: it is already on the Owner's desk or being written. Owner Topics (`origin: owner`, written by the Owner by hand, approved from the start) count like your own.
 - A parked Topic may return when it fits this Digest (new Source material, a fitting date). Do not edit the parked note: only the Owner changes a status. Write a new Topic note with a new title and set `previously_parked: "[[<parked Topic title>]]"`. Do not bring a parked story back while a later Topic that brought it back is still proposed or approved.
 
 A story is the same when it makes the same point from the same Source material, whatever its title or Rubric.

@@ -30,7 +30,7 @@ Channels in this version: `x`, `reddit`, `linkedin`. Each approved Topic gets ex
 
 A unit of work is one approved Topic and one Channel:
 
-- the Topic note in `Topics/` has `status: approved` and the Channel in `channels`;
+- the Topic note in `Topics/` has `status: approved` and the Channel in `channels`; an Owner Topic (`origin: owner`, no Digest, no `rank`) is treated exactly like a Scout Topic;
 - `Drafts/<topic title> - <channel>.md` does not exist yet, or still has `status: drafting` (an interrupted run): then resume after the last Pass in its `passes`;
 - or the Draft's Editor loop is unfinished (an interrupted run): it has `status: revising`, or `status: in-review` with no `## Editor review` yet, or `status: in-review` whose last Editor review says `Verdict: revise` while `editor_rounds` is below 2. Resume it at Step 4.
 

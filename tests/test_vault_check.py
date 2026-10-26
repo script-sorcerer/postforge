@@ -32,6 +32,8 @@ BROKEN = {
     "required-fields-topic": ("Topics/No rubric.md", "required-fields"),
     "required-fields-draft": ("Drafts/No topic link.md", "required-fields"),
     "required-fields-post": ("Publish packages/No channel.md", "required-fields"),
+    "required-fields-scout-rank": ("Topics/Scout topic without rank.md", "required-fields"),
+    "topic-origin": ("Topics/Unknown origin.md", "topic-origin"),
     "status-topic": ("Topics/Wrong status.md", "status"),
     "status-draft": ("Drafts/Wrong status.md", "status"),
     "status-post": ("Posts/Wrong status.md", "status"),

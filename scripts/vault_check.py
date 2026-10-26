@@ -61,6 +61,10 @@ RUBRICS = [
 # Channels in iteration 1: a Topic's `channels` may name only these.
 CHANNELS = ["x", "reddit", "linkedin"]
 
+# A Topic's `origin`: the Scout's (the default when absent) or the Owner's own. An Owner Topic is written
+# by hand outside any Digest, so it carries no `rank`.
+ORIGINS = ["scout", "owner"]
+
 # Every Topic note body carries these `## ` sections (the Scout's Topic template).
 TOPIC_SECTIONS = ["Angle", "Why now", "Source material", "Shot list"]
 
@@ -136,7 +140,10 @@ def check_required_fields(note):
     kind = kind_of(note)
     if not kind:
         return []
-    missing = [f for f in REQUIRED_FIELDS[kind] if note["fm"].get(f) in (None, "", [])]
+    required = REQUIRED_FIELDS[kind]
+    if kind == "topic" and note["fm"].get("origin") == "owner":
+        required = [f for f in required if f != "rank"]
+    missing = [f for f in required if note["fm"].get(f) in (None, "", [])]
     return [f"{kind} is missing {', '.join(missing)}"] if missing else []
 
 
@@ -179,6 +186,11 @@ def check_rejection_reason(note):
     if kind_of(note) == "topic" and fm.get("status") == "rejected" and not fm.get("reason"):
         return ["rejected topic has no reason"]
     return []
+
+
+def check_topic_origin(note):
+    origin = note["fm"].get("origin", "scout") if kind_of(note) == "topic" else "scout"
+    return [] if origin in ORIGINS else [f"origin {origin!r} is not one of {', '.join(ORIGINS)}"]
 
 
 def check_topic_channels(note):
@@ -643,7 +655,7 @@ def seal(path):
 
 RULES = [
     check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
-    check_fact_sheet, check_rubric, check_rejection_reason, check_topic_channels, check_topic_sections,
+    check_fact_sheet, check_rubric, check_rejection_reason, check_topic_origin, check_topic_channels, check_topic_sections,
     check_digest_links, check_digest_size, check_digest_ranks, check_digest_rubrics, check_digest_promotional,
     check_trend_scan_date, check_digest_trend_scan,
     check_draft_topic, check_draft_passes, check_draft_length, check_hashtags,
