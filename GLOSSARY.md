@@ -126,6 +126,10 @@ _Avoid_: bundle, export
 A Project's cadence per Channel (how many Posts a week, on which weekdays) and the dates its Publish packages go out on. A Post "goes out" on its `publish_on`; it "is published" when the Owner records the link.
 _Avoid_: calendar, plan, queue
 
+**Phase**:
+One stage of a Project's campaign, listed in order in its Fact sheet: a name, the date it starts (empty until the Owner sets it) and what it makes public. Every Topic names its Phase; none of its Posts goes out before that Phase starts.
+_Avoid_: stage, milestone, wave
+
 **Channel**:
 One place a Post goes out: X, Reddit, LinkedIn, Shorts (one 9:16 video for YouTube Shorts and TikTok) or Article (long-form: dev.to for English, Habr for Russian Adaptations).
 _Avoid_: platform, network

@@ -10,6 +10,7 @@ rank: 1
 needs_media: false
 promotional: false
 attachments: []
+phase: Pre-reveal
 ---
 
 # Unknown origin

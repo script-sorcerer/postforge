@@ -100,7 +100,16 @@ BROKEN = {
     "schedule": ("Schedule/traffic_jam.md", "schedule"),
     "schedule-slot": ("Publish packages/Lane change bug - x.md", "schedule-slot"),
     "schedule-collision": ("Publish packages/Lane change bug again - x.md", "schedule-collision"),
+    "topic-phase": ("Topics/Lane change bug.md", "topic-phase"),
+    "phase-date": ("Publish packages/Lane change bug - x.md", "phase-date"),
+    "phase-date-undated": ("Publish packages/Lane change bug - x.md", "phase-date"),
 }
+
+
+def test_phase_without_a_date_blocks_scheduling_and_says_so():
+    """A Phase with an empty `starts` takes Topics and Drafts (the valid Vault holds one) but no scheduled package."""
+    violations = run_check(FIXTURES / "phase-date-undated")[1]
+    assert "Phase 'Reveal' has no date yet" in violations[0], violations
 
 
 # owner_edits as Obsidian's Properties panel writes it (block list), unindented, or a flow list over two lines.

@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Fact sheet template and the existing Fact sheet carry `phases`; "Not public yet" items start with `[<Phase>]`
-- [ ] Topic and Owner Topic template carry `phase`; `topic-phase` and `phase-date` have fixture Vaults; the valid fixture passes with Phases
-- [ ] Scout prompt: current and next Phase only, reveal Topic rule, Source material checked against Phase order
-- [ ] A package for a Topic in a Phase with empty `starts` fails `phase-date` with a message that says the Phase has no date
-- [ ] Glossary entry "Phase"; README documents Phases
+- [x] Fact sheet template and the existing Fact sheet carry `phases`; "Not public yet" items start with `[<Phase>]`
+- [x] Topic and Owner Topic template carry `phase`; `topic-phase` and `phase-date` have fixture Vaults; the valid fixture passes with Phases
+- [x] Scout prompt: current and next Phase only, reveal Topic rule, Source material checked against Phase order
+- [x] A package for a Topic in a Phase with empty `starts` fails `phase-date` with a message that says the Phase has no date
+- [x] Glossary entry "Phase"; README documents Phases

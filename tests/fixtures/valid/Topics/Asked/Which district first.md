@@ -8,6 +8,7 @@ channels: [x, reddit]
 language: en
 needs_media: false
 promotional: false
+phase: Reveal  # no date yet: Topics and Drafts are written ahead, not scheduled
 ---
 
 # Which district first

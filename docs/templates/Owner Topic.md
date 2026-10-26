@@ -8,6 +8,7 @@ channels: [x, reddit, linkedin]  # any of x, reddit, linkedin, shorts
 language: en
 needs_media: true        # false when the Post can ship with no image or video
 promotional: false
+phase: Pre-reveal        # one Phase name from the Fact sheet's phases; a Phase with no starts date is drafted, not scheduled
 attachments: []
 ---
 

@@ -8,6 +8,7 @@ channels: [x, reddit]
 language: en
 needs_media: false
 promotional: true
+phase: Pre-reveal
 ---
 
 # Ten thousand cars

@@ -8,6 +8,7 @@ channels: [x, reddit]
 language: en
 needs_media: false
 promotional: false
+phase: Pre-reveal
 ---
 
 # Topic 4

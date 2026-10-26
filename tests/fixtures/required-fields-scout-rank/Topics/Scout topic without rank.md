@@ -9,6 +9,7 @@ language: en
 needs_media: false
 promotional: false
 attachments: []
+phase: Pre-reveal
 ---
 
 # Scout topic without rank

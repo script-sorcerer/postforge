@@ -9,6 +9,7 @@ language: en
 needs_media: true
 promotional: false
 attachments: []
+phase: Pre-reveal
 ---
 
 # Queue at the junction

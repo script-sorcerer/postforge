@@ -8,6 +8,7 @@ channels: [x, mastodon]
 language: en
 needs_media: false
 promotional: false
+phase: Pre-reveal
 ---
 
 # Unknown channel

@@ -39,7 +39,7 @@ WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", 
 
 # kind -> fields every note of that kind must fill.
 REQUIRED_FIELDS = {
-    "topic": ["kind", "status", "project", "rubric", "channels", "language", "rank", "needs_media", "promotional"],
+    "topic": ["kind", "status", "project", "rubric", "channels", "language", "rank", "needs_media", "promotional", "phase"],
     "draft": ["kind", "status", "project", "topic", "channel", "language"],
     "post": ["kind", "status", "project", "topic", "channel", "language"],
     "fact-sheet": ["kind", "status", "project"],  # one per Project, approved only by the Owner
@@ -102,6 +102,7 @@ REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github
 # frontmatter of each valid Channel rules note by `channel`.
 VAULT_NOTES = {}
 CHANNEL_RULES = {}
+FACT_SHEETS = {}  # filled by check_vault: Project name -> {Phase name: its `starts` date or None}
 SCHEDULES = {}  # filled by check_vault: Project name -> {channel: {per_week, weekdays}}
 VAULT_ROOT = []  # filled by check_vault: Attachment paths are relative to it
 
@@ -179,7 +180,44 @@ def check_fact_sheet(note):
         messages.append("public_name is missing or not text (leave it empty until the name is public)")
     if not isinstance(fm.get("shown_publicly", 0), (list, type(None))):
         messages.append("shown_publicly is missing or not a list")
+    phases = fm.get("phases")
+    if not (isinstance(phases, list) and phases):
+        return messages + ["phases must list the campaign Phases in order, each with name, starts and makes_public"]
+    names = []
+    for n, phase in enumerate(phases, 1):
+        phase = phase if isinstance(phase, dict) else {}
+        name, starts = phase.get("name"), phase.get("starts")
+        if not (isinstance(name, str) and name.strip()):
+            messages.append(f"phase {n} has no name")
+        elif name in names:
+            messages.append(f"phase {name!r} is listed twice")
+        names.append(name)
+        if starts not in (None, "") and not as_date(starts):
+            messages.append(f"phase {n} starts {starts!r} is not an ISO date (YYYY-MM-DD) or empty")
+        if not isinstance(phase.get("makes_public"), str):
+            messages.append(f"phase {n} makes_public is missing or not text")
     return messages
+
+
+def fact_sheet_phases(note):
+    """{Phase name: `starts` date or None} of a Fact sheet whose `phases` are well formed, else None."""
+    if kind_of(note) != "fact-sheet" or not isinstance(note["fm"].get("project"), str) or check_fact_sheet(note):
+        return None
+    return {p["name"]: as_date(p["starts"]) if p.get("starts") not in (None, "") else None for p in note["fm"]["phases"]}
+
+
+def topic_phases(fm):
+    """The Phases of the Project a note names, or None when the Project has no well-formed Fact sheet."""
+    return FACT_SHEETS.get(link_name(fm["project"])) if isinstance(fm.get("project"), str) else None
+
+
+def check_topic_phase(note):
+    fm = note["fm"]
+    phase = fm.get("phase") if kind_of(note) == "topic" else None
+    phases = topic_phases(fm) if phase not in (None, "") else None
+    if phases is None or phase in phases:
+        return []  # a missing phase is reported by required-fields; without a Fact sheet there is nothing to check
+    return [f"phase {phase!r} is not one of the Fact sheet's Phases: {', '.join(phases)}"]
 
 
 def check_rubric(note):
@@ -511,6 +549,20 @@ def check_schedule_collision(note):
         return []
     earlier = sorted(n["path"] for n in VAULT_NOTES.values() if package_slot(n) == slot and n["path"] < note["path"])
     return [f"publish_on {slot[2]} is already taken by {earlier[0].relative_to(VAULT_ROOT[0])}"] if earlier else []
+
+
+def check_phase_date(note):
+    """A ready package goes out on or after its Topic's Phase starts; a Phase with no date blocks scheduling."""
+    slot = package_slot(note)
+    topic = linked_note("Topics", note["fm"].get("topic") or "") if slot else None
+    phase = topic["fm"].get("phase") if topic and kind_of(topic) == "topic" else None
+    phases = topic_phases(topic["fm"]) if phase else None
+    if not phases or phase not in phases:
+        return []  # a missing or unknown phase is reported on the Topic
+    starts = phases[phase]
+    if starts is None:
+        return [f"Phase {phase!r} has no date yet (its starts is empty); leave this package unscheduled until the Owner dates the Phase"]
+    return [f"publish_on {slot[2]} is before Phase {phase!r} starts on {starts}"] if slot[2] < starts else []
 
 
 def check_schedule_gap(note):
@@ -896,14 +948,14 @@ def seal(path):
 
 RULES = [
     check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
-    check_fact_sheet, check_rubric, check_rejection_reason, check_topic_origin, check_topic_channels, check_topic_sections,
+    check_fact_sheet, check_rubric, check_rejection_reason, check_topic_origin, check_topic_channels, check_topic_sections, check_topic_phase,
     check_digest_links, check_digest_size, check_digest_ranks, check_digest_rubrics, check_digest_promotional,
     check_trend_scan_date, check_digest_trend_scan,
     check_draft_topic, check_draft_passes, check_draft_length, check_hashtags,
     check_private_repo_link, check_editor_rounds,
     check_topic_drafts, check_reddit_subreddit, check_reddit_title,
     check_shorts_title, check_shorts_video, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,
-    check_publish_on, check_schedule_slot, check_schedule_collision, check_schedule_gap,
+    check_publish_on, check_schedule_slot, check_schedule_collision, check_phase_date, check_schedule_gap,
     check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,
     check_attachment_size, check_alt_text, check_mixed_attachments, check_owner_edits,
 ]
@@ -923,6 +975,8 @@ def check_vault(vault):
     notes = [read_note(p) for p in paths]
     VAULT_NOTES.clear()
     VAULT_NOTES.update({(n["path"].relative_to(vault).parts[0], n["path"].stem): n for n in notes})
+    FACT_SHEETS.clear()
+    FACT_SHEETS.update({link_name(n["fm"]["project"]): fact_sheet_phases(n) for n in notes if fact_sheet_phases(n)})
     violations, warnings = [], []
     for note in notes:
         for rule in RULES:

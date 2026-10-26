@@ -4,6 +4,7 @@ status: proposed
 project: "[[traffic_jam]]"
 channels: [x]
 language: en
+phase: Pre-reveal
 ---
 
 ## Angle

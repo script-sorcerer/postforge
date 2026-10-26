@@ -18,6 +18,16 @@ sources:                 # repository-relative paths you drew on
   - Docs/adr/0016-level-number-derives-the-generated-level.md
   - Docs/adr/0017-roads-are-a-subgraph-of-the-lattice.md
   - Docs/adr/0018-rounded-bends-in-the-road-renderer.md
+phases:                  # the campaign in order; starts is an ISO date, or empty until the Owner sets it
+  - name: Pre-reveal
+    starts: 2026-10-27
+    makes_public: "The core loop and devlog of 'my traffic puzzle game', without its name, store page or dates"
+  - name: Reveal
+    starts:
+    makes_public: "The public name, the store page and the pre-registration link"
+  - name: Launch
+    starts:
+    makes_public: "Release date, price, platforms, game modes beyond the Day level, the daily challenge, the campaign's scale"
 ---
 
 # traffic_jam: Fact sheet
@@ -56,12 +66,13 @@ What makes it different: control by officer poses instead of traffic lights, and
 - Not built yet: event status text in the in-play HUD, rewards, final art.
 
 ## Not public yet
-- The working name "traffic_jam" / "Traffic Jam". Until `public_name` is set, say "my traffic puzzle game".
-- Planned game modes beyond the ordinary Day level: Evacuation (residents leave within a time limit) and Official visit (an escort between an Airport and City Hall), and the Shelter, CityHall and Airport district kinds made for them.
-- The daily challenge (the same generated city for every player on a date).
-- Campaign scale and difficulty curve: the plan for 1,000 to 10,000 generated levels and its formula.
-- Release dates, store plans, prices, and whether Android ships at launch.
-- Internal tools: developer console commands, the Gameplay Debugger, the repository, its issues and pull requests.
+- [Reveal] The working name "traffic_jam" / "Traffic Jam". Until `public_name` is set, say "my traffic puzzle game".
+- [Reveal] Store plans and the pre-registration.
+- [Launch] Planned game modes beyond the ordinary Day level: Evacuation (residents leave within a time limit) and Official visit (an escort between an Airport and City Hall), and the Shelter, CityHall and Airport district kinds made for them.
+- [Launch] The daily challenge (the same generated city for every player on a date).
+- [Launch] Campaign scale and difficulty curve: the plan for 1,000 to 10,000 generated levels and its formula.
+- [Launch] Release dates, prices, and whether Android ships at launch.
+- [never] Internal tools: developer console commands, the Gameplay Debugger, the repository, its issues and pull requests.
 
 ## Open questions for the Owner
 1. Which of the core loop may be shown before an announcement: officer poses, generated cities, dissatisfaction, the concert, accidents with police and ambulance?
@@ -72,3 +83,4 @@ What makes it different: control by officer poses instead of traffic lights, and
 6. Docs/ScenarioDesign.md says rewards are deferred. Is there a star or score system to mention?
 7. May the AI-agent workflow be named in posts, and which tools (the repository holds instructions for several)?
 8. The game is landscape only. For Shorts (9:16), should footage be a crop of landscape captures, or a portrait capture window?
+9. Are the Phases right (Pre-reveal from 2026-10-27, Reveal, Launch), and does each "Not public yet" item sit in the Phase that lifts it? Set Reveal's `starts` once the name and store page have a date.

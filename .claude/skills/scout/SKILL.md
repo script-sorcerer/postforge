@@ -54,6 +54,13 @@ public_name: ""          # the game's public name; empty until the Owner announc
 shown_publicly: []       # one item per thing already shown in public: "<date> <channel>: <what>"
 sources:                 # repository-relative paths you drew on
   - CONTEXT.md
+phases:                  # the campaign in order; starts is an ISO date, or empty until the Owner sets it
+  - name: Pre-reveal
+    starts: <today>
+    makes_public: "The core loop, without the name, store page or dates"
+  - name: Reveal
+    starts:
+    makes_public: "The public name, the store page and the pre-registration link"
 ---
 
 # <project>: Fact sheet
@@ -71,7 +78,9 @@ Mechanics, systems and terms a post may mention, each true per the sources. Use 
 Stage of development and what works today.
 
 ## Not public yet
-What exists in the sources but must not be shown before it is announced (unannounced mechanics, the working name while public_name is empty).
+What exists in the sources but must not be shown before it is announced (unannounced mechanics, the working name while public_name is empty). One item per line, each starting with the Phase that lifts it in brackets, or `[never]` for what stays private:
+- [Reveal] The working name "<working name>".
+- [never] The repository, its issues and pull requests.
 
 ## Open questions for the Owner
 Anything the sources leave unclear or contradict.
@@ -82,13 +91,15 @@ Rules for the Fact sheet:
 - Every claim rests on a source you read. If unsure, put it under Open questions, not under facts.
 - Leave `public_name` empty unless the sources show the name is already public. While it is empty, the Office says "my traffic puzzle game" (or the Project's equivalent), never the working name.
 - Leave `shown_publicly` empty: the repository cannot tell what the Owner has posted. Ask the Owner instead.
+- Propose `phases` (a name, `starts` and `makes_public` each, in campaign order): at least the Phase running now, dated today, and the reveal Phase with an empty `starts`. Only the Owner dates a later Phase. The Vault check fails a Topic whose `phase` the list does not hold (`topic-phase`) and a Publish package dated before its Topic's Phase starts, or in a Phase with no date (`phase-date`).
 
 Then run `scripts/vault_check.py` and fix any violation in the Fact sheet. Stop and ask the Owner to:
 
 1. read `Fact sheets/<project>.md` and correct anything wrong;
 2. fill `public_name` if the game already has a public name;
 3. list in `shown_publicly` what they have already shown in public;
-4. set `status: approved`, then run `/scout` again.
+4. correct `phases` and the Phase tag of each "Not public yet" item;
+5. set `status: approved`, then run `/scout` again.
 
 End the run there.
 
@@ -171,7 +182,13 @@ Pick 5 to 8 Topics, ranked by strength (1 is the strongest). Rules the Vault che
 - promotional Topics (those that ask for a follow, a pre-registration or a wishlist, or mainly sell the game) at most a third of the Digest;
 - every Rubric is one of exactly: Devlog, Design decision, Gameplay moment, Building with AI agents, Ask the audience, How-to, Humor / Meme, Bug of the week, Before / After, By the numbers, Player challenge. Spread Topics across them.
 
-Every Topic must agree with the Fact sheet and keep out what it lists under "Not public yet". Channels: `x`, `reddit`, `linkedin`, `shorts` (one 9:16 video for YouTube Shorts and TikTok; list it only when the Shot list names footage that shows the story in under 60 seconds).
+**Phases.** Read the Fact sheet's `phases`. The current Phase is the last one whose `starts` is on or before today; the next Phase is the one after it. Give every Topic a `phase`:
+
+- Propose Topics for the current Phase and the next one only, never for a later Phase. Spread the Digest across both, so the next Phase's Posts are written before it starts. A Topic of a Phase with an empty `starts` may be written and drafted now; it is packaged once the Owner dates the Phase.
+- **Reveal Topic.** When the next Phase has a `starts` date and no note in `Topics/` (any status) names it in `phase`, propose its reveal Topic: the public name, the store page and the pre-registration link, `promotional: true`, `phase` set to that Phase.
+- **Check Source material against the Phases.** For each Topic, read every Source material line against the "Not public yet" list. A Topic may draw on an item only when the item's bracketed Phase is the Topic's own `phase` or an earlier one in the `phases` order; `[never]` items never. Move a Topic to the Phase that lifts all it shows, or drop the Topic.
+
+Every Topic must agree with the Fact sheet and keep out what it lists under "Not public yet" for its Phase. Channels: `x`, `reddit`, `linkedin`, `shorts` (one 9:16 video for YouTube Shorts and TikTok; list it only when the Shot list names footage that shows the story in under 60 seconds).
 
 Write one note per Topic, `Topics/<title>.md` (the title must be a valid file name and unique in `Topics/`):
 
@@ -186,6 +203,7 @@ channels: [x, reddit, linkedin]
 language: en
 needs_media: true        # false when the Post can ship with no image or video
 promotional: false
+phase: Pre-reveal        # one Phase name from the Fact sheet's phases: the current one or the next
 reason: ""               # the Owner's one-line reason when they reject the Topic
 previously_parked: ""    # "[[<parked Topic title>]]" when this Topic brings a parked one back
 attachments: []

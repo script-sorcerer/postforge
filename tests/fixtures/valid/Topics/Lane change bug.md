@@ -9,6 +9,7 @@ language: en
 needs_media: false
 promotional: false
 reason: "Too small for a post"
+phase: Pre-reveal
 ---
 
 # Lane change bug
