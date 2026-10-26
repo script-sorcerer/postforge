@@ -58,8 +58,8 @@ RUBRICS = [
     "Before / After", "By the numbers", "Player challenge",
 ]
 
-# Channels in iteration 1: a Topic's `channels` may name only these.
-CHANNELS = ["x", "reddit", "linkedin"]
+# A Topic's `channels` may name only these. `shorts` is one 9:16 video for YouTube Shorts and TikTok.
+CHANNELS = ["x", "reddit", "linkedin", "shorts"]
 
 # A Topic's `origin`: the Scout's (the default when absent) or the Owner's own. An Owner Topic is written
 # by hand outside any Digest, so it carries no `rank`.
@@ -363,6 +363,15 @@ def check_channel_rules(note):
             problems.append("subreddits must be a non-empty list")
         if not isinstance(text, dict) or not is_count(text.get("max_title_length")):
             problems.append("text.max_title_length must be a positive integer")
+    if fm.get("channel") == "shorts":
+        video = attachments.get("video") if isinstance(attachments, dict) else None
+        if not isinstance(text, dict) or not is_count(text.get("max_title_length")):
+            problems.append("text.max_title_length must be a positive integer")
+        if not isinstance(video, dict) or not is_count(video.get("max_seconds")):
+            problems.append("attachments.video.max_seconds must be a positive integer")
+        on_screen = fm.get("on_screen_text")
+        if not isinstance(on_screen, dict) or not is_count(on_screen.get("max_chars_per_beat")):
+            problems.append("on_screen_text.max_chars_per_beat must be a positive integer")
     return problems
 
 

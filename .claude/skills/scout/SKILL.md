@@ -170,7 +170,7 @@ Pick 5 to 8 Topics, ranked by strength (1 is the strongest). Rules the Vault che
 - promotional Topics (those that ask for a follow, a pre-registration or a wishlist, or mainly sell the game) at most a third of the Digest;
 - every Rubric is one of exactly: Devlog, Design decision, Gameplay moment, Building with AI agents, Ask the audience, How-to, Humor / Meme, Bug of the week, Before / After, By the numbers, Player challenge. Spread Topics across them.
 
-Every Topic must agree with the Fact sheet and keep out what it lists under "Not public yet". Channels in iteration 1: `x`, `reddit`, `linkedin`.
+Every Topic must agree with the Fact sheet and keep out what it lists under "Not public yet". Channels: `x`, `reddit`, `linkedin`, `shorts` (one 9:16 video for YouTube Shorts and TikTok; list it only when the Shot list names footage that shows the story in under 60 seconds).
 
 Write one note per Topic, `Topics/<title>.md` (the title must be a valid file name and unique in `Topics/`):
 

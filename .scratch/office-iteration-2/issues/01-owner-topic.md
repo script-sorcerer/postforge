@@ -15,4 +15,4 @@
 
 ## Comments
 
-- 2026-10-26: Resolved in commit HASH01. Rank is required only when `origin` is not `owner`; new rule `topic-origin`; fixtures `valid/Topics/Rush hour in one tap.md`, `required-fields-scout-rank`, `topic-origin`. `/write` needed only one prompt line: its work selection already reads every approved Topic. Not checked end to end with a real `/write` run (ticket 09).
+- 2026-10-26: Resolved in commit 343100a. Rank is required only when `origin` is not `owner`; new rule `topic-origin`; fixtures `valid/Topics/Rush hour in one tap.md`, `required-fields-scout-rank`, `topic-origin`. `/write` needed only one prompt line: its work selection already reads every approved Topic. Not checked end to end with a real `/write` run (ticket 09).

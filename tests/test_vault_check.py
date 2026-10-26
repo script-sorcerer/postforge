@@ -79,6 +79,7 @@ BROKEN = {
     "hashtags": ("Drafts/Two hashtags.md", "hashtags"),
     "draft-length-package": ("Publish packages/Too long.md", "draft-length"),
     "reddit-title-package": ("Publish packages/Road capacity explained - reddit.md", "reddit-title"),
+    "channel-rules-shorts": ("Channel rules/Shorts.md", "channel-rules"),
     "channel-rules-reddit": ("Channel rules/Reddit.md", "channel-rules"),
 }
 

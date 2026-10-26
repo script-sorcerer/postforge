@@ -4,7 +4,7 @@ status: approved         # an Owner Topic is approved the moment the Owner write
 origin: owner            # no Digest and no rank; every Role after the Scout treats it like a Scout Topic
 project: "[[traffic_jam]]"
 rubric: Gameplay moment  # one of the eleven Rubrics in README.md
-channels: [x, reddit, linkedin]
+channels: [x, reddit, linkedin]  # any of x, reddit, linkedin, shorts
 language: en
 needs_media: true        # false when the Post can ship with no image or video
 promotional: false

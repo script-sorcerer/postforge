@@ -11,7 +11,7 @@ Open this repository in Obsidian as its own Vault (ADR 0001). Its folders:
 | `Projects/` | Project config, one note per Project (`traffic_jam.md`) |
 | `Fact sheets/` | One Fact sheet per Project |
 | `Voice guide/` | The Voice guide |
-| `Channel rules/` | One note per Channel |
+| `Channel rules/` | One note per Channel: `X.md`, `Reddit.md`, `LinkedIn.md`, `Shorts.md` (one 9:16 video for YouTube Shorts and TikTok) |
 | `Trend scans/` | Dated Trend scans |
 | `Digests/`, `Topics/` | Digests and their Topic notes |
 | `Drafts/` | One Draft per Channel per approved Topic |
@@ -22,7 +22,7 @@ Open this repository in Obsidian as its own Vault (ADR 0001). Its folders:
 
 Topic, Draft and Post notes carry YAML frontmatter (`kind`, `status`, `project`, `language`, plus `rubric` and `channels` on a Topic, `topic` and `channel` on a Draft or Post, `published_url` on a published Post).
 
-A Topic also carries `origin` (`scout`, the default when absent, or `owner`), `rank` (not on an Owner Topic), `needs_media`, `promotional`, a one-line `reason` once the Owner rejects it, and `previously_parked` (a link to the parked Topic it brings back, or empty); its `rubric` is one of the eleven Rubrics, its `channels` each one of `x`, `reddit`, `linkedin`, and its body has the sections `## Angle`, `## Why now`, `## Source material` and `## Shot list`. A Digest carries `kind: digest`, `project`, `date` and `topics`, the links to its Topic notes, best first (their `rank`s run 1 to N in that order), and `trend_scan`, the link to the Trend scan it built on (at most 14 days older than the Digest).
+A Topic also carries `origin` (`scout`, the default when absent, or `owner`), `rank` (not on an Owner Topic), `needs_media`, `promotional`, a one-line `reason` once the Owner rejects it, and `previously_parked` (a link to the parked Topic it brings back, or empty); its `rubric` is one of the eleven Rubrics, its `channels` each one of `x`, `reddit`, `linkedin`, `shorts`, and its body has the sections `## Angle`, `## Why now`, `## Source material` and `## Shot list`. A Digest carries `kind: digest`, `project`, `date` and `topics`, the links to its Topic notes, best first (their `rank`s run 1 to N in that order), and `trend_scan`, the link to the Trend scan it built on (at most 14 days older than the Digest).
 
 A Trend scan (`Trend scans/<YYYY-MM-DD> Trend scan.md`) carries `kind: trend-scan`, `date` (ISO) and `sources` (URLs).
 
@@ -42,7 +42,7 @@ An Owner edit is text between `%% owner %%` and `%% /owner %%` in a Draft (Obsid
 2. Run `scripts/vault_check.py --seal "Drafts/<name>.md"`; it records each block's fingerprint in `owner_edits`.
 3. Edit a block again later? Seal again. The Vault check fails a Draft whose blocks no longer match `owner_edits` (`owner-edits`), so a Role's change to your words shows up.
 
-Each Channel rules note carries the Channel's limits in frontmatter (`channel`, `text.max_length`, `attachments.<type>` with `max_count`, `formats` and `max_size_mb`, `hashtags.max`; for Reddit also `subreddits` and `text.max_title_length`); the Vault check reads limits from there and reports a note missing any of them under `channel-rules`.
+Each Channel rules note carries the Channel's limits in frontmatter (`channel`, `text.max_length`, `attachments.<type>` with `max_count`, `formats` and `max_size_mb`, `hashtags.max`; for Reddit also `subreddits` and `text.max_title_length`; for Shorts also `text.max_title_length`, `attachments.video.max_seconds` and `on_screen_text.max_chars_per_beat`); the Vault check reads limits from there and reports a note missing any of them under `channel-rules`.
 
 **Attachments.** Put captured files in `Attachments/` and list them, in upload order, in the Topic's `attachments` (or the Draft's, once it exists; the Draft's list wins when not empty), one entry each:
 
