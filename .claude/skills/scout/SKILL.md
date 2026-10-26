@@ -58,7 +58,7 @@ public_links:            # each empty until public; the Packager fills pinned co
   landing: ""            # the game's landing page
 sources:                 # repository-relative paths you drew on
   - CONTEXT.md
-phases:                  # the campaign in order; starts is an ISO date, or empty until the Owner sets it
+phases:                  # the Phases in order; starts is an ISO date, or empty until the Owner sets it
   - name: Pre-reveal
     starts: <today>
     makes_public: "The core loop, without the name, store page or dates"
@@ -96,7 +96,7 @@ Rules for the Fact sheet:
 - Leave `public_name` empty unless the sources show the name is already public. While it is empty, the Office says "my traffic puzzle game" (or the Project's equivalent), never the working name.
 - Leave `shown_publicly` empty: the repository cannot tell what the Owner has posted. Ask the Owner instead.
 - Leave `public_links` empty unless the sources show a public store page, pre-registration or landing page. Never put the repository there.
-- Propose `phases` (a name, `starts` and `makes_public` each, in campaign order): at least the Phase running now, dated today, and the reveal Phase with an empty `starts`. Only the Owner dates a later Phase. The Vault check fails a Topic whose `phase` the list does not hold (`topic-phase`) and a Publish package dated before its Topic's Phase starts, or in a Phase with no date (`phase-date`).
+- Propose `phases` (a name, `starts` and `makes_public` each, in order): at least the Phase running now, dated today, and the reveal Phase with an empty `starts`. Only the Owner dates a later Phase. The Vault check fails a Topic whose `phase` the list does not hold (`topic-phase`) and a Publish package dated before its Topic's Phase starts, or in a Phase with no date (`phase-date`).
 
 Then run `scripts/vault_check.py` and fix any violation in the Fact sheet. Stop and ask the Owner to:
 
