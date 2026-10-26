@@ -130,6 +130,10 @@ _Avoid_: calendar, plan, queue
 One stage of a Project's campaign, listed in order in its Fact sheet: a name, the date it starts (empty until the Owner sets it) and what it makes public. Every Topic names its Phase; none of its Posts goes out before that Phase starts.
 _Avoid_: stage, milestone, wave
 
+**Destination**:
+Where a Channel sends a viewer after a Post: the pinned comment, the profile link or the description. Its Channel rules note holds the template, filled from the Fact sheet's public links, and the fallback text used while a link is empty. The Packager writes it as the package's `pinned_comment`; the Post text itself never asks for anything.
+_Avoid_: call to action, CTA, link in bio
+
 **Channel**:
 One place a Post goes out: X, Reddit, LinkedIn, Shorts (one 9:16 video for YouTube Shorts and TikTok) or Article (long-form: dev.to for English, Habr for Russian Adaptations).
 _Avoid_: platform, network

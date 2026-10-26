@@ -12,6 +12,10 @@ attachments:  # one Post holds ONE Attachment type: up to 4 images, or 1 GIF, or
   video: {max_count: 1, formats: [mp4, mov], max_size_mb: 512}
 hashtags:
   max: 1  # house rule, not a platform limit
+destination:  # my own first reply under the Post: X shows Posts with links less
+  kind: pinned_comment
+  template: "Pre-register: {pre_registration} | Store page: {store}"
+  fallback: "More clips of this traffic puzzle game on my profile."
 ---
 
 # Channel rules: X

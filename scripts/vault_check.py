@@ -75,6 +75,12 @@ ORIGINS = ["scout", "owner"]
 # Every Topic note body carries these `## ` sections (the Scout's Topic template).
 TOPIC_SECTIONS = ["Angle", "Why now", "Source material", "Shot list"]
 
+# A Channel rules note's `destination`: where a Post sends a viewer, and its template's `{placeholders}`,
+# the keys of the Fact sheet's `public_links`.
+DESTINATION_KINDS = ["pinned_comment", "profile_link", "description"]
+PUBLIC_LINKS = ["store", "pre_registration", "landing"]
+PLACEHOLDER = re.compile(r"\{(\w*)\}")
+
 # A Digest's `trend_scan` may be at most this many days older than the Digest.
 TREND_SCAN_MAX_AGE_DAYS = 14
 
@@ -180,6 +186,9 @@ def check_fact_sheet(note):
         messages.append("public_name is missing or not text (leave it empty until the name is public)")
     if not isinstance(fm.get("shown_publicly", 0), (list, type(None))):
         messages.append("shown_publicly is missing or not a list")
+    links = fm.get("public_links", {})
+    if not (isinstance(links, dict) and all(isinstance(links.get(k, ""), (str, type(None))) for k in PUBLIC_LINKS)):
+        messages.append(f"public_links must map {', '.join(PUBLIC_LINKS)} to a link, or leave it empty until public")
     phases = fm.get("phases")
     if not (isinstance(phases, list) and phases):
         return messages + ["phases must list the campaign Phases in order, each with name, starts and makes_public"]
@@ -418,6 +427,17 @@ def check_channel_rules(note):
         on_screen = fm.get("on_screen_text")
         if not isinstance(on_screen, dict) or not is_count(on_screen.get("max_chars_per_beat")):
             problems.append("on_screen_text.max_chars_per_beat must be a positive integer")
+    if "destination" in fm:  # optional: a Channel without one needs no pinned_comment
+        dest = fm["destination"] if isinstance(fm["destination"], dict) else {}
+        template = dest.get("template")
+        if dest.get("kind") not in DESTINATION_KINDS:
+            problems.append(f"destination.kind must be one of {', '.join(DESTINATION_KINDS)}")
+        if not (isinstance(template, str) and template.strip()):
+            problems.append("destination.template must be text")
+        elif unknown := sorted(set(PLACEHOLDER.findall(template)) - set(PUBLIC_LINKS)):
+            problems.append(f"destination.template placeholders {unknown} are not among {', '.join(PUBLIC_LINKS)}")
+        if not (isinstance(dest.get("fallback"), str) and dest["fallback"].strip()):
+            problems.append("destination.fallback must be text (used while a public link is empty)")
     return problems
 
 
@@ -615,6 +635,17 @@ def check_draft_length(note):
 
 # A hashtag starts a word and holds a letter first: not a URL fragment (page#top) or a number (issue #91).
 HASHTAG = re.compile(r"(?<!\S)#[^\W\d_]\w*")
+
+
+def check_pinned_comment(note):
+    """A ready Publish package on a Channel with a `destination` carries the text the Owner pastes after publishing."""
+    rules = text_rules(note) if is_ready_package(note) else None
+    if not (rules and "destination" in rules):
+        return []
+    comment = note["fm"].get("pinned_comment")
+    if isinstance(comment, str) and comment.strip():
+        return []
+    return [f"ready package has no pinned_comment ({rules['channel']} destination: {rules['destination']['kind']}); run /package again"]
 
 
 def check_hashtags(note):
@@ -951,7 +982,7 @@ RULES = [
     check_fact_sheet, check_rubric, check_rejection_reason, check_topic_origin, check_topic_channels, check_topic_sections, check_topic_phase,
     check_digest_links, check_digest_size, check_digest_ranks, check_digest_rubrics, check_digest_promotional,
     check_trend_scan_date, check_digest_trend_scan,
-    check_draft_topic, check_draft_passes, check_draft_length, check_hashtags,
+    check_draft_topic, check_draft_passes, check_draft_length, check_hashtags, check_pinned_comment,
     check_private_repo_link, check_editor_rounds,
     check_topic_drafts, check_reddit_subreddit, check_reddit_title,
     check_shorts_title, check_shorts_video, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,

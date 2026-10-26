@@ -12,6 +12,10 @@ attachments:  # one Post holds ONE Attachment type: images, or 1 video, or 1 doc
   document: {max_count: 1, formats: [pdf], max_size_mb: 100}
 hashtags:
   max: 3  # house rule, not a platform limit
+destination:  # the first comment: links in the body cost reach
+  kind: pinned_comment
+  template: "More about the game: {landing}"
+  fallback: "More devlog posts on my profile."
 ---
 
 # Channel rules: LinkedIn

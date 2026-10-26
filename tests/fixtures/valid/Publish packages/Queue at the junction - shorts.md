@@ -7,6 +7,7 @@ topic: "[[Queue at the junction]]"
 draft: "[[Queue at the junction - shorts]]"
 channel: shorts
 language: en
+pinned_comment: "more clips on this channel"
 title: "One number made my traffic queue"
 attachments:
   - file: "[[Attachments/Queue at the junction - shorts.mp4]]"

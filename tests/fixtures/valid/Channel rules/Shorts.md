@@ -13,6 +13,10 @@ on_screen_text:
   max_chars_per_beat: 42  # house rule: one short line readable at phone size
 hashtags:
   max: 3  # house rule, not a platform limit
+destination:
+  kind: pinned_comment
+  template: "Store page: {store}"
+  fallback: "more clips on this channel"
 ---
 
 # Channel rules: Shorts

@@ -4,6 +4,10 @@ status: proposed
 project: "[[traffic_jam]]"
 public_name: ""          # the game's public name; empty until the Owner announces one
 shown_publicly: []       # one item per thing already shown in public: "<date> <channel>: <what>"
+public_links:            # each empty until public; the Packager fills pinned comments from them
+  store: ""              # the store page
+  pre_registration: ""   # the pre-registration page
+  landing: ""            # the game's landing page
 sources:                 # repository-relative paths you drew on
   - CONTEXT.md
   - AGENTS.md

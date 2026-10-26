@@ -14,6 +14,10 @@ attachments:  # one Post holds ONE Attachment type: an image gallery, or 1 GIF, 
 hashtags:
   max: 0  # Reddit has no hashtags; they read as spam
 subreddits: [IndieDev, indiegames, gamedev, unrealengine, MobileGaming, AndroidGaming, iosgaming]
+destination:  # no link in the post: many subreddits ban self-promotion; my Reddit profile carries it
+  kind: profile_link
+  template: "More about the game: {landing}"
+  fallback: "Devlog of a mobile traffic puzzle game; more posts on my profile."
 ---
 
 # Channel rules: Reddit

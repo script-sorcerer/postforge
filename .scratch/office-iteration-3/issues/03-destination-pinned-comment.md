@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] All four Channel rules notes carry a `destination` with template and fallback; `channel-rules` reports a malformed one
-- [ ] Fact sheet carries `public_links`
-- [ ] `/package` writes `pinned_comment`; with empty links it uses the fallback and says so to the Owner
-- [ ] `pinned-comment` fixture Vault; a pinned comment linking the private repository fails `private-repo-link` (fixture)
-- [ ] Glossary entry "Destination"; README documents the field and where the Owner pastes it
+- [x] All four Channel rules notes carry a `destination` with template and fallback; `channel-rules` reports a malformed one
+- [x] Fact sheet carries `public_links`
+- [x] `/package` writes `pinned_comment`; with empty links it uses the fallback and says so to the Owner
+- [x] `pinned-comment` fixture Vault; a pinned comment linking the private repository fails `private-repo-link` (fixture)
+- [x] Glossary entry "Destination"; README documents the field and where the Owner pastes it

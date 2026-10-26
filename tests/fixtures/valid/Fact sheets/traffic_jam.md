@@ -4,6 +4,7 @@ status: approved
 project: "[[traffic_jam]]"
 public_name: ""
 shown_publicly: []
+public_links: {store: "", pre_registration: "", landing: ""}
 phases:
   - name: Pre-reveal
     starts: 2026-10-01

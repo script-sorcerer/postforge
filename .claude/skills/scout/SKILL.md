@@ -52,6 +52,10 @@ status: proposed
 project: "[[<project>]]"
 public_name: ""          # the game's public name; empty until the Owner announces one
 shown_publicly: []       # one item per thing already shown in public: "<date> <channel>: <what>"
+public_links:            # each empty until public; the Packager fills pinned comments from them
+  store: ""              # the store page
+  pre_registration: ""   # the pre-registration page
+  landing: ""            # the game's landing page
 sources:                 # repository-relative paths you drew on
   - CONTEXT.md
 phases:                  # the campaign in order; starts is an ISO date, or empty until the Owner sets it
@@ -91,13 +95,14 @@ Rules for the Fact sheet:
 - Every claim rests on a source you read. If unsure, put it under Open questions, not under facts.
 - Leave `public_name` empty unless the sources show the name is already public. While it is empty, the Office says "my traffic puzzle game" (or the Project's equivalent), never the working name.
 - Leave `shown_publicly` empty: the repository cannot tell what the Owner has posted. Ask the Owner instead.
+- Leave `public_links` empty unless the sources show a public store page, pre-registration or landing page. Never put the repository there.
 - Propose `phases` (a name, `starts` and `makes_public` each, in campaign order): at least the Phase running now, dated today, and the reveal Phase with an empty `starts`. Only the Owner dates a later Phase. The Vault check fails a Topic whose `phase` the list does not hold (`topic-phase`) and a Publish package dated before its Topic's Phase starts, or in a Phase with no date (`phase-date`).
 
 Then run `scripts/vault_check.py` and fix any violation in the Fact sheet. Stop and ask the Owner to:
 
 1. read `Fact sheets/<project>.md` and correct anything wrong;
 2. fill `public_name` if the game already has a public name;
-3. list in `shown_publicly` what they have already shown in public;
+3. list in `shown_publicly` what they have already shown in public, and fill `public_links` that already exist;
 4. correct `phases` and the Phase tag of each "Not public yet" item;
 5. set `status: approved`, then run `/scout` again.
 

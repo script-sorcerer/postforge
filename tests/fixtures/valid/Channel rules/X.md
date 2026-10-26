@@ -9,6 +9,10 @@ attachments:
   video: {max_count: 1, formats: [mp4], max_size_mb: 512}
 hashtags:
   max: 1
+destination:
+  kind: pinned_comment
+  template: "Store page: {store}"
+  fallback: "more clips on this channel"
 ---
 
 Etiquette.

@@ -6,6 +6,7 @@ project: "[[traffic_jam]]"
 topic: "[[Lane change bug]]"
 channel: x
 language: en
+pinned_comment: "more clips on this channel"
 attachments:
   - file: "[[Attachments/Lane change.png]]"
     alt: "A car cuts across two lanes at once."

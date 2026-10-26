@@ -103,6 +103,9 @@ BROKEN = {
     "topic-phase": ("Topics/Lane change bug.md", "topic-phase"),
     "phase-date": ("Publish packages/Lane change bug - x.md", "phase-date"),
     "phase-date-undated": ("Publish packages/Lane change bug - x.md", "phase-date"),
+    "channel-rules-destination": ("Channel rules/X.md", "channel-rules"),
+    "pinned-comment": ("Publish packages/Lane change bug - x.md", "pinned-comment"),
+    "private-repo-link-pinned-comment": ("Publish packages/Lane change bug - x.md", "private-repo-link"),
 }
 
 
