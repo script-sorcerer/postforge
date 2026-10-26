@@ -54,7 +54,17 @@ Before any Pass runs on a Topic, create every missing Draft note of that Topic, 
    - **Reddit**: modest and not self-promotional; a lesson or a moment shared with peers, the game as context, not the pitch. First pick one `subreddit` from the `subreddits` list in `Channel rules/Reddit.md`, written exactly as listed (`gamedev`, not `r/gamedev`), whose fit and self-promotion rule suit the Topic; skip the store-player subreddits the note says to hold. Write to that subreddit's rules. Write a `title` that states what the Post shows or teaches, within `text.max_title_length`; it goes in frontmatter, not in the Post text. The three hooks are openings of the body; the title is separate.
    - **LinkedIn**: reflective, with a takeaway: what I tried, what happened, what I learned that another builder can use. The first two lines carry the hook. Short paragraphs, hashtags (at most the Channel rules' `hashtags.max`) only at the end.
 4. **`voice`**: check the Draft against every section of the Voice guide (who is speaking, tone, register, AI stance, never publish) and fix what breaks it. Check the hook alternatives too.
-5. **`humanize`**: remove every banned word and pattern the Voice guide lists, in the Post text and the alternatives.
+5. **`humanize`**: a minimal repair, not a rewrite. The Voice guide's Banned words and patterns is the only list; apply it to the Post text and the alternatives under this contract:
+   - Edit a sentence only when it holds a confirmed banned word or pattern. Repair it with the smallest change that removes the match.
+   - Copy every other sentence unchanged, in its order.
+   - Add nothing: no new claim, advice, anecdote or conclusion.
+   - Delete empty framing ("It's worth noting that", "At the end of the day") rather than replace it with other filler.
+   - Keep every fact, number, name, code, unit and every "never", "must" and "all" as written.
+   - A match inside a quote, a technical term (a function name, `seamless` as an engine setting) or an Owner block is not a defect. Never touch text between `%% owner %%` and `%% /owner %%`.
+   - Never stack short sentences into staccato prose to sound human, and stop at matters of taste: a sentence you would merely phrase differently stays.
+   - Recognise paraphrased filler by what it does, not only by the words listed: formulaic framing, stock journey sentences, moralising recap, vague praise without a measure (the Voice guide names all four).
+
+   The same contract applies when you revise from an Editor remark on item 7 (Human).
 6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation line that names this Draft and run it again until none does. Violations in other notes are not yours to fix here: list them for the Owner in Step 5.
 
 ## Step 4: Editor loop

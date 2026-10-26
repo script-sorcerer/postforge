@@ -4,11 +4,13 @@
 
 **Blocked by:** none
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `humanize` Pass states the minimal-repair rules above
-- [ ] Voice guide's Banned words and patterns gains the four categories as patterns, not only words
-- [ ] Owner blocks are named as untouchable in the Pass (already a ground rule; repeat it there)
-- [ ] One existing Draft run through the new Pass by hand as a check
+- [x] `humanize` Pass states the minimal-repair rules above
+- [x] Voice guide's Banned words and patterns gains the four categories as patterns, not only words
+- [x] Owner blocks are named as untouchable in the Pass (already a ground rule; repeat it there)
+- [x] One existing Draft run through the new Pass by hand as a check
 
 ## Comments
+
+- 2026-10-26: Resolved in commit HASH05. The `humanize` Pass in `.claude/skills/write/SKILL.md` is now the minimal-repair contract and also governs revisions from Editor item 7; the Voice guide gains a "Filler by function" block with the four categories (the Owner should reread it: the Voice guide is Owner-approved). Hand check on the fixture `tests/fixtures/valid/Drafts/Road capacity explained - x.md`: no confirmed match outside the Owner block, so the Post text is copied unchanged; "started to feel like a city" sits inside the Owner block and is not touched; alternative 2's "far more than any feature I shipped this month" is a matter of taste, not vague praise, and stays. Left out: no Vault check rule (the contract is judgement, scored by the Editor's item 7).

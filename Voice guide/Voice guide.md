@@ -58,6 +58,12 @@ Remove or rewrite on sight.
 - Generic closing calls to action ("What do you think? Let me know in the comments!").
 - Hashtag strings, emoji bullets, bold-unicode text.
 
+**Filler by function** (the Humanize Pass catches these however they are worded):
+- Formulaic framing: a sentence that announces the point instead of making it ("Here's what I learned", "Let me tell you about", "It's worth noting that").
+- Stock journey sentences: the project as a story arc with no fact in it ("It's been quite a ride", "Every step taught me something", "What started as a small idea").
+- Moralising recap: a closing line that restates the Post as a lesson ("And that's the power of small changes", "Sometimes the simplest fix is the best one").
+- Vague praise without a measure: "much better", "feels so smooth", "huge improvement" with no number, before / after or concrete detail.
+
 ## Never publish
 
 - Code beyond short snippets (a few lines that illustrate one point).
