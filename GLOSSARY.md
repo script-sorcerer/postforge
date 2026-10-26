@@ -1,6 +1,6 @@
 # Postforge
 
-Postforge is a content and marketing Office. Its agents find post ideas in a Project's work, put them to the owner for review, and turn the approved ones into ready-to-publish Posts.
+Postforge is a content and marketing Office. Its agents find post ideas in a Project's work, put them to the owner for review, and turn the approved ones into ready-to-publish Posts. The owner can also bring a Topic of their own.
 
 ## Language
 
@@ -29,6 +29,10 @@ _Avoid_: reviewer, critic
 **Packager**:
 The Role that assembles a Publish package and checks its Attachments against the Channel rules.
 _Avoid_: publisher, formatter
+
+**Producer**:
+The Role that builds a Composition from a ready Video script and the Owner's Attachments and renders the video (ADR 0002).
+_Avoid_: video editor, renderer, animator
 
 **Owner**:
 The human who approves Topics, edits Drafts and publishes Posts.
@@ -70,6 +74,10 @@ _Avoid_: knowledge base, database, memory bank
 One proposed story for a post, with its angle, audience and target Channels. The Owner approves, rejects or parks it.
 _Avoid_: idea, pitch, suggestion
 
+**Owner Topic**:
+A Topic the Owner writes by hand and approves at once, outside any Digest. Every Role after the Scout treats it like a Scout Topic.
+_Avoid_: manual topic, custom idea
+
 **Parked Topic**:
 A Topic the Owner set aside for later, neither approved nor rejected.
 _Avoid_: backlog item, deferred
@@ -95,8 +103,12 @@ A change the Owner makes to a Draft, by hand or by prompt. Owner edits always wi
 _Avoid_: correction, feedback
 
 **Video script**:
-A Draft for a short-video Channel: the hook, timed shots, on-screen text and caption. The Office writes it; it never makes the video.
+A Draft for the Shorts Channel: the caption, the title and a beat table of timed footage, on-screen text and narration. The Writer writes it; the Producer renders it.
 _Avoid_: storyboard, video post
+
+**Composition**:
+The HyperFrames source the Producer builds from a Video script: an HTML project under `Attachments/video/` that renders to the Post's video. Committed; its render is not.
+_Avoid_: project file, timeline, scene file
 
 **Adaptation**:
 A Draft in a second language, rewritten for that language's readers rather than translated word for word.
@@ -111,11 +123,11 @@ A Post with everything the Owner needs to publish it by hand: final text, checke
 _Avoid_: bundle, export
 
 **Channel**:
-One place a Post goes out: X, Reddit, LinkedIn, a short-video platform (YouTube Shorts, TikTok) or Article (long-form: dev.to for English, Habr for Russian Adaptations).
+One place a Post goes out: X, Reddit, LinkedIn, Shorts (one 9:16 video for YouTube Shorts and TikTok) or Article (long-form: dev.to for English, Habr for Russian Adaptations).
 _Avoid_: platform, network
 
 **Shot list**:
-The Office's description of the footage a Topic needs, for the Owner to capture.
+The Office's description of the footage a Topic needs, for the Owner to capture. A Video script's beats name these files.
 _Avoid_: storyboard, media request
 
 **Attachment**:
