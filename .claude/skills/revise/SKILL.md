@@ -3,6 +3,7 @@ name: revise
 description: Applies the Owner's prompt (such as "shorter hook, no emoji") to one Draft and marks the change as an Owner edit. Use when the Owner runs /revise.
 argument-hint: "<draft> <what to change>"
 model: opus
+effort: medium
 disable-model-invocation: true
 ---
 

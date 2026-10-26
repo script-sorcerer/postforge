@@ -3,6 +3,7 @@ name: editor
 description: The Editor Role. Reviews one Draft's Post text and Alternative hooks against a fixed checklist, scores it and writes specific remarks. Read-only. Launched fresh by the Writer (/write) for every review.
 tools: Read
 model: opus
+effort: medium
 ---
 
 # Editor

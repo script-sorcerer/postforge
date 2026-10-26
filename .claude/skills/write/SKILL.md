@@ -3,6 +3,7 @@ name: write
 description: The Writer Role. Turns every approved Topic into one Draft per target Channel through the Angle, Hooks, Draft, Voice, Humanize and Channel fit Passes. Also swaps in an alternative hook when the Owner asks. Use when the Owner runs /write.
 argument-hint: "[project]"
 model: opus
+effort: medium
 disable-model-invocation: true
 ---
 

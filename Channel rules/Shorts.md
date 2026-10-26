@@ -46,6 +46,8 @@ The Producer's check fails any caption inside the top or bottom band.
 
 - Burned captions: most viewing starts with the sound off, so every beat's On-screen text is burned into the video, never left to the platform's auto-captions.
 - The first beat carries the payoff: the viewer decides in about one second.
+- Aim for 15 to 30 seconds; 60 is the ceiling. One mechanic per video.
+- Before / after: a hard cut with the dramatic change first, never a fade.
 - No end card, no fade to black, no logo outro. End on the payoff, or loop into the first beat so the replay feels seamless.
 - The game's own sound is welcome. No narration is required, and a Video script never needs a recorded voice.
 - Real footage only: the Owner's captured clips and screenshots, never generated video.
@@ -53,6 +55,7 @@ The Producer's check fails any caption inside the top or bottom band.
 ## Caption and hashtags
 
 - The caption's first line repeats the hook in words; only its first 80 to 100 characters show before "more".
+- The YouTube title is a searchable phrase that names the mechanic ("traffic puzzle game: lane change"), evergreen: Shorts keep surfacing for months, so no "Day N" or dated framing in it.
 - At most three hashtags, at the end of the caption: one for the genre or platform (`#indiegame`, `#mobilegame`), one for the moment (`#gamedev`, `#screenshotsaturday` on Saturdays).
 - Never link to the private repository or its issues.
 
@@ -60,4 +63,6 @@ The Producer's check fails any caption inside the top or bottom band.
 
 - TikTok caption 2,200 characters and upload size 1 GB: <https://dopost.featurebase.app/en/help/articles/4326822-tiktok>, <https://help.swat.io/en/articles/11726862-tiktok-post-format-specifications>
 - YouTube Shorts 1080x1920, 9:16, up to 3 minutes since 2024-10-15; safe zones: <https://piktochart.com/blog/youtube-shorts-dimensions/>, <https://www.clipspeed.ai/blog/youtube-shorts-size.html>
+- Clip length 15 to 30 s, hard-cut before/after, loop-friendly mechanics, no TikTok watermark on cross-posts: <https://presskit.gg/field-guides/tiktok-indie-game-marketing> (read 2026-10-27)
+- Searchable evergreen Shorts titles, Shorts resurface for months while TikTok fades in 48 hours: <https://bugnet.io/blog/youtube-shorts-for-indie-game-marketing> (read 2026-10-27)
 - YouTube title 100 characters: YouTube Studio upload form (not re-checked online on 2026-10-26).

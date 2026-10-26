@@ -3,6 +3,7 @@ name: scout
 description: The Scout Role. Reads a Project's Source material and delivers a Digest of Topics; on the first run it builds the Project's Fact sheet and stops for the Owner's approval. Use when the Owner runs /scout.
 argument-hint: "[project]"
 model: opus
+effort: medium
 disable-model-invocation: true
 ---
 
