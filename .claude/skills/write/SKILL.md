@@ -38,7 +38,7 @@ Leave every other Topic alone: proposed, rejected and parked Topics get no Draft
 
 ## Step 3: Write each Draft through the Passes
 
-Before any Pass runs on a Topic, create every missing Draft note of that Topic, one per Channel in its `channels`: frontmatter only (as in the template below), with `status: drafting` and an empty `passes` list. So the Vault check never takes a half-written Topic for a finished one. Then write each Draft in turn. After each Pass, rewrite the note and append that Pass's name to `passes`. Run the Passes in exactly this order; the Vault check fails a Draft whose Passes are out of order, or incomplete once it leaves `drafting`.
+Before any Pass runs on a Topic, create every missing Draft note of that Topic, one per Channel in its `channels` whose Channel rules note is `approved` (a Channel you skip gets no note; the Vault check expects no Draft for it until its rules are approved): frontmatter only (as in the template below), with `status: drafting` and an empty `passes` list. So the Vault check never takes a half-written Topic for a finished one. Then write each Draft in turn. After each Pass, rewrite the note and append that Pass's name to `passes`. Run the Passes in exactly this order; the Vault check fails a Draft whose Passes are out of order, or incomplete once it leaves `drafting`.
 
 1. **`angle`**: read the Topic note in full (Angle, Why now, Source material, Shot list) and its Source material if needed. Fix the one point of the Post and who it is for, in one sentence. Write it under `## Writer notes`.
 2. **`hooks`**: write three opening lines for that point, each pulling a different lever of these five:
@@ -48,7 +48,7 @@ Before any Pass runs on a Topic, create every missing Draft note of that Topic, 
    - **promise a payoff**: say what the reader gets by reading on (a fix, a number, a trick they can use);
    - **borrow weight**: lead with a real number or name from the Source material, never an invented one.
 
-   **Shorts**: a hook is the first beat's On-screen text plus the caption's first line, and it carries the payoff itself in the first two seconds: the result on screen, no setup, no "watch this". The alternatives are other first beats written the same way.
+   **Shorts**: a hook is the first beat's On-screen text plus the caption's first line, and it carries the payoff itself in the first two seconds: the result on screen, no setup, no "watch this". The alternatives are other first beats written the same way, each holding both parts as `<beat 1 On-screen text> / <caption first line>`.
 
    Three hooks, three different levers. At least one is sensory (a scene or one concrete detail) and at least one is reader-direct (a problem the reader has, a conditional "if you...", a promise). Each leads with the thing itself. None uses a hook anti-pattern from the Voice guide's Banned words and patterns. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below). Under `## Writer notes`, record each hook's lever in one word, as `Hooks: body=<lever>, 1=<lever>, 2=<lever>` (gap, prediction, scene, payoff, weight), so the Owner sees the spread.
 3. **`draft`**: write the Post text in the Channel's register from the Voice guide.
@@ -74,7 +74,7 @@ Before any Pass runs on a Topic, create every missing Draft note of that Topic, 
 
 Every `in-review` Draft goes through the Editor before the Owner sees it. The checklist and the pass threshold live only in `.claude/agents/editor.md`; you do not score the Draft yourself.
 
-1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks; for Reddit also the `subreddit` and `title`; for Shorts also the `title` and the `## Script` beat table. No file path, no Writer notes, no earlier reviews.
+1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks; for Reddit also the `subreddit` and `title`; for Shorts also the `title` and the `## Script` beat table; always also the Topic's `## Source material` lines, so the Editor can tell a real number or name from an invented one. No file path, no Writer notes, no earlier reviews.
 2. **Record the review.** Let N be this review's number: `editor_rounds` plus 1, or 1 if the Draft has no `editor_rounds` yet. Append to the end of the Draft:
 
    ```markdown
@@ -144,7 +144,7 @@ subreddit: gamedev
 title: "Giving every road a capacity fixed my traffic sim's feel"
 ```
 
-Copy `attachments` from the Topic. The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist. `editor_rounds`, `editor_score` and the `## Editor review N` sections appear once the Editor loop runs; each review is appended after the previous one.
+Copy `attachments` from the Topic, except for Shorts: a Shorts Draft starts with `attachments: []` and only the Producer fills it, with the one rendered MP4 (the Topic's raw clips are named in the Script, never attached). The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist. `editor_rounds`, `editor_score` and the `## Editor review N` sections appear once the Editor loop runs; each review is appended after the previous one.
 
 ## The Shorts Draft
 
@@ -164,7 +164,7 @@ title: "One number made my traffic queue"
 duration_s: 7
 ---
 
-Cars in my traffic puzzle game used to drive through each other. One capacity number per road made them queue. #indiegame
+Cars in my traffic puzzle game now queue at a full road. One capacity number per road did it; before, they drove through each other. #indiegame
 
 > [!note]- Alternative hooks
 > Say "use hook 1" or "use hook 2" to swap one into the body.
@@ -194,6 +194,8 @@ The columns are exactly `#`, `Footage`, `On-screen text`, `Narration`, `Seconds`
 ## Switching hooks
 
 When the Owner says "use hook 2" (or similar) for a Draft:
+
+For Shorts, the hook has two parts: replace beat 1's On-screen text in the `## Script` table with the alternative's first part and the caption's first line with its second part, wrapping each in its own Owner block, and put both replaced parts back as one alternative. Otherwise:
 
 1. Replace the opening hook of the Post text with alternative 2, adjusting the next sentence only if it no longer follows (never one inside an Owner block). The Owner chose it, so wrap the new hook in `%% owner %%` ... `%% /owner %%` and run `scripts/vault_check.py --seal "<draft path>"`: this is the one time you seal, because the Owner asked for this change.
 2. Put the replaced hook in the callout as alternative 2, so both alternatives stay available.

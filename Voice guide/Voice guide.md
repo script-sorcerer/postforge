@@ -26,6 +26,7 @@ The Writer's Voice Pass checks every Draft against this note; the Humanize Pass 
 
 - **X**: short. One idea, one or two sentences, Attachment first. Reads like a note to other developers.
 - **Reddit**: modest and not self-promotional. A lesson or a moment shared with peers; the game is context, not the pitch. Follow each subreddit's rules (see [[Channel rules/Reddit]]).
+- **Shorts**: one idea per video, shown, not explained. On-screen text is short labels (a few words each), never sentences. The caption speaks in the same first person as every other Channel, payoff first.
 - **LinkedIn**: reflective, with a takeaway. What I tried, what happened, what I learned that another builder can use. Still first person, still no corporate tone.
 
 ## AI stance

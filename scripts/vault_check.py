@@ -580,6 +580,12 @@ def check_mixed_attachments(note):
     return []
 
 
+def rules_approved(channel):
+    """False only for a Channel whose rules note exists but is not approved: the Writer skips that Channel."""
+    rules = CHANNEL_RULES.get(channel)
+    return rules is None or rules.get("status") == "approved"
+
+
 def check_topic_drafts(note):
     """An approved Topic has exactly one Draft per Channel it lists and none for a Channel it does
     not list; a Publish package or Post for the Channel stands in for a Draft already packaged.
@@ -598,7 +604,7 @@ def check_topic_drafts(note):
         drafts = sum(1 for f in linked if f.get("kind") == "draft" and f.get("channel") == channel)
         if drafts > 1:
             messages.append(f"approved topic has {drafts} drafts for {channel}, expected one")
-        elif written and not any(f.get("channel") == channel for f in linked):
+        elif written and not any(f.get("channel") == channel for f in linked) and rules_approved(channel):
             messages.append(f"approved topic has no draft for {channel}")
     stale = sorted({str(f.get("channel")) for f in linked if f.get("channel") and f.get("channel") not in fm["channels"]})
     messages += [f"approved topic has a draft or post for {c}, which it does not list in channels" for c in stale]

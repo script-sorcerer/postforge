@@ -139,3 +139,14 @@ def test_non_text_channel_and_status_are_reported_not_crashed_on():
     )
     assert "Traceback" not in result.stderr
     assert result.returncode == 1
+
+
+def test_missing_draft_for_channel_with_unapproved_rules_passes_until_approved(tmp_path):
+    """The Writer skips a Channel whose rules are not approved; its missing Draft is reported only once they are."""
+    assert run_check(FIXTURES / "topic-drafts-unapproved-rules") == (0, [])
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "topic-drafts-unapproved-rules", vault)
+    rules = vault / "Channel rules" / "Shorts.md"
+    rules.write_text(rules.read_text().replace("status: proposed", "status: approved", 1))
+    code, violations = run_check(vault)
+    assert code == 1 and len(violations) == 1 and "[topic-drafts] approved topic has no draft for shorts" in violations[0]

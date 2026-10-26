@@ -8,12 +8,5 @@
   },
   "media": {
     "autoProxy": true
-  },
-  "registryItems": [
-    {
-      "name": "caption-highlight",
-      "type": "hyperframes:component",
-      "target": "compositions/components/caption-highlight.html"
-    }
-  ]
+  }
 }

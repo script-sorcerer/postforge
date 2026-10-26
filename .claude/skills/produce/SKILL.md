@@ -2,6 +2,7 @@
 name: produce
 description: The Producer Role. Builds a HyperFrames Composition from one ready Shorts Draft (its Video script's beat table and the Owner's captured Attachments), opens it in the HyperFrames desktop app for the Owner's review, and on the Owner's word renders the MP4 once and sets it as the Draft's Attachment. Use when the Owner runs /produce.
 argument-hint: "<draft note> [render | --fresh] [--model <model>]"
+disable-model-invocation: true
 ---
 
 # Producer
@@ -39,7 +40,7 @@ Also never: `snapshot --review`, `snapshot --describe`, `compare`, `grade-compar
 2. If its `channel` is not `shorts`, stop: say only Shorts Drafts are produced. If its `status` is not `ready`, stop: say its status and that only the Owner sets `ready`.
 3. Read the Draft's `title`, `duration_s`, `## Title` and `## Script` beat table, its Topic (the `topic` link; `<topic title>` is that note's name) and `Channel rules/Shorts.md` (`attachments.video.max_seconds`, `on_screen_text.max_chars_per_beat`).
 4. If any beat has Narration, stop: say narration is out of scope for the Producer and name the beat.
-5. **Footage.** For each beat whose Footage is not `text`, the file its link names must exist (a path from the Vault root, else found under `Attachments/`). If any is missing, stop at **checkpoint 1**: list, for each missing file, the Topic's Shot list line that names it (or the beat and file when no line does). Build nothing.
+5. **Footage.** For each beat whose Footage is not `text`, take the link's target: drop the `[[`, `]]` and `!`, and any alias after `|` or `\|` (a table cell writes `[[Attachments/x.mp4\|label]]`). The file it names must exist (a path from the Vault root, else found under `Attachments/`). If any is missing, stop at **checkpoint 1**: list, for each missing file, the Topic's Shot list line that names it (or the beat and file when no line does). Build nothing.
 
 ## Step 2: Build (`/produce <draft>` and `--fresh`)
 
@@ -49,7 +50,7 @@ Let `DIR` be `Attachments/video/<topic title>`.
 2. **New Composition.** Copy `docs/templates/shorts-composition/` to `DIR`. Read its three files' comments: they say how to fill them.
 3. **Footage.** Copy each beat's file into `DIR/assets/footage/` (git ignores this folder; the source stays in `Attachments/`). Do this on every run: a fresh clone has no copies.
 4. **Fill from the beat table**, beat n starting where beat n-1 ends (beat 1 at 0):
-   - `compositions/beat-<n>.html` per beat, copied from `beat-1.html` with every `beat-1` replaced by `beat-<n>`. A screenshot keeps the `<img>` (src `assets/footage/<file>`); a clip replaces the frame with the `<video>` the comment shows, `data-duration` its Seconds and the push-in tween removed; a `text` beat deletes the frame and its tween, leaving the black ground. Its inner `data-duration` values are the beat's Seconds.
+   - `compositions/beat-<n>.html` per beat, copied from `beat-1.html` with every `beat-1` replaced by `beat-<n>`. A screenshot keeps the `<img>` (src `assets/footage/<file>`); a clip replaces the frame with the `<video>` the comment shows, `data-duration` its Seconds and the push-in tween removed; a `text` beat deletes the frame and its tween, leaving the black ground. Its inner `data-duration` values and the push-in tween's `duration` are the beat's Seconds.
    - In `index.html`, one host per beat (`id`, `data-composition-id` and `data-composition-src` all `beat-<n>`), `data-start` the beat's start, `data-duration` its Seconds, `data-track-index` n.
    - In `compositions/captions.html`, one group per beat (`cap-<n>`, its `-bg` and `-text` and their two tweens at the beat's start), its text the beat's On-screen text, `data-start` and `data-duration` the beat's. Keep the template's position and size: they keep text out of the safe bands.
    - The root's and the captions host's `data-duration` are `duration_s`.
