@@ -79,7 +79,9 @@ TOPIC_SECTIONS = ["Angle", "Why now", "Source material", "Shot list"]
 # the keys of the Fact sheet's `public_links`.
 DESTINATION_KINDS = ["pinned_comment", "profile_link", "description"]
 PUBLIC_LINKS = ["store", "pre_registration", "landing"]
-PLACEHOLDER = re.compile(r"\{(\w*)\}")
+PLACEHOLDER = re.compile(r"\{(\w+)\}")
+# Destination kinds whose text goes with each Post; a profile link is set once, from the template, by the Owner.
+PER_POST_DESTINATIONS = ["pinned_comment", "description"]
 
 # A Digest's `trend_scan` may be at most this many days older than the Digest.
 TREND_SCAN_MAX_AGE_DAYS = 14
@@ -108,7 +110,7 @@ REPO_SLUGS = []  # filled by check_vault from each Projects/<project>.md `github
 # frontmatter of each valid Channel rules note by `channel`.
 VAULT_NOTES = {}
 CHANNEL_RULES = {}
-FACT_SHEETS = {}  # filled by check_vault: Project name -> {Phase name: its `starts` date or None}
+PROJECT_PHASES = {}  # filled by check_vault: Project name -> {Phase name: its `starts` date or None}
 SCHEDULES = {}  # filled by check_vault: Project name -> {channel: {per_week, weekdays}}
 VAULT_ROOT = []  # filled by check_vault: Attachment paths are relative to it
 
@@ -177,8 +179,14 @@ def check_published_link(note):
     return []
 
 
+def is_text(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
 def check_fact_sheet(note):
-    """public_name may be empty until the name is public; the key must still be there."""
+    """public_name may be empty until the name is public; the key must still be there. `phases` lists
+    the Project's Phases in order, each with a name, `starts` (dated Phases in date order, or empty)
+    and `makes_public`."""
     if kind_of(note) != "fact-sheet":
         return []
     fm, messages = note["fm"], []
@@ -186,25 +194,29 @@ def check_fact_sheet(note):
         messages.append("public_name is missing or not text (leave it empty until the name is public)")
     if not isinstance(fm.get("shown_publicly", 0), (list, type(None))):
         messages.append("shown_publicly is missing or not a list")
-    links = fm.get("public_links", {})
+    links = {} if fm.get("public_links") is None else fm["public_links"]
     if not (isinstance(links, dict) and all(isinstance(links.get(k, ""), (str, type(None))) for k in PUBLIC_LINKS)):
         messages.append(f"public_links must map {', '.join(PUBLIC_LINKS)} to a link, or leave it empty until public")
     phases = fm.get("phases")
     if not (isinstance(phases, list) and phases):
-        return messages + ["phases must list the campaign Phases in order, each with name, starts and makes_public"]
-    names = []
+        return messages + ["phases must list the Project's Phases in order, each with name, starts and makes_public"]
+    names, last = [], None
     for n, phase in enumerate(phases, 1):
         phase = phase if isinstance(phase, dict) else {}
         name, starts = phase.get("name"), phase.get("starts")
-        if not (isinstance(name, str) and name.strip()):
-            messages.append(f"phase {n} has no name")
+        if not is_text(name):
+            messages.append(f"Phase {n} has no name")
         elif name in names:
-            messages.append(f"phase {name!r} is listed twice")
+            messages.append(f"Phase {name!r} is listed twice")
         names.append(name)
-        if starts not in (None, "") and not as_date(starts):
-            messages.append(f"phase {n} starts {starts!r} is not an ISO date (YYYY-MM-DD) or empty")
+        day = as_date(starts) if starts not in (None, "") else None
+        if starts not in (None, "") and not day:
+            messages.append(f"Phase {n} starts {starts!r} is not an ISO date (YYYY-MM-DD) or empty")
+        elif day and last and day < last:
+            messages.append(f"Phase {n} starts {day}, before an earlier Phase starts on {last}")
+        last = day or last
         if not isinstance(phase.get("makes_public"), str):
-            messages.append(f"phase {n} makes_public is missing or not text")
+            messages.append(f"Phase {n} makes_public is missing or not text")
     return messages
 
 
@@ -215,16 +227,21 @@ def fact_sheet_phases(note):
     return {p["name"]: as_date(p["starts"]) if p.get("starts") not in (None, "") else None for p in note["fm"]["phases"]}
 
 
-def topic_phases(fm):
+def load_project_phases(notes):
+    """{Project name: its Phases} for each well-formed Fact sheet among `notes`."""
+    return {link_name(n["fm"]["project"]): phases for n in notes if (phases := fact_sheet_phases(n))}
+
+
+def project_phases(fm):
     """The Phases of the Project a note names, or None when the Project has no well-formed Fact sheet."""
-    return FACT_SHEETS.get(link_name(fm["project"])) if isinstance(fm.get("project"), str) else None
+    return PROJECT_PHASES.get(link_name(fm["project"])) if isinstance(fm.get("project"), str) else None
 
 
 def check_topic_phase(note):
     fm = note["fm"]
     phase = fm.get("phase") if kind_of(note) == "topic" else None
-    phases = topic_phases(fm) if phase not in (None, "") else None
-    if phases is None or phase in phases:
+    phases = project_phases(fm) if phase not in (None, "") else None
+    if phases is None or (isinstance(phase, str) and phase in phases):
         return []  # a missing phase is reported by required-fields; without a Fact sheet there is nothing to check
     return [f"phase {phase!r} is not one of the Fact sheet's Phases: {', '.join(phases)}"]
 
@@ -432,12 +449,12 @@ def check_channel_rules(note):
         template = dest.get("template")
         if dest.get("kind") not in DESTINATION_KINDS:
             problems.append(f"destination.kind must be one of {', '.join(DESTINATION_KINDS)}")
-        if not (isinstance(template, str) and template.strip()):
+        if not is_text(template):
             problems.append("destination.template must be text")
         elif unknown := sorted(set(PLACEHOLDER.findall(template)) - set(PUBLIC_LINKS)):
             problems.append(f"destination.template placeholders {unknown} are not among {', '.join(PUBLIC_LINKS)}")
-        if not (isinstance(dest.get("fallback"), str) and dest["fallback"].strip()):
-            problems.append("destination.fallback must be text (used while a public link is empty)")
+        if not is_text(dest.get("fallback")):
+            problems.append("destination.fallback must be text (used when no template line has all its links)")
     return problems
 
 
@@ -473,12 +490,12 @@ def check_schedule(note):
     cadence = fm.get("cadence")
     if not isinstance(cadence, dict) or not cadence:
         return problems + ["cadence must map each Channel to its per_week and weekdays"]
-    for channel, slot in cadence.items():
-        slot = slot if isinstance(slot, dict) else {}
-        days = slot.get("weekdays")
+    for channel, entry in cadence.items():
+        entry = entry if isinstance(entry, dict) else {}
+        days = entry.get("weekdays")
         if channel not in CHANNELS:
             problems.append(f"cadence channel {channel!r} is not one of {', '.join(CHANNELS)}")
-        if not is_count(slot.get("per_week")):
+        if not is_count(entry.get("per_week")):
             problems.append(f"cadence.{channel}.per_week must be a positive integer")
         if not (isinstance(days, list) and days and all(isinstance(d, str) and d.lower() in WEEKDAYS for d in days)):
             problems.append(f"cadence.{channel}.weekdays must be a non-empty list of weekday names (Monday to Sunday)")
@@ -525,6 +542,16 @@ def check_draft_passes(note):
     return []
 
 
+ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def is_iso_date(value):
+    """A YAML date (not a datetime) or a YYYY-MM-DD string that is a real date."""
+    if isinstance(value, datetime.date):
+        return not isinstance(value, datetime.datetime)
+    return isinstance(value, str) and bool(ISO_DATE.fullmatch(value)) and as_date(value) is not None
+
+
 def is_ready_package(note):
     return kind_of(note) == "post" and note["fm"].get("status") == "ready"
 
@@ -535,14 +562,14 @@ def check_publish_on(note):
         return []
     value = note["fm"].get("publish_on")
     if value in (None, ""):
-        return ["ready package has no publish_on; run /package again to pick a slot"]
-    return [] if as_date(value) else [f"publish_on {value!r} is not an ISO date (YYYY-MM-DD)"]
+        return ["ready package has no publish_on; run /package again to pick a cadence day"]
+    return [] if is_iso_date(value) else [f"publish_on {value!r} is not an ISO date (YYYY-MM-DD)"]
 
 
 def package_slot(note):
     """(project, channel, date) of a ready Publish package with a readable `publish_on`, else None."""
     fm = note["fm"]
-    day = as_date(fm.get("publish_on")) if is_ready_package(note) and fm.get("publish_on") else None
+    day = as_date(fm.get("publish_on")) if is_ready_package(note) and is_iso_date(fm.get("publish_on")) else None
     if not (day and isinstance(fm.get("project"), str) and isinstance(fm.get("channel"), str)):
         return None
     return link_name(fm["project"]), fm["channel"], day
@@ -576,7 +603,7 @@ def check_phase_date(note):
     slot = package_slot(note)
     topic = linked_note("Topics", note["fm"].get("topic") or "") if slot else None
     phase = topic["fm"].get("phase") if topic and kind_of(topic) == "topic" else None
-    phases = topic_phases(topic["fm"]) if phase else None
+    phases = project_phases(topic["fm"]) if isinstance(phase, str) else None
     if not phases or phase not in phases:
         return []  # a missing or unknown phase is reported on the Topic
     starts = phases[phase]
@@ -585,28 +612,39 @@ def check_phase_date(note):
     return [f"publish_on {slot[2]} is before Phase {phase!r} starts on {starts}"] if slot[2] < starts else []
 
 
-def check_schedule_gap(note):
-    """A ready Draft with no Publish package while its Channel's next cadence day (on or after today) is empty."""
-    fm = note["fm"]
-    if kind_of(note) != "draft" or fm.get("status") != "ready" or not isinstance(fm.get("project"), str):
-        return []
-    project, channel, topic = link_name(fm["project"]), fm.get("channel"), link_name(fm.get("topic") or "")
-    cadence = SCHEDULES.get(project, {}).get(channel) if isinstance(channel, str) else None
-    if not cadence:
-        return []
-    posts = [
+def channel_packages(project, channel):
+    """The frontmatter of every Publish package and Post of one Project and Channel."""
+    return [
         n["fm"] for n in VAULT_NOTES.values()
         if kind_of(n) == "post" and n["fm"].get("channel") == channel
         and isinstance(n["fm"].get("project"), str) and link_name(n["fm"]["project"]) == project
     ]
-    if any(link_name(p.get("topic") or "") == topic for p in posts):
-        return []  # already packaged
+
+
+def waiting_draft(note):
+    """(project, channel) of a ready Draft that has no Publish package or Post yet, else None."""
+    fm = note["fm"]
+    if kind_of(note) != "draft" or fm.get("status") != "ready" or not isinstance(fm.get("project"), str):
+        return None
+    project, channel, topic = link_name(fm["project"]), fm.get("channel"), link_name(fm.get("topic") or "")
+    if not isinstance(channel, str) or any(link_name(p.get("topic") or "") == topic for p in channel_packages(project, channel)):
+        return None
+    return project, channel
+
+
+def check_schedule_gap(note):
+    """A ready Draft waits unpackaged while its Channel's next cadence day (on or after today) is empty:
+    reported once per Channel, on the first waiting Draft by path."""
+    waiting = waiting_draft(note)
+    cadence = SCHEDULES.get(waiting[0], {}).get(waiting[1]) if waiting else None
+    if not cadence or any(n["path"] < note["path"] and waiting_draft(n) == waiting for n in VAULT_NOTES.values()):
+        return []
     days = {d.lower() for d in cadence["weekdays"]}
     today = datetime.date.today()
-    nxt = next(today + datetime.timedelta(n) for n in range(7) if WEEKDAYS[(today + datetime.timedelta(n)).weekday()] in days)
-    if any(as_date(p.get("publish_on") or "") == nxt for p in posts):
+    next_day = next(today + datetime.timedelta(n) for n in range(7) if WEEKDAYS[(today + datetime.timedelta(n)).weekday()] in days)
+    if any(as_date(p.get("publish_on") or "") == next_day for p in channel_packages(*waiting)):
         return []
-    return [f"the next {channel} day, {nxt}, has no package while this Draft is ready; run /package on it"]
+    return [f"the next {waiting[1]} day, {next_day}, has no package while this Draft is ready; run /package on it"]
 
 
 def text_rules(note):
@@ -638,12 +676,12 @@ HASHTAG = re.compile(r"(?<!\S)#[^\W\d_]\w*")
 
 
 def check_pinned_comment(note):
-    """A ready Publish package on a Channel with a `destination` carries the text the Owner pastes after publishing."""
+    """A ready Publish package on a Channel whose destination goes with each Post (pinned comment or
+    description) carries the text the Owner pastes after publishing."""
     rules = text_rules(note) if is_ready_package(note) else None
-    if not (rules and "destination" in rules):
+    if not (rules and rules.get("destination", {}).get("kind") in PER_POST_DESTINATIONS):
         return []
-    comment = note["fm"].get("pinned_comment")
-    if isinstance(comment, str) and comment.strip():
+    if is_text(note["fm"].get("pinned_comment")):
         return []
     return [f"ready package has no pinned_comment ({rules['channel']} destination: {rules['destination']['kind']}); run /package again"]
 
@@ -768,7 +806,7 @@ def check_alt_text(note):
     return [
         f"attachment {e['file']} has no alt text"
         for e, t in typed
-        if t in ALT_TEXT_TYPES and not (isinstance(e.get("alt"), str) and e["alt"].strip())
+        if t in ALT_TEXT_TYPES and not is_text(e.get("alt"))
     ]
 
 
@@ -831,7 +869,7 @@ def check_reddit_title(note):
     if not rules:
         return []
     title = note["fm"].get("title")
-    if not isinstance(title, str) or not title.strip():
+    if not is_text(title):
         return [f"reddit {kind_of(note)} has no title"]
     limit = rules["text"]["max_title_length"]
     if len(title) > limit:
@@ -851,7 +889,7 @@ def check_shorts_title(note):
     if not rules:
         return []
     title = note["fm"].get("title")
-    if not isinstance(title, str) or not title.strip():
+    if not is_text(title):
         return [f"shorts {kind_of(note)} has no title"]
     limit = rules["text"]["max_title_length"]
     return [] if len(title) <= limit else [f"title is {len(title)} characters, shorts allows {limit}"]
@@ -1006,8 +1044,8 @@ def check_vault(vault):
     notes = [read_note(p) for p in paths]
     VAULT_NOTES.clear()
     VAULT_NOTES.update({(n["path"].relative_to(vault).parts[0], n["path"].stem): n for n in notes})
-    FACT_SHEETS.clear()
-    FACT_SHEETS.update({link_name(n["fm"]["project"]): fact_sheet_phases(n) for n in notes if fact_sheet_phases(n)})
+    PROJECT_PHASES.clear()
+    PROJECT_PHASES.update(load_project_phases(notes))
     violations, warnings = [], []
     for note in notes:
         for rule in RULES:

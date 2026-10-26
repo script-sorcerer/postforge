@@ -15,7 +15,7 @@ hashtags:
   max: 3  # house rule, not a platform limit
 destination:  # YouTube and TikTok pinned comment: descriptions are nearly invisible on mobile
   kind: pinned_comment
-  template: "Pre-register: {pre_registration} | Store page: {store}"
+  template: "Pre-register: {pre_registration}\nStore page: {store}"  # one line per link: a line with an empty link is dropped
   fallback: "more clips on this channel"
 ---
 

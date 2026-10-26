@@ -4,7 +4,7 @@ status: approved
 project: "[[traffic_jam]]"
 public_name: ""
 shown_publicly: []
-public_links: {store: "", pre_registration: "", landing: ""}
+public_links:  # null until any link is public, like an empty map
 phases:
   - name: Pre-reveal
     starts: 2026-10-01

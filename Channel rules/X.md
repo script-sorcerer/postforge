@@ -14,7 +14,7 @@ hashtags:
   max: 1  # house rule, not a platform limit
 destination:  # my own first reply under the Post: X shows Posts with links less
   kind: pinned_comment
-  template: "Pre-register: {pre_registration} | Store page: {store}"
+  template: "Pre-register: {pre_registration}\nStore page: {store}"  # one line per link: a line with an empty link is dropped
   fallback: "More clips of this traffic puzzle game on my profile."
 ---
 

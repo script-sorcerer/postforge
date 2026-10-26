@@ -98,6 +98,7 @@ BROKEN = {
     "publish-on": ("Publish packages/Lane change bug - x.md", "publish-on"),
     "publish-on-format": ("Publish packages/Lane change bug - x.md", "publish-on"),
     "schedule": ("Schedule/traffic_jam.md", "schedule"),
+    "schedule-duplicate": ("Schedule/traffic_jam.md", "schedule"),
     "schedule-slot": ("Publish packages/Lane change bug - x.md", "schedule-slot"),
     "schedule-collision": ("Publish packages/Lane change bug again - x.md", "schedule-collision"),
     "topic-phase": ("Topics/Lane change bug.md", "topic-phase"),
@@ -105,6 +106,7 @@ BROKEN = {
     "phase-date-undated": ("Publish packages/Lane change bug - x.md", "phase-date"),
     "channel-rules-destination": ("Channel rules/X.md", "channel-rules"),
     "pinned-comment": ("Publish packages/Lane change bug - x.md", "pinned-comment"),
+    "fact-sheet-public-links": ("Fact sheets/traffic_jam.md", "fact-sheet"),
     "private-repo-link-pinned-comment": ("Publish packages/Lane change bug - x.md", "private-repo-link"),
 }
 
@@ -112,7 +114,44 @@ BROKEN = {
 def test_phase_without_a_date_blocks_scheduling_and_says_so():
     """A Phase with an empty `starts` takes Topics and Drafts (the valid Vault holds one) but no scheduled package."""
     violations = run_check(FIXTURES / "phase-date-undated")[1]
-    assert "Phase 'Reveal' has no date yet" in violations[0], violations
+    assert any("Phase 'Reveal' has no date yet" in v for v in violations), violations
+
+
+def edited_valid_vault(tmp_path, note, old, new):
+    """A copy of the valid Vault with `old` replaced by `new` in `note`."""
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "valid", vault)
+    path = vault / note
+    assert old in path.read_text()
+    path.write_text(path.read_text().replace(old, new, 1))
+    return vault
+
+
+def test_list_phase_is_reported_not_crashed_on(tmp_path):
+    vault = edited_valid_vault(tmp_path, "Topics/Lane change bug.md", "phase: Pre-reveal", "phase: [Pre-reveal]")
+    result = subprocess.run([sys.executable, str(SCRIPT), str(vault)], capture_output=True, text=True)
+    assert "Traceback" not in result.stderr
+    assert run_check(vault) == (1, ["Topics/Lane change bug.md: [topic-phase] phase ['Pre-reveal'] is not one of the Fact sheet's Phases: Pre-reveal, Reveal"])
+
+
+@pytest.mark.parametrize("value", ["20261019", "2026-W43-1", "2026-10-19T10:00:00"])
+def test_publish_on_accepts_only_yyyy_mm_dd(tmp_path, value):
+    vault = edited_valid_vault(tmp_path, "Publish packages/Lane change bug - x.md", "publish_on: 2026-10-19", f"publish_on: {value}")
+    code, violations = run_check(vault)
+    assert code == 1 and len(violations) == 1 and "[publish-on] " in violations[0], violations
+
+
+def test_dated_phases_out_of_order_fail_fact_sheet(tmp_path):
+    vault = edited_valid_vault(tmp_path, "Fact sheets/traffic_jam.md", "  - name: Reveal\n    starts:\n", "  - name: Reveal\n    starts: 2026-09-01\n")
+    assert run_check(vault) == (1, ["Fact sheets/traffic_jam.md: [fact-sheet] Phase 2 starts 2026-09-01, before an earlier Phase starts on 2026-10-01"])
+
+
+def test_profile_link_channel_needs_no_pinned_comment():
+    """Reddit's destination is the profile link, set once by the Owner: its ready package carries no pinned_comment."""
+    package = FIXTURES / "valid" / "Publish packages" / "Road capacity explained - reddit.md"
+    assert "pinned_comment" not in package.read_text()
+    assert "kind: profile_link" in (FIXTURES / "valid" / "Channel rules" / "Reddit.md").read_text()
+    assert run_check(FIXTURES / "valid") == (0, [])
 
 
 # owner_edits as Obsidian's Properties panel writes it (block list), unindented, or a flow list over two lines.
@@ -173,11 +212,13 @@ def test_missing_draft_for_channel_with_unapproved_rules_passes_until_approved(t
 def test_schedule_gap_is_a_warning_until_the_next_cadence_day_is_packaged(tmp_path):
     """A ready Draft waits unpackaged while x's next cadence day is empty: warned, exit 0. A package of that
     Channel on the next cadence day (today, with a daily cadence) fills the gap."""
-    code, lines = run_check(FIXTURES / "schedule-gap")
-    assert code == 0 and len(lines) == 1, lines
-    assert lines[0].startswith("warning: Drafts/Rush hour in one tap - x.md: [schedule-gap] ")
     vault = tmp_path / "vault"
     shutil.copytree(FIXTURES / "schedule-gap", vault)
+    draft = vault / "Drafts" / "Rush hour in one tap - x.md"
+    (vault / "Drafts" / "Rush hour in one tap - x2.md").write_text(draft.read_text())  # a second waiting Draft
+    code, lines = run_check(vault)
+    assert code == 0 and len(lines) == 1, lines
+    assert lines[0].startswith("warning: Drafts/Rush hour in one tap - x.md: [schedule-gap] ")
     schedule = vault / "Schedule" / "traffic_jam.md"
     every_day = "[Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]"
     schedule.write_text(schedule.read_text().replace("[Monday, Thursday]", every_day))

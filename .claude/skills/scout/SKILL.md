@@ -191,7 +191,7 @@ Pick 5 to 8 Topics, ranked by strength (1 is the strongest). Rules the Vault che
 
 - Propose Topics for the current Phase and the next one only, never for a later Phase. Spread the Digest across both, so the next Phase's Posts are written before it starts. A Topic of a Phase with an empty `starts` may be written and drafted now; it is packaged once the Owner dates the Phase.
 - **Reveal Topic.** When the next Phase has a `starts` date and no note in `Topics/` (any status) names it in `phase`, propose its reveal Topic: the public name, the store page and the pre-registration link, `promotional: true`, `phase` set to that Phase.
-- **Check Source material against the Phases.** For each Topic, read every Source material line against the "Not public yet" list. A Topic may draw on an item only when the item's bracketed Phase is the Topic's own `phase` or an earlier one in the `phases` order; `[never]` items never. Move a Topic to the Phase that lifts all it shows, or drop the Topic.
+- **Check Source material against the Phases.** For each Topic, read every Source material line against the "Not public yet" list. A Topic may draw on an item only when the item's bracketed Phase is the Topic's own `phase` or an earlier one in the `phases` order; `[never]` items never. Move a Topic to the Phase that lifts all it shows when that is the current or the next Phase; if it is a later Phase, drop the Topic.
 
 Every Topic must agree with the Fact sheet and keep out what it lists under "Not public yet" for its Phase. Channels: `x`, `reddit`, `linkedin`, `shorts` (one 9:16 video for YouTube Shorts and TikTok; list it only when the Shot list names footage that shows the story in under 60 seconds).
 
