@@ -1,0 +1,42 @@
+<!--
+  One beat: the beat's footage, full frame, for the beat's Seconds (set on its host in index.html).
+  Copy to beat-<n>.html and replace every "beat-1" with "beat-<n>" (host, root and timeline share the id).
+  A screenshot: keep the frame and its <img>, set the img's src. A clip: replace the whole frame <div> with
+    <video id="beat-1-footage" class="clip" src="assets/footage/<file>.mp4" data-start="0" data-duration="3"
+           data-media-start="0" data-track-index="1" muted playsinline></video>
+  and delete the push-in tween (data-media-start trims into the clip; keep the game's sound with
+  data-has-audio="true" instead of muted).
+-->
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: #000000;
+    }
+    #beat-1-frame {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #beat-1-footage {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1080px;
+      height: 1920px;
+      object-fit: cover;
+    }
+  </style>
+  <div id="root" data-composition-id="beat-1" data-width="1080" data-height="1920">
+    <div id="beat-1-frame" class="clip" data-layout-allow-overflow data-start="0" data-duration="3" data-track-index="1">
+      <img id="beat-1-footage" src="assets/placeholder.png" alt="" />
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // A slow push-in keeps a still screenshot alive; drop it for a clip.
+    tl.fromTo("#beat-1-footage", { scale: 1 }, { scale: 1.06, duration: 3, ease: "none" }, 0);
+    window.__timelines["beat-1"] = tl;
+  </script>
+</template>

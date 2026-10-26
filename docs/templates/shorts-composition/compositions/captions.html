@@ -1,0 +1,68 @@
+<!--
+  Burned captions: one group per beat holding that beat's On-screen text, timed like its beat
+  (data-start = the beat's start in the video, data-duration = its Seconds). The look is the registry's
+  caption-highlight component (`npx hyperframes add caption-highlight`), cut down to one line per beat
+  and set for 1080x1920: the group sits in the band the platforms leave free, above the bottom 18% and
+  below the top 15% (Channel rules/Shorts.md). Never move it into either band.
+  For each further beat copy the cap-1 group to cap-<n> and add its two tweens below.
+-->
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .cap-group {
+      position: absolute;
+      left: 0;
+      bottom: 640px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 0 108px;
+    }
+    .cap-line {
+      font-family: "Montserrat", sans-serif;
+      font-weight: 800;
+      font-size: 72px;
+      text-transform: uppercase;
+      text-align: center;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      position: relative;
+      padding: 10px 20px 12px;
+      isolation: isolate;
+      text-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    }
+    .cap-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #ff1745 0%, #df1238 100%);
+      border-radius: 10px;
+      box-shadow: 0 12px 30px rgba(229, 20, 58, 0.32);
+      transform-origin: 0% 50%;
+      z-index: -1;
+    }
+    .cap-text {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+  <div id="root" data-composition-id="captions" data-width="1080" data-height="1920">
+    <div id="cap-1" class="clip cap-group" data-start="0" data-duration="3" data-track-index="1">
+      <div class="cap-line">
+        <span id="cap-1-bg" class="cap-bg"></span>
+        <span id="cap-1-text" class="cap-text">On-screen text</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // cap-1: the highlight sweeps in at the beat's start (the group's data-start).
+    tl.fromTo("#cap-1-bg", { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.15, ease: "power2.out" }, 0);
+    tl.fromTo("#cap-1-text", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 0);
+    window.__timelines["captions"] = tl;
+  </script>
+</template>
