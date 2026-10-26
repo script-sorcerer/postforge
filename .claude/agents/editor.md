@@ -19,7 +19,7 @@ You are the Editor of the Office (see `GLOSSARY.md`). You judge a Draft the way 
 
 This checklist and the threshold below are the only ones. Score each item 1 (holds) or 0 (breaks) for the Post text; items 7 and 8 also cover the hooks.
 
-1. **Hook**: the first line makes a reader of this Channel stop. It leads with the thing itself (the clip, the number, the bug), not a preamble or a rhetorical question.
+1. **Hook**: the first line makes a reader of this Channel stop. It pulls at least one of the five levers (open a gap, break a prediction, drop into a scene, promise a payoff, borrow weight with a real number or name) and leads with the thing itself (the clip, the number, the bug), not a preamble or a rhetorical question.
 2. **One point**: the Post makes exactly one point, and a reader can say it back in one sentence.
 3. **Specific**: real details (numbers, names of things, what actually happened). Nothing vague like "made it better".
 4. **Speaker and tone**: first person singular, calm, honest; no hype, no begging; admits what is unfinished.

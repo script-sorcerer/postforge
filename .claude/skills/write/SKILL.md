@@ -41,7 +41,14 @@ Leave every other Topic alone: proposed, rejected and parked Topics get no Draft
 Before any Pass runs on a Topic, create every missing Draft note of that Topic, one per Channel in its `channels`: frontmatter only (as in the template below), with `status: drafting` and an empty `passes` list. So the Vault check never takes a half-written Topic for a finished one. Then write each Draft in turn. After each Pass, rewrite the note and append that Pass's name to `passes`. Run the Passes in exactly this order; the Vault check fails a Draft whose Passes are out of order, or incomplete once it leaves `drafting`.
 
 1. **`angle`**: read the Topic note in full (Angle, Why now, Source material, Shot list) and its Source material if needed. Fix the one point of the Post and who it is for, in one sentence. Write it under `## Writer notes`.
-2. **`hooks`**: write three different opening lines for that point. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below).
+2. **`hooks`**: write three opening lines for that point, each pulling a different lever of these five:
+   - **open a gap**: name something the reader wants closed (a result without its cause, a question the Post answers);
+   - **break a prediction**: state what the reader expects, then what actually happened;
+   - **drop into a scene**: start inside the moment, with what the player sees or hears;
+   - **promise a payoff**: say what the reader gets by reading on (a fix, a number, a trick they can use);
+   - **borrow weight**: lead with a real number or name from the Source material, never an invented one.
+
+   Three hooks, three different levers. At least one is sensory (a scene or one concrete detail) and at least one is reader-direct (a problem the reader has, a conditional "if you...", a promise). Each leads with the thing itself. None uses a hook anti-pattern from the Voice guide's Banned words and patterns. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below). Under `## Writer notes`, record each hook's lever in one word, as `Hooks: body=<lever>, 1=<lever>, 2=<lever>` (gap, prediction, scene, payoff, weight), so the Owner sees the spread.
 3. **`draft`**: write the Post text in the Channel's register from the Voice guide.
    - **X**: short, one point, one or two sentences, leads with the thing itself, Attachment first.
    - **Reddit**: modest and not self-promotional; a lesson or a moment shared with peers, the game as context, not the pitch. First pick one `subreddit` from the `subreddits` list in `Channel rules/Reddit.md`, written exactly as listed (`gamedev`, not `r/gamedev`), whose fit and self-promotion rule suit the Topic; skip the store-player subreddits the note says to hold. Write to that subreddit's rules. Write a `title` that states what the Post shows or teaches, within `text.max_title_length`; it goes in frontmatter, not in the Post text. The three hooks are openings of the body; the title is separate.
@@ -104,6 +111,7 @@ editor_score: 7
 ## Writer notes
 
 Angle: <the one point and who it is for>.
+Hooks: body=<lever>, 1=<lever>, 2=<lever>.
 
 ## Editor review 1
 

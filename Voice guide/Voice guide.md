@@ -46,6 +46,12 @@ Remove or rewrite on sight.
 - "It's not just X, it's Y" and other "not X but Y" reversals.
 - Lists of three adjectives or three parallel clauses used for rhythm, not meaning.
 - Rhetorical question openers ("Ever wondered why...?").
+- Hook anti-patterns, in any hook or first line:
+  - rhetorical throat-clearing: "Have you ever wondered", "Did you know", "Here's the thing";
+  - hype labels: "Hot take:", "Unpopular opinion:", "This changes everything";
+  - unsourced statistics: "studies show", "most developers", a number with no source in the Topic's Source material;
+  - "It's not just X, it's Y" as an opener;
+  - time framing without a date: "recently", "lately", "the other day" (name the day or the week, or drop it).
 - Em dashes as the default punctuation; use a full stop, a comma or a colon.
 - Every paragraph ending on a neat moral or a one-line zinger.
 - Headings, bold and bullet lists in a Post that should read as speech.
