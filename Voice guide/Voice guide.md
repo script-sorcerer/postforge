@@ -26,6 +26,7 @@ The Writer's Voice Pass checks every Draft against this note; the Humanize Pass 
 
 - **X**: short. One idea, one or two sentences, Attachment first. Reads like a note to other developers.
 - **Reddit**: modest and not self-promotional. A lesson or a moment shared with peers; the game is context, not the pitch. Follow each subreddit's rules (see [[Channel rules/Reddit]]).
+- **Shorts**: one idea per video, shown, not explained. On-screen text is short labels (a few words each), never sentences. The caption speaks in the same first person as every other Channel, payoff first.
 - **LinkedIn**: reflective, with a takeaway. What I tried, what happened, what I learned that another builder can use. Still first person, still no corporate tone.
 
 ## AI stance
@@ -46,11 +47,23 @@ Remove or rewrite on sight.
 - "It's not just X, it's Y" and other "not X but Y" reversals.
 - Lists of three adjectives or three parallel clauses used for rhythm, not meaning.
 - Rhetorical question openers ("Ever wondered why...?").
+- Hook anti-patterns, in any hook or first line:
+  - rhetorical throat-clearing: "Have you ever wondered", "Did you know", "Here's the thing";
+  - hype labels: "Hot take:", "Unpopular opinion:", "This changes everything";
+  - unsourced statistics: "studies show", "most developers", a number with no source in the Topic's Source material;
+  - "It's not just X, it's Y" as an opener;
+  - time framing without a date: "recently", "lately", "the other day" (name the day or the week, or drop it).
 - Em dashes as the default punctuation; use a full stop, a comma or a colon.
 - Every paragraph ending on a neat moral or a one-line zinger.
 - Headings, bold and bullet lists in a Post that should read as speech.
 - Generic closing calls to action ("What do you think? Let me know in the comments!").
 - Hashtag strings, emoji bullets, bold-unicode text.
+
+**Filler by function** (the Humanize Pass catches these however they are worded):
+- Formulaic framing: a sentence that announces the point instead of making it ("Here's what I learned", "Let me tell you about", "It's worth noting that").
+- Stock journey sentences: the project as a story arc with no fact in it ("It's been quite a ride", "Every step taught me something", "What started as a small idea").
+- Moralising recap: a closing line that restates the Post as a lesson ("And that's the power of small changes", "Sometimes the simplest fix is the best one").
+- Vague praise without a measure: "much better", "feels so smooth", "huge improvement" with no number, before / after or concrete detail.
 
 ## Never publish
 

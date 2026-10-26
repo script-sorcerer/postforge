@@ -26,11 +26,11 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 ## Step 2: Pick the work
 
-Channels in this version: `x`, `reddit`, `linkedin`. Each approved Topic gets exactly one Draft per Channel in its `channels`; the Vault check fails an approved Topic with two Drafts for one Channel, or with a Draft or Post for a Channel it does not list, and, once the Topic has a Draft and none is `drafting`, one missing a Draft for one of its Channels. A Publish package or Post for that Channel stands in for its Draft once packaged.
+Channels in this version: `x`, `reddit`, `linkedin`, `shorts` (one 9:16 video for YouTube Shorts and TikTok; its Draft is a Video script, see "The Shorts Draft" below). Each approved Topic gets exactly one Draft per Channel in its `channels`; the Vault check fails an approved Topic with two Drafts for one Channel, or with a Draft or Post for a Channel it does not list, and, once the Topic has a Draft and none is `drafting`, one missing a Draft for one of its Channels. A Publish package or Post for that Channel stands in for its Draft once packaged.
 
 A unit of work is one approved Topic and one Channel:
 
-- the Topic note in `Topics/` has `status: approved` and the Channel in `channels`;
+- the Topic note in `Topics/` has `status: approved` and the Channel in `channels`; an Owner Topic (`origin: owner`, no Digest, no `rank`) is treated exactly like a Scout Topic;
 - `Drafts/<topic title> - <channel>.md` does not exist yet, or still has `status: drafting` (an interrupted run): then resume after the last Pass in its `passes`;
 - or the Draft's Editor loop is unfinished (an interrupted run): it has `status: revising`, or `status: in-review` with no `## Editor review` yet, or `status: in-review` whose last Editor review says `Verdict: revise` while `editor_rounds` is below 2. Resume it at Step 4.
 
@@ -38,23 +38,43 @@ Leave every other Topic alone: proposed, rejected and parked Topics get no Draft
 
 ## Step 3: Write each Draft through the Passes
 
-Before any Pass runs on a Topic, create every missing Draft note of that Topic, one per Channel in its `channels`: frontmatter only (as in the template below), with `status: drafting` and an empty `passes` list. So the Vault check never takes a half-written Topic for a finished one. Then write each Draft in turn. After each Pass, rewrite the note and append that Pass's name to `passes`. Run the Passes in exactly this order; the Vault check fails a Draft whose Passes are out of order, or incomplete once it leaves `drafting`.
+Before any Pass runs on a Topic, create every missing Draft note of that Topic, one per Channel in its `channels` whose Channel rules note is `approved` (a Channel you skip gets no note; the Vault check expects no Draft for it until its rules are approved): frontmatter only (as in the template below), with `status: drafting` and an empty `passes` list. So the Vault check never takes a half-written Topic for a finished one. Then write each Draft in turn. After each Pass, rewrite the note and append that Pass's name to `passes`. Run the Passes in exactly this order; the Vault check fails a Draft whose Passes are out of order, or incomplete once it leaves `drafting`.
 
 1. **`angle`**: read the Topic note in full (Angle, Why now, Source material, Shot list) and its Source material if needed. Fix the one point of the Post and who it is for, in one sentence. Write it under `## Writer notes`.
-2. **`hooks`**: write three different opening lines for that point. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below).
+2. **`hooks`**: write three opening lines for that point, each pulling a different lever of these five:
+   - **open a gap**: name something the reader wants closed (a result without its cause, a question the Post answers);
+   - **break a prediction**: state what the reader expects, then what actually happened;
+   - **drop into a scene**: start inside the moment, with what the player sees or hears;
+   - **promise a payoff**: say what the reader gets by reading on (a fix, a number, a trick they can use);
+   - **borrow weight**: lead with a real number or name from the Source material, never an invented one.
+
+   **Shorts**: a hook is the first beat's On-screen text plus the caption's first line, and it carries the payoff itself in the first two seconds: the result on screen, no setup, no "watch this". The alternatives are other first beats written the same way, each holding both parts as `<beat 1 On-screen text> / <caption first line>`.
+
+   Three hooks, three different levers. At least one is sensory (a scene or one concrete detail) and at least one is reader-direct (a problem the reader has, a conditional "if you...", a promise). Each leads with the thing itself. None uses a hook anti-pattern from the Voice guide's Banned words and patterns. Pick the strongest. It opens the Post text; the two others go in the Alternative hooks callout (format below). Under `## Writer notes`, record each hook's lever in one word, as `Hooks: body=<lever>, 1=<lever>, 2=<lever>` (gap, prediction, scene, payoff, weight), so the Owner sees the spread.
 3. **`draft`**: write the Post text in the Channel's register from the Voice guide.
    - **X**: short, one point, one or two sentences, leads with the thing itself, Attachment first.
    - **Reddit**: modest and not self-promotional; a lesson or a moment shared with peers, the game as context, not the pitch. First pick one `subreddit` from the `subreddits` list in `Channel rules/Reddit.md`, written exactly as listed (`gamedev`, not `r/gamedev`), whose fit and self-promotion rule suit the Topic; skip the store-player subreddits the note says to hold. Write to that subreddit's rules. Write a `title` that states what the Post shows or teaches, within `text.max_title_length`; it goes in frontmatter, not in the Post text. The three hooks are openings of the body; the title is separate.
+   - **Shorts**: a Video script (see "The Shorts Draft" below). One idea, no setup. Write the beat table from the Topic's Shot list: each beat names one captured file as an `[[Attachments/<file>]]` link (or `text` for a text-only beat), a short On-screen text, Narration (leave it empty: Shorts need no voice, and the Producer stops on a beat with narration) and its Seconds. Beat 1 carries the hook; the last beat ends on the payoff or loops into beat 1, with no end card and no fade. The Post text is the caption: the hook's words on the first line, one or two plain sentences, hashtags (at most `hashtags.max`) at the end. Write the YouTube `title` in frontmatter and under `## Title`, within `text.max_title_length`.
    - **LinkedIn**: reflective, with a takeaway: what I tried, what happened, what I learned that another builder can use. The first two lines carry the hook. Short paragraphs, hashtags (at most the Channel rules' `hashtags.max`) only at the end.
 4. **`voice`**: check the Draft against every section of the Voice guide (who is speaking, tone, register, AI stance, never publish) and fix what breaks it. Check the hook alternatives too.
-5. **`humanize`**: remove every banned word and pattern the Voice guide lists, in the Post text and the alternatives.
-6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation line that names this Draft and run it again until none does. Violations in other notes are not yours to fix here: list them for the Owner in Step 5.
+5. **`humanize`**: a minimal repair, not a rewrite. The Voice guide's Banned words and patterns is the only list; apply it to the Post text and the alternatives under this contract:
+   - Edit a sentence only when it holds a confirmed banned word or pattern. Repair it with the smallest change that removes the match.
+   - Copy every other sentence unchanged, in its order.
+   - Add nothing: no new claim, advice, anecdote or conclusion.
+   - Delete empty framing ("It's worth noting that", "At the end of the day") rather than replace it with other filler.
+   - Keep every fact, number, name, code, unit and every "never", "must" and "all" as written.
+   - A match inside a quote, a technical term (a function name, `seamless` as an engine setting) or an Owner block is not a defect. Never touch text between `%% owner %%` and `%% /owner %%`.
+   - Never stack short sentences into staccato prose to sound human, and stop at matters of taste: a sentence you would merely phrase differently stays.
+   - Recognise paraphrased filler by what it does, not only by the words listed: formulaic framing, stock journey sentences, moralising recap, vague praise without a measure (the Voice guide names all four).
+
+   The same contract applies when you revise from an Editor remark on item 7 (Human).
+6. **`channel-fit`**: apply the Channel rules note: length, hashtags, Attachments, etiquette. For Shorts also: keep every On-screen text short enough to sit outside the top and bottom safe bands (one line, a label, never a sentence pair), check each against `on_screen_text.max_chars_per_beat`, add up the beats' Seconds against `attachments.video.max_seconds` and write the sum to `duration_s`, and check the `title` against `text.max_title_length`. Then set `status: in-review`, record the Pass, and run `scripts/vault_check.py`. Fix every violation line that names this Draft and run it again until none does. Violations in other notes are not yours to fix here: list them for the Owner in Step 5.
 
 ## Step 4: Editor loop
 
 Every `in-review` Draft goes through the Editor before the Owner sees it. The checklist and the pass threshold live only in `.claude/agents/editor.md`; you do not score the Draft yourself.
 
-1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks; for Reddit also the `subreddit` and `title`. No file path, no Writer notes, no earlier reviews.
+1. **Launch a fresh Editor.** Call the Agent tool with `subagent_type: "editor"`, a new call for every review. Never `fork` and never continue an earlier Editor with SendMessage: both carry context the Editor must not see. The prompt holds only the Channel, the Project, the Post text (as defined below) and the two Alternative hooks; for Reddit also the `subreddit` and `title`; for Shorts also the `title` and the `## Script` beat table; always also the Topic's `## Source material` lines, so the Editor can tell a real number or name from an invented one. No file path, no Writer notes, no earlier reviews.
 2. **Record the review.** Let N be this review's number: `editor_rounds` plus 1, or 1 if the Draft has no `editor_rounds` yet. Append to the end of the Draft:
 
    ```markdown
@@ -104,6 +124,7 @@ editor_score: 7
 ## Writer notes
 
 Angle: <the one point and who it is for>.
+Hooks: body=<lever>, 1=<lever>, 2=<lever>.
 
 ## Editor review 1
 
@@ -123,11 +144,58 @@ subreddit: gamedev
 title: "Giving every road a capacity fixed my traffic sim's feel"
 ```
 
-Copy `attachments` from the Topic. The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist. `editor_rounds`, `editor_score` and the `## Editor review N` sections appear once the Editor loop runs; each review is appended after the previous one.
+Copy `attachments` from the Topic, except for Shorts: a Shorts Draft starts with `attachments: []` and only the Producer fills it, with the one rendered MP4 (the Topic's raw clips are named in the Script, never attached). The Draft must link to its Topic in `topic`; the Vault check fails a Draft whose Topic note does not exist. `editor_rounds`, `editor_score` and the `## Editor review N` sections appear once the Editor loop runs; each review is appended after the previous one.
+
+## The Shorts Draft
+
+A Shorts Draft is a Video script. Its Post text is the caption. After `## Writer notes` come `## Title` (the YouTube title, the same text as `title`) and `## Script`, the beat table the Producer builds the video from:
+
+```markdown
+---
+kind: draft
+status: in-review
+project: "[[<project>]]"
+topic: "[[<topic title>]]"
+channel: shorts
+language: en
+passes: [angle, hooks, draft, voice, humanize, channel-fit]
+attachments: []
+title: "One number made my traffic queue"
+duration_s: 7
+---
+
+Cars in my traffic puzzle game now queue at a full road. One capacity number per road did it; before, they drove through each other. #indiegame
+
+> [!note]- Alternative hooks
+> Say "use hook 1" or "use hook 2" to swap one into the body.
+> 1. <alternative first beat On-screen text> / <caption first line>
+> 2. <alternative first beat On-screen text> / <caption first line>
+
+## Writer notes
+
+Angle: <the one point and who it is for>.
+Hooks: body=<lever>, 1=<lever>, 2=<lever>.
+
+## Title
+
+One number made my traffic queue
+
+## Script
+
+| # | Footage | On-screen text | Narration | Seconds |
+|---|---|---|---|---|
+| 1 | [[Attachments/queue-after.mp4]] | CARS NOW QUEUE |  | 3 |
+| 2 | [[Attachments/queue-before.mp4]] | THEY USED TO OVERLAP |  | 2 |
+| 3 | [[Attachments/queue-after.mp4]] | ONE NUMBER PER ROAD |  | 2 |
+```
+
+The columns are exactly `#`, `Footage`, `On-screen text`, `Narration`, `Seconds`. Write an aliased link inside the table as `[[Attachments/x.mp4\|label]]`. Every `Footage` link names a file from the Topic's Shot list; a file not captured yet still goes in, and the Producer lists it for the Owner. The Vault check fails a Shorts Draft with no `## Script`, fewer than two beats, a beat without Footage or Seconds, `duration_s` not equal to the beats' sum or over `attachments.video.max_seconds`, an On-screen text over `on_screen_text.max_chars_per_beat`, or no `title` or one over `text.max_title_length`. Editor reviews are appended after the Script.
 
 ## Switching hooks
 
 When the Owner says "use hook 2" (or similar) for a Draft:
+
+For Shorts, the hook has two parts: replace beat 1's On-screen text in the `## Script` table with the alternative's first part and the caption's first line with its second part, wrapping each in its own Owner block, and put both replaced parts back as one alternative. Otherwise:
 
 1. Replace the opening hook of the Post text with alternative 2, adjusting the next sentence only if it no longer follows (never one inside an Owner block). The Owner chose it, so wrap the new hook in `%% owner %%` ... `%% /owner %%` and run `scripts/vault_check.py --seal "<draft path>"`: this is the one time you seal, because the Owner asked for this change.
 2. Put the replaced hook in the callout as alternative 2, so both alternatives stay available.

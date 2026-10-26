@@ -4,13 +4,15 @@
 
 **Blocked by:** none
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `docs/templates/Owner Topic.md` exists with the four sections and `origin: owner`
-- [ ] The Vault check accepts an `owner` Topic without `rank` and still fails a `scout` Topic without one
-- [ ] The Vault check fails `origin` outside `scout`/`owner`
-- [ ] `/write` picks up an approved Owner Topic like any other
-- [ ] Scout prompt names Owner Topics among the Topics it must not repeat
-- [ ] Fixtures: an Owner Topic that passes, a Scout Topic without rank that fails
+- [x] `docs/templates/Owner Topic.md` exists with the four sections and `origin: owner`
+- [x] The Vault check accepts an `owner` Topic without `rank` and still fails a `scout` Topic without one
+- [x] The Vault check fails `origin` outside `scout`/`owner`
+- [x] `/write` picks up an approved Owner Topic like any other
+- [x] Scout prompt names Owner Topics among the Topics it must not repeat
+- [x] Fixtures: an Owner Topic that passes, a Scout Topic without rank that fails
 
 ## Comments
+
+- 2026-10-26: Resolved in commit 343100a. Rank is required only when `origin` is not `owner`; new rule `topic-origin`; fixtures `valid/Topics/Rush hour in one tap.md`, `required-fields-scout-rank`, `topic-origin`. `/write` needed only one prompt line: its work selection already reads every approved Topic. Not checked end to end with a real `/write` run (ticket 09).

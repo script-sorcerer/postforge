@@ -4,11 +4,14 @@
 
 **Blocked by:** none
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `Channel rules/Shorts.md` exists, `status: approved` only after the Owner reads it
-- [ ] A Topic may list `shorts` in `channels`
-- [ ] The Vault check reads the Shorts limits from the note's frontmatter like the other Channels
-- [ ] README's Channel list names Shorts
+- [x] `Channel rules/Shorts.md` exists, `status: approved` only after the Owner reads it
+- [x] A Topic may list `shorts` in `channels`
+- [x] The Vault check reads the Shorts limits from the note's frontmatter like the other Channels
+- [x] README's Channel list names Shorts
 
 ## Comments
+
+- 2026-10-26: Resolved in commit a4b7390. `Channel rules/Shorts.md` is `status: proposed` until the Owner reads it and sets `approved`; the Writer skips a Channel whose rules are not approved. The video limits sit under `attachments.video` (`max_count`, `formats`, `max_size_mb`, `max_seconds`, `aspect`) instead of a separate `video:` key, so the existing Attachment checks read them unchanged. Caption 2,200 (TikTok) and upload 1 GB (TikTok) checked online; the YouTube title limit of 100 was not re-checked online. New rule branch in `channel-rules` for Shorts, fixture `channel-rules-shorts`. The checkbox for approval stays the Owner's to act on.
+- 2026-10-26: Review fix in commit 23b57bd: `topic-drafts` no longer reports a missing Draft for a Channel whose rules note exists but is not `approved` (Shorts is `proposed`), and the Writer creates `drafting` stubs only for Channels whose rules are approved; test `test_missing_draft_for_channel_with_unapproved_rules_passes_until_approved`, fixture `topic-drafts-unapproved-rules`.

@@ -4,14 +4,16 @@
 
 **Blocked by:** none
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Three HyperFrames skills under `.claude/skills/`
+- [x] Three HyperFrames skills under `.claude/skills/`
 - [x] `docs/producer-setup.md` with versions, commands and the usage/plan answer
-- [ ] `docs/templates/shorts-composition/` passes `npx hyperframes check` with placeholder footage
-- [ ] `.gitignore` covers renders and `node_modules`
+- [x] `docs/templates/shorts-composition/` passes `npx hyperframes check` with placeholder footage
+- [x] `.gitignore` covers renders and `node_modules`
 - [ ] A sample render completes locally
 
 ## Comments
 
 - 2026-10-26: Pipeline studied on the Owner's machine; findings and quota rules in `docs/producer-setup.md`. Ready to install.
+- 2026-10-26: Resolved in commit cddd4b4. Skills `hyperframes`, `hyperframes-cli`, `hyperframes-registry` copied into `.claude/skills/` with `skills-lock.json` (two of them from a sparse clone after the regular clone stalled; see `docs/producer-setup.md`). `.gitignore` covers `Attachments/*.mp4` and, under `Attachments/video/**/`, `node_modules/`, `out/`, `renders/`, `.hyperframes/artifacts/`, `assets/footage/` (verified with `git status`; `.hyperframes/history` stays tracked). `docs/templates/shorts-composition/` (1080x1920 `index.html`, `compositions/beat-1.html`, `compositions/captions.html`, placeholder still) passes `npx hyperframes check --json` with the top and bottom caption zones at `severity=error`: 0 errors, 0 warnings; one `snapshot --at 0.3` frame looked right. The caption block is adapted by hand from the registry's `caption-highlight` component (installed with `npx hyperframes add caption-highlight` in a scratch project, then cut to one line per beat at 1080x1920), not added to the template with `add`. `npx hyperframes init` ran once in a scratch folder and was deleted. Left out: the sample render (box unticked), because this run was told not to run `npx hyperframes render`; the first render is the Owner's, in ticket 09.
+- 2026-10-26: Review fix in commit 23b57bd: Removed the template's `registryItems` entry for `caption-highlight`, whose file the template does not ship.

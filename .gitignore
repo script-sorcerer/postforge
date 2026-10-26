@@ -18,7 +18,19 @@
 *.mov
 *.webm
 *.mkv
+# ...except the Vault check's test fixtures (a few bytes each)
+!tests/fixtures/**/*.mp4
+!tests/fixtures/**/*.mov
 
 # Python
 __pycache__/
 .pytest_cache/
+
+# Producer Compositions (ADR 0002): the HTML source is committed; renders, tool output and copied footage are not.
+# Keep .hyperframes/history (undo). Footage copies live in assets/footage/; the source stays in Attachments/.
+Attachments/*.mp4
+Attachments/video/**/node_modules/
+Attachments/video/**/out/
+Attachments/video/**/renders/
+Attachments/video/**/.hyperframes/artifacts/
+Attachments/video/**/assets/footage/

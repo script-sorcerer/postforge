@@ -32,6 +32,8 @@ BROKEN = {
     "required-fields-topic": ("Topics/No rubric.md", "required-fields"),
     "required-fields-draft": ("Drafts/No topic link.md", "required-fields"),
     "required-fields-post": ("Publish packages/No channel.md", "required-fields"),
+    "required-fields-scout-rank": ("Topics/Scout topic without rank.md", "required-fields"),
+    "topic-origin": ("Topics/Unknown origin.md", "topic-origin"),
     "status-topic": ("Topics/Wrong status.md", "status"),
     "status-draft": ("Drafts/Wrong status.md", "status"),
     "status-post": ("Posts/Wrong status.md", "status"),
@@ -77,6 +79,20 @@ BROKEN = {
     "hashtags": ("Drafts/Two hashtags.md", "hashtags"),
     "draft-length-package": ("Publish packages/Too long.md", "draft-length"),
     "reddit-title-package": ("Publish packages/Road capacity explained - reddit.md", "reddit-title"),
+    "channel-rules-shorts": ("Channel rules/Shorts.md", "channel-rules"),
+    "shorts-script": ("Drafts/Queue at the junction - shorts.md", "shorts-script"),
+    "shorts-script-beat": ("Drafts/Queue at the junction - shorts.md", "shorts-script"),
+    "shorts-script-footage": ("Drafts/Queue at the junction - shorts.md", "shorts-script"),
+    "shorts-script-one-beat": ("Drafts/Queue at the junction - shorts.md", "shorts-script"),
+    "shorts-duration": ("Drafts/Queue at the junction - shorts.md", "shorts-duration"),
+    "shorts-duration-limit": ("Drafts/Queue at the junction - shorts.md", "shorts-duration"),
+    "shorts-on-screen-text": ("Drafts/Queue at the junction - shorts.md", "shorts-on-screen-text"),
+    "shorts-title": ("Drafts/Queue at the junction - shorts.md", "shorts-title"),
+    "shorts-video": ("Publish packages/Queue at the junction - shorts.md", "shorts-video"),
+    "shorts-package-count": ("Publish packages/Queue at the junction - shorts.md", "attachment-count"),
+    "shorts-package-format": ("Publish packages/Queue at the junction - shorts.md", "attachment-format"),
+    "shorts-package-size": ("Publish packages/Queue at the junction - shorts.md", "attachment-size"),
+    "shorts-package-title": ("Publish packages/Queue at the junction - shorts.md", "shorts-title"),
     "channel-rules-reddit": ("Channel rules/Reddit.md", "channel-rules"),
 }
 
@@ -123,3 +139,14 @@ def test_non_text_channel_and_status_are_reported_not_crashed_on():
     )
     assert "Traceback" not in result.stderr
     assert result.returncode == 1
+
+
+def test_missing_draft_for_channel_with_unapproved_rules_passes_until_approved(tmp_path):
+    """The Writer skips a Channel whose rules are not approved; its missing Draft is reported only once they are."""
+    assert run_check(FIXTURES / "topic-drafts-unapproved-rules") == (0, [])
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "topic-drafts-unapproved-rules", vault)
+    rules = vault / "Channel rules" / "Shorts.md"
+    rules.write_text(rules.read_text().replace("status: proposed", "status: approved", 1))
+    code, violations = run_check(vault)
+    assert code == 1 and len(violations) == 1 and "[topic-drafts] approved topic has no draft for shorts" in violations[0]

@@ -31,12 +31,20 @@ The Producer runs from Claude Code with the CLI, never through the desktop app's
 6. **The Owner picks the model.** The skill sets no `model`; it runs on whatever the Owner chose for the session, or on the model named in the command (`/produce <draft> --model sonnet`). With the template and the beat table the work is filling, not designing, so a cheaper model is a fair default, but it is the Owner's call per Draft.
 7. **Fixed checkpoints, no proposals.** The Producer stops and talks to the Owner at three points only: footage missing (lists the Shot list lines), composition ready for review (the app is open), render done (path, duration). It proposes no styles, music, transitions or extra scenes.
 
-## Install still to do (ticket 06)
+## Install (ticket 06, done 2026-10-26)
+
+HyperFrames' own skills sit in the repository at project level, copied (not symlinked) so a fresh clone has them; `skills-lock.json` records their source and hash:
 
 ```sh
-npx skills add heygen-com/hyperframes --skill hyperframes
-npx skills add heygen-com/hyperframes --skill hyperframes-cli
-npx skills add heygen-com/hyperframes --skill hyperframes-registry
+npx skills add heygen-com/hyperframes --skill hyperframes -a claude-code --copy -y
+npx skills add heygen-com/hyperframes --skill hyperframes-cli -a claude-code --copy -y
+npx skills add heygen-com/hyperframes --skill hyperframes-registry -a claude-code --copy -y
 ```
 
-Project level, into `.claude/skills/`; not `media-use`. Then `.gitignore` for `Attachments/video/**/node_modules/`, `Attachments/video/**/.hyperframes/artifacts/`, `Attachments/video/**/renders/`, `Attachments/*.mp4`; keep `.hyperframes/history` (undo).
+Not installed: `media-use`, `figma`, `slideshow`, `remotion-to-hyperframes`. Each `skills add` clones the whole HyperFrames repository. On 2026-10-26 the clone stalled twice for `hyperframes-cli` and `hyperframes-registry`, so those two were installed from a sparse clone of the same repository (`git clone --depth 1 --filter=blob:none --sparse`, commit `7d6c02f`, `git sparse-checkout set skills/...`, then `npx skills add <that folder> --skill ...`), and `skills-lock.json` was pointed back at `heygen-com/hyperframes`; the `hyperframes` skill from the regular install matched that clone file for file.
+
+Checked on install: Node.js v24.13.1, FFmpeg 8.1, HyperFrames CLI 0.8.204 (`npx --yes hyperframes@0.8.204`).
+
+`.gitignore` keeps out `Attachments/*.mp4` and, under `Attachments/video/**/`, `node_modules/`, `out/`, `renders/`, `.hyperframes/artifacts/` and `assets/footage/` (copies of the Owner's footage; the source stays in `Attachments/`). `.hyperframes/history` (undo) is committed.
+
+The house template `docs/templates/shorts-composition/` (1080x1920 `index.html`, `compositions/beat-1.html`, `compositions/captions.html` adapted from the registry's `caption-highlight`, a placeholder still in `assets/`) passes `npx hyperframes check --json` with both caption zones (top `y1=.15`, bottom `y0=.82`, `severity=error`): no error, no warning. No sample render was run while installing: the render belongs to the Owner's word (rule 4), and the first one is the smoke run.

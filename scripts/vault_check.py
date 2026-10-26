@@ -58,8 +58,12 @@ RUBRICS = [
     "Before / After", "By the numbers", "Player challenge",
 ]
 
-# Channels in iteration 1: a Topic's `channels` may name only these.
-CHANNELS = ["x", "reddit", "linkedin"]
+# A Topic's `channels` may name only these. `shorts` is one 9:16 video for YouTube Shorts and TikTok.
+CHANNELS = ["x", "reddit", "linkedin", "shorts"]
+
+# A Topic's `origin`: the Scout's (the default when absent) or the Owner's own. An Owner Topic is written
+# by hand outside any Digest, so it carries no `rank`.
+ORIGINS = ["scout", "owner"]
 
 # Every Topic note body carries these `## ` sections (the Scout's Topic template).
 TOPIC_SECTIONS = ["Angle", "Why now", "Source material", "Shot list"]
@@ -136,7 +140,10 @@ def check_required_fields(note):
     kind = kind_of(note)
     if not kind:
         return []
-    missing = [f for f in REQUIRED_FIELDS[kind] if note["fm"].get(f) in (None, "", [])]
+    required = REQUIRED_FIELDS[kind]
+    if kind == "topic" and note["fm"].get("origin") == "owner":
+        required = [f for f in required if f != "rank"]
+    missing = [f for f in required if note["fm"].get(f) in (None, "", [])]
     return [f"{kind} is missing {', '.join(missing)}"] if missing else []
 
 
@@ -179,6 +186,11 @@ def check_rejection_reason(note):
     if kind_of(note) == "topic" and fm.get("status") == "rejected" and not fm.get("reason"):
         return ["rejected topic has no reason"]
     return []
+
+
+def check_topic_origin(note):
+    origin = note["fm"].get("origin", "scout") if kind_of(note) == "topic" else "scout"
+    return [] if origin in ORIGINS else [f"origin {origin!r} is not one of {', '.join(ORIGINS)}"]
 
 
 def check_topic_channels(note):
@@ -351,6 +363,15 @@ def check_channel_rules(note):
             problems.append("subreddits must be a non-empty list")
         if not isinstance(text, dict) or not is_count(text.get("max_title_length")):
             problems.append("text.max_title_length must be a positive integer")
+    if fm.get("channel") == "shorts":
+        video = attachments.get("video") if isinstance(attachments, dict) else None
+        if not isinstance(text, dict) or not is_count(text.get("max_title_length")):
+            problems.append("text.max_title_length must be a positive integer")
+        if not isinstance(video, dict) or not is_count(video.get("max_seconds")):
+            problems.append("attachments.video.max_seconds must be a positive integer")
+        on_screen = fm.get("on_screen_text")
+        if not isinstance(on_screen, dict) or not is_count(on_screen.get("max_chars_per_beat")):
+            problems.append("on_screen_text.max_chars_per_beat must be a positive integer")
     return problems
 
 
@@ -559,6 +580,12 @@ def check_mixed_attachments(note):
     return []
 
 
+def rules_approved(channel):
+    """False only for a Channel whose rules note exists but is not approved: the Writer skips that Channel."""
+    rules = CHANNEL_RULES.get(channel)
+    return rules is None or rules.get("status") == "approved"
+
+
 def check_topic_drafts(note):
     """An approved Topic has exactly one Draft per Channel it lists and none for a Channel it does
     not list; a Publish package or Post for the Channel stands in for a Draft already packaged.
@@ -577,7 +604,7 @@ def check_topic_drafts(note):
         drafts = sum(1 for f in linked if f.get("kind") == "draft" and f.get("channel") == channel)
         if drafts > 1:
             messages.append(f"approved topic has {drafts} drafts for {channel}, expected one")
-        elif written and not any(f.get("channel") == channel for f in linked):
+        elif written and not any(f.get("channel") == channel for f in linked) and rules_approved(channel):
             messages.append(f"approved topic has no draft for {channel}")
     stale = sorted({str(f.get("channel")) for f in linked if f.get("channel") and f.get("channel") not in fm["channels"]})
     messages += [f"approved topic has a draft or post for {c}, which it does not list in channels" for c in stale]
@@ -612,6 +639,115 @@ def check_reddit_title(note):
     return []
 
 
+def shorts_rules(note):
+    """The Shorts Channel rules for a Shorts Draft or ready Publish package, else None."""
+    rules = text_rules(note)
+    return rules if rules and rules["channel"] == "shorts" else None
+
+
+def check_shorts_title(note):
+    """A Shorts Draft or package carries the YouTube title in `title`."""
+    rules = shorts_rules(note)
+    if not rules:
+        return []
+    title = note["fm"].get("title")
+    if not isinstance(title, str) or not title.strip():
+        return [f"shorts {kind_of(note)} has no title"]
+    limit = rules["text"]["max_title_length"]
+    return [] if len(title) <= limit else [f"title is {len(title)} characters, shorts allows {limit}"]
+
+
+def check_shorts_video(note):
+    """A ready Shorts Publish package carries its video; two or a wrong format are reported by
+    attachment-count and attachment-format."""
+    if not (is_ready_package(note) and shorts_rules(note)) or package_attachments(note):
+        return []
+    return ["shorts package has no video; run /produce <draft> render, then /package again"]
+
+
+# A Video script's beat table: the `## Script` section, one row per beat. A cell splits on `|` unless
+# escaped (`\|`), as Obsidian writes an aliased link inside a table.
+SCRIPT_COLUMNS = ["#", "Footage", "On-screen text", "Narration", "Seconds"]
+SCRIPT_SECTION = re.compile(r"^## Script[ \t]*\n(.*?)(?=^## |\Z)", re.MULTILINE | re.DOTALL)
+TABLE_CELL = re.compile(r"(?<!\\)\|")
+
+
+def script_beats(note):
+    """The beats of a Shorts Draft's `## Script` table as dicts keyed by SCRIPT_COLUMNS, or None when
+    the Draft has no Script section."""
+    match = SCRIPT_SECTION.search(OWNER_MARKER.sub("", note["text"]))
+    if not match:
+        return None
+    rows = [
+        [c.strip() for c in TABLE_CELL.split(line.strip().strip("|"))]
+        for line in match.group(1).splitlines()
+        if line.strip().startswith("|")
+    ]
+    if not rows:
+        return []
+    header, body = rows[0], [r for r in rows[1:] if not all(set(c) <= set("-: ") for c in r)]
+    return [dict(zip(header, r)) for r in body]
+
+
+def beat_seconds(beat):
+    try:
+        seconds = float(beat.get("Seconds", ""))
+    except ValueError:
+        return None
+    return seconds if seconds > 0 else None
+
+
+def shorts_draft_beats(note):
+    """(Shorts Channel rules, beats) for a Shorts Draft whose Script parses, else (None, None)."""
+    rules = shorts_rules(note) if kind_of(note) == "draft" else None
+    return (rules, script_beats(note)) if rules else (None, None)
+
+
+def check_shorts_script(note):
+    rules, beats = shorts_draft_beats(note)
+    if not rules:
+        return []
+    if beats is None:
+        return ["shorts draft has no ## Script section"]
+    if beats and list(beats[0]) != SCRIPT_COLUMNS:
+        return [f"script table columns {list(beats[0])} must be {', '.join(SCRIPT_COLUMNS)}"]
+    if len(beats) < 2:
+        return [f"script has {len(beats)} beats, at least 2 needed"]
+    messages = []
+    for n, beat in enumerate(beats, 1):
+        if not beat.get("Footage"):
+            messages.append(f"beat {n} has no Footage (an [[Attachments/...]] link, or text)")
+        if beat_seconds(beat) is None:
+            messages.append(f"beat {n} Seconds {beat.get('Seconds', '')!r} is not a positive number")
+    return messages
+
+
+def check_shorts_duration(note):
+    rules, beats = shorts_draft_beats(note)
+    if not beats or any(beat_seconds(b) is None for b in beats):
+        return []  # a missing Script or a beat without Seconds is reported by shorts-script
+    total, stated = sum(beat_seconds(b) for b in beats), note["fm"].get("duration_s")
+    limit = rules["attachments"]["video"]["max_seconds"]
+    messages = []
+    if isinstance(stated, bool) or not isinstance(stated, (int, float)) or abs(stated - total) > 1e-6:
+        messages.append(f"duration_s {stated!r} is not the beats' sum, {total:g}")
+    if total > limit:
+        messages.append(f"beats add up to {total:g} seconds, shorts allows {limit}")
+    return messages
+
+
+def check_shorts_on_screen_text(note):
+    rules, beats = shorts_draft_beats(note)
+    if not beats:
+        return []
+    limit = rules["on_screen_text"]["max_chars_per_beat"]
+    return [
+        f"beat {n} On-screen text is {len(b.get('On-screen text', ''))} characters, shorts allows {limit}"
+        for n, b in enumerate(beats, 1)
+        if len(b.get("On-screen text", "")) > limit
+    ]
+
+
 def owner_fingerprints(text):
     """One fingerprint per Owner block in the note body. The `o` prefix keeps YAML from reading it as a number."""
     body = FRONTMATTER.sub("", text.replace("\r\n", "\n"), count=1)
@@ -643,12 +779,13 @@ def seal(path):
 
 RULES = [
     check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
-    check_fact_sheet, check_rubric, check_rejection_reason, check_topic_channels, check_topic_sections,
+    check_fact_sheet, check_rubric, check_rejection_reason, check_topic_origin, check_topic_channels, check_topic_sections,
     check_digest_links, check_digest_size, check_digest_ranks, check_digest_rubrics, check_digest_promotional,
     check_trend_scan_date, check_digest_trend_scan,
     check_draft_topic, check_draft_passes, check_draft_length, check_hashtags,
     check_private_repo_link, check_editor_rounds,
     check_topic_drafts, check_reddit_subreddit, check_reddit_title,
+    check_shorts_title, check_shorts_video, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,
     check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,
     check_attachment_size, check_alt_text, check_mixed_attachments, check_owner_edits,
 ]

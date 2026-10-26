@@ -4,12 +4,15 @@
 
 **Blocked by:** none
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Writer `hooks` Pass names the five levers and the diversification rule
-- [ ] Voice guide lists the hook anti-patterns under Banned words and patterns
-- [ ] Writer notes record the lever per hook
-- [ ] Editor item 1 names the lever test
-- [ ] One existing Draft rewritten through the new Pass as a check, by hand, not committed as a Post
+- [x] Writer `hooks` Pass names the five levers and the diversification rule
+- [x] Voice guide lists the hook anti-patterns under Banned words and patterns
+- [x] Writer notes record the lever per hook
+- [x] Editor item 1 names the lever test
+- [x] One existing Draft rewritten through the new Pass as a check, by hand, not committed as a Post
 
 ## Comments
+
+- 2026-10-26: Resolved in commit 927339a. Levers, diversification rule and the `Hooks: body=..., 1=..., 2=...` Writer notes line are in `.claude/skills/write/SKILL.md`; the anti-patterns sit under the Voice guide's Banned words and patterns (the Voice guide is Owner-approved: the Owner should reread that section); Editor item 1 names the lever test. The Vault has no real Draft yet, so the hand check used the fixture `tests/fixtures/valid/Drafts/Road capacity explained - x.md`: its three hooks pull weight, scene and gap, but none is reader-direct, which the new rule catches. Rewritten by hand, not committed: body (scene) "Past a road's capacity, cars in my traffic puzzle game now queue at the junction instead of driving through each other."; 1 (payoff, reader-direct) "If your traffic sim feels fake, give every road one number: its capacity."; 2 (prediction) "I expected a capacity rule to be a balance tweak. It changed how the whole map plays." Left out: no Vault check rule for levers (it is prose judgement, scored by the Editor).
+- 2026-10-26: Review fix in commit 23b57bd: The Writer now hands the Editor the Topic's Source material lines, so item 1's "real number or name" and item 7's unsourced-statistics pattern can be judged.
