@@ -9,6 +9,12 @@ channel: shorts
 language: en
 pinned_comment: "more clips on this channel"
 title: "One number made my traffic queue"
+caption_youtube: |-
+  Cars in my traffic puzzle game used to drive through each other. One capacity number per road made them queue. #indiegame
+caption_tiktok: |-
+  Cars now wait their turn. One capacity number per road made them queue. #indiegame
+hook_lever: scene
+hook_lever_tiktok: payoff
 attachments:
   - file: "[[Attachments/Queue at the junction - shorts.mp4]]"
     alt: "Cars queue at a junction"
@@ -16,5 +22,3 @@ missing: []
 published_url: ""
 published_on: ""
 ---
-
-Cars in my traffic puzzle game used to drive through each other. One capacity number per road made them queue. #indiegame

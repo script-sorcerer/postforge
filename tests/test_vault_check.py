@@ -109,7 +109,22 @@ BROKEN = {
     "fact-sheet-public-links": ("Fact sheets/traffic_jam.md", "fact-sheet"),
     "private-repo-link-pinned-comment": ("Publish packages/Lane change bug - x.md", "private-repo-link"),
     "metrics": ("Posts/Queue at the junction - shorts.md", "metrics"),
+    "draft-length-tiktok": ("Publish packages/Queue at the junction - shorts.md", "draft-length"),
+    "hashtags-tiktok": ("Publish packages/Queue at the junction - shorts.md", "hashtags"),
 }
+
+
+@pytest.mark.parametrize("fixture, message", [
+    ("draft-length-tiktok", "caption_tiktok is 2336 characters, shorts allows 2200"),
+    ("hashtags-tiktok", "caption_tiktok has 4 hashtags, shorts allows 3"),
+])
+def test_shorts_package_names_the_caption_that_breaks_the_limit(fixture, message):
+    assert run_check(FIXTURES / fixture)[1] == [f"Publish packages/Queue at the junction - shorts.md: [{BROKEN[fixture][1]}] {message}"]
+
+
+def test_shorts_package_without_tiktok_caption_fails(tmp_path):
+    vault = edited_valid_vault(tmp_path, "Publish packages/Queue at the junction - shorts.md", "caption_tiktok:", "caption_tiktok_old:")
+    assert run_check(vault) == (1, ["Publish packages/Queue at the junction - shorts.md: [draft-length] shorts package has no caption_tiktok; run /package again"])
 
 
 def test_phase_without_a_date_blocks_scheduling_and_says_so():

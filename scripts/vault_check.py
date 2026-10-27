@@ -215,7 +215,7 @@ def check_metrics(note):
         if "retention" in entry and (isinstance(retention, bool) or not isinstance(retention, (int, float)) or not 0 <= retention <= 100):
             problems.append("retention must be a percent from 0 to 100")
         if entry.get("hook") not in HOOK_LEVERS:
-            problems.append(f"hook must be one of {', '.join(HOOK_LEVERS)} (the package's hook_lever)")
+            problems.append(f"hook must be one of {', '.join(HOOK_LEVERS)} (the package's hook_lever; a Short's tiktok entry: hook_lever_tiktok)")
         messages += [f"metrics entry {n}: {p}" for p in problems]
     return messages
 
@@ -710,14 +710,32 @@ def post_text(note):
     return POST_TEXT_END.split(body, maxsplit=1)[0].strip()
 
 
+# A ready Shorts package carries two captions in frontmatter: the Post text for YouTube and, for TikTok,
+# the same text opening with the first alternative hook, so the two platforms test two hooks.
+SHORTS_CAPTIONS = ["caption_youtube", "caption_tiktok"]
+
+
+def checked_texts(note):
+    """(name, text) pairs the text rules measure: a ready Shorts package's two captions (None when one is
+    missing), else the Post text."""
+    fm = note["fm"]
+    if is_ready_package(note) and fm.get("channel") == "shorts":
+        return [(f, fm[f].strip() if is_text(fm.get(f)) else None) for f in SHORTS_CAPTIONS]
+    return [("post text", post_text(note))]
+
+
 def check_draft_length(note):
     rules = text_rules(note)
     if not rules:
         return []
-    # URLs count as written: stricter than X, which counts each as 23 characters.
-    length = len(post_text(note))
-    limit = rules["text"]["max_length"]
-    return [] if length <= limit else [f"post text is {length} characters, {rules['channel']} allows {limit}"]
+    limit, messages = rules["text"]["max_length"], []
+    for name, text in checked_texts(note):
+        # URLs count as written: stricter than X, which counts each as 23 characters.
+        if text is None:
+            messages.append(f"shorts package has no {name}; run /package again")
+        elif len(text) > limit:
+            messages.append(f"{name} is {len(text)} characters, {rules['channel']} allows {limit}")
+    return messages
 
 
 # A hashtag starts a word and holds a letter first: not a URL fragment (page#top) or a number (issue #91).
@@ -739,8 +757,12 @@ def check_hashtags(note):
     rules = text_rules(note)
     if not rules:
         return []
-    count, limit = len(HASHTAG.findall(post_text(note))), rules["hashtags"]["max"]
-    return [] if count <= limit else [f"post text has {count} hashtags, {rules['channel']} allows {limit}"]
+    limit, messages = rules["hashtags"]["max"], []
+    for name, text in checked_texts(note):
+        count = len(HASHTAG.findall(text or ""))  # a missing caption is reported by draft-length
+        if count > limit:
+            messages.append(f"{name} has {count} hashtags, {rules['channel']} allows {limit}")
+    return messages
 
 
 def load_repo_slugs(vault):

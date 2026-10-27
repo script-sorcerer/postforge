@@ -8,6 +8,7 @@ language: en
 published_url: https://youtube.com/shorts/example
 published_on: 2026-10-01
 hook_lever: scene
+hook_lever_tiktok: gap
 metrics:
   - at: 7d
     platform: youtube

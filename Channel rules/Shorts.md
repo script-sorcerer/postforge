@@ -69,6 +69,7 @@ How the Owner records footage so one session covers many Topics. Work from `Capt
 ## Caption and hashtags
 
 - The caption's first line repeats the hook in words; only its first 80 to 100 characters show before "more".
+- Two captions, one per site: YouTube gets the caption as written (`caption_youtube`), TikTok the same caption opening with the first alternative hook (`caption_tiktok`), so the two sites test two hooks. Both stay within these limits.
 - The YouTube title is a searchable phrase that names the mechanic ("traffic puzzle game: lane change"), evergreen: Shorts keep surfacing for months, so no "Day N" or dated framing in it.
 - At most three hashtags, at the end of the caption: one for the genre or platform (`#indiegame`, `#mobilegame`), one for the moment (`#gamedev`, `#screenshotsaturday` on Saturdays).
 - Never link to the private repository or its issues.

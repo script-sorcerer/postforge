@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] `/package` on a Shorts Draft writes both captions; with no alternative hook it writes `caption_tiktok` equal to the YouTube one and tells the Owner
-- [ ] `draft-length` and `hashtags` fixture Vaults gain a case where only `caption_tiktok` breaks the limit
-- [ ] README documents the two captions and which platform gets which
+- [x] `/package` on a Shorts Draft writes both captions; with no alternative hook it writes `caption_tiktok` equal to the YouTube one and tells the Owner
+- [x] `draft-length` and `hashtags` fixture Vaults gain a case where only `caption_tiktok` breaks the limit
+- [x] README documents the two captions and which platform gets which
