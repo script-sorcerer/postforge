@@ -15,7 +15,9 @@ The schema (folders, required fields, lifecycles, Rubrics, Channels, Topic
 sections, Passes) is the tables at the top. To add a rule: write a
 `check_<name>(note)` function returning a list of messages and add it to the
 RULES list above check_vault. The rule is reported as `<name>` with
-underscores turned into hyphens.
+underscores turned into hyphens. A rule whose name is in WARNING_RULES prints
+as a warning and does not fail the check. The folder-level rules (`channel-rules`,
+`schedule`) are reported by their `load_*` function, not through RULES.
 """
 
 import datetime
@@ -83,11 +85,14 @@ PLACEHOLDER = re.compile(r"\{(\w+)\}")
 # Destination kinds whose text goes with each Post; a profile link is set once, from the template, by the Owner.
 PER_POST_DESTINATIONS = ["pinned_comment", "description"]
 
-# A published Post's `metrics` entries: taken about two and about seven days after publishing, per platform
-# (a Short goes out to YouTube and TikTok; any other Post's platform is its Channel), naming the hook lever
+# A published Post's `metrics` entries: taken about two and about seven days after publishing, per site
+# (a Short goes out to YouTube and TikTok; any other Post's site is its Channel), naming the hook lever
 # that went out (the Writer's five levers, copied by the Packager into `hook_lever`).
 METRIC_POINTS = ["2d", "7d"]
 SHORTS_PLATFORMS = ["youtube", "tiktok"]
+# A ready Shorts package carries two captions in frontmatter: the Post text for YouTube and, for TikTok,
+# the same text opening with the first alternative hook, so the two sites test two hooks.
+SHORTS_CAPTIONS = ["caption_youtube", "caption_tiktok"]
 METRIC_COUNTS = ["views", "likes", "comments", "shares"]
 HOOK_LEVERS = ["gap", "prediction", "scene", "payoff", "weight"]
 
@@ -211,8 +216,7 @@ def check_metrics(note):
         problems += [f"{k} must be a whole number" for k in METRIC_COUNTS if not is_count(entry.get(k), minimum=0)]
         if "link_clicks" in entry and not is_count(entry["link_clicks"], minimum=0):
             problems.append("link_clicks must be a whole number")
-        retention = entry.get("retention")
-        if "retention" in entry and (isinstance(retention, bool) or not isinstance(retention, (int, float)) or not 0 <= retention <= 100):
+        if "retention" in entry and not is_percent(entry["retention"]):
             problems.append("retention must be a percent from 0 to 100")
         if entry.get("hook") not in HOOK_LEVERS:
             problems.append(f"hook must be one of {', '.join(HOOK_LEVERS)} (the package's hook_lever; a Short's tiktok entry: hook_lever_tiktok)")
@@ -258,7 +262,7 @@ def check_fact_sheet(note):
         elif name in names:
             messages.append(f"Phase {name!r} is listed twice")
         names.append(name)
-        day = as_date(starts) if starts not in (None, "") else None
+        day = as_date(starts) if is_iso_date(starts) else None
         if starts not in (None, "") and not day:
             messages.append(f"Phase {n} starts {starts!r} is not an ISO date (YYYY-MM-DD) or empty")
         elif day and last and day < last:
@@ -271,19 +275,24 @@ def check_fact_sheet(note):
 
 def fact_sheet_phases(note):
     """{Phase name: `starts` date or None} of a Fact sheet whose `phases` are well formed, else None."""
-    if kind_of(note) != "fact-sheet" or not isinstance(note["fm"].get("project"), str) or check_fact_sheet(note):
+    if kind_of(note) != "fact-sheet" or not project_name(note["fm"]) or check_fact_sheet(note):
         return None
     return {p["name"]: as_date(p["starts"]) if p.get("starts") not in (None, "") else None for p in note["fm"]["phases"]}
 
 
 def load_project_phases(notes):
     """{Project name: its Phases} for each well-formed Fact sheet among `notes`."""
-    return {link_name(n["fm"]["project"]): phases for n in notes if (phases := fact_sheet_phases(n))}
+    return {project_name(n["fm"]): phases for n in notes if (phases := fact_sheet_phases(n))}
+
+
+def project_name(fm):
+    """The name of the Project a note's `project` links, or None when it is not text."""
+    return link_name(fm["project"]) if isinstance(fm.get("project"), str) else None
 
 
 def project_phases(fm):
     """The Phases of the Project a note names, or None when the Project has no well-formed Fact sheet."""
-    return PROJECT_PHASES.get(link_name(fm["project"])) if isinstance(fm.get("project"), str) else None
+    return PROJECT_PHASES.get(project_name(fm))
 
 
 def check_topic_phase(note):
@@ -450,6 +459,10 @@ def is_count(value, minimum=1):
     return isinstance(value, int) and not isinstance(value, bool) and value >= minimum
 
 
+def is_percent(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and 0 <= value <= 100
+
+
 def check_channel_rules(note):
     """Each Channel rules note must carry machine-readable limits."""
     fm = note["fm"]
@@ -558,7 +571,7 @@ def load_schedules(vault):
     for path in paths:
         note = read_note(path)
         problems = check_frontmatter(note) + check_schedule(note)
-        project = link_name(note["fm"]["project"]) if note["fm"] and isinstance(note["fm"].get("project"), str) else None
+        project = project_name(note["fm"]) if note["fm"] else None
         if project and project in seen:
             problems.append(f"project {project!r} already has a Schedule in {seen[project].relative_to(vault)}")
         elif project:
@@ -619,9 +632,9 @@ def package_slot(note):
     """(project, channel, date) of a ready Publish package with a readable `publish_on`, else None."""
     fm = note["fm"]
     day = as_date(fm.get("publish_on")) if is_ready_package(note) and is_iso_date(fm.get("publish_on")) else None
-    if not (day and isinstance(fm.get("project"), str) and isinstance(fm.get("channel"), str)):
+    if not (day and project_name(fm) and isinstance(fm.get("channel"), str)):
         return None
-    return link_name(fm["project"]), fm["channel"], day
+    return project_name(fm), fm["channel"], day
 
 
 def check_schedule_slot(note):
@@ -647,15 +660,21 @@ def check_schedule_collision(note):
     return [f"publish_on {slot[2]} is already taken by {earlier[0].relative_to(VAULT_ROOT[0])}"] if earlier else []
 
 
+def topic_phase(link):
+    """(Phase name, its `starts` date or None) of the Topic `link` names, when its Fact sheet lists that Phase, else None."""
+    topic = linked_note("Topics", link or "")
+    phase = topic["fm"].get("phase") if topic and kind_of(topic) == "topic" else None
+    phases = project_phases(topic["fm"]) if isinstance(phase, str) else None
+    return (phase, phases[phase]) if phases and phase in phases else None
+
+
 def check_phase_date(note):
     """A ready package goes out on or after its Topic's Phase starts; a Phase with no date blocks scheduling."""
     slot = package_slot(note)
-    topic = linked_note("Topics", note["fm"].get("topic") or "") if slot else None
-    phase = topic["fm"].get("phase") if topic and kind_of(topic) == "topic" else None
-    phases = project_phases(topic["fm"]) if isinstance(phase, str) else None
-    if not phases or phase not in phases:
+    found = topic_phase(note["fm"].get("topic")) if slot else None
+    if not found:
         return []  # a missing or unknown phase is reported on the Topic
-    starts = phases[phase]
+    phase, starts = found
     if starts is None:
         return [f"Phase {phase!r} has no date yet (its starts is empty); leave this package unscheduled until the Owner dates the Phase"]
     return [f"publish_on {slot[2]} is before Phase {phase!r} starts on {starts}"] if slot[2] < starts else []
@@ -665,17 +684,19 @@ def channel_packages(project, channel):
     """The frontmatter of every Publish package and Post of one Project and Channel."""
     return [
         n["fm"] for n in VAULT_NOTES.values()
-        if kind_of(n) == "post" and n["fm"].get("channel") == channel
-        and isinstance(n["fm"].get("project"), str) and link_name(n["fm"]["project"]) == project
+        if kind_of(n) == "post" and n["fm"].get("channel") == channel and project_name(n["fm"]) == project
     ]
 
 
 def waiting_draft(note):
-    """(project, channel) of a ready Draft that has no Publish package or Post yet, else None."""
+    """(project, channel) of a ready Draft that has no Publish package or Post yet, else None. A Draft whose
+    Topic's Phase has no date is not waiting: /package refuses it until the Owner dates the Phase."""
     fm = note["fm"]
-    if kind_of(note) != "draft" or fm.get("status") != "ready" or not isinstance(fm.get("project"), str):
+    if kind_of(note) != "draft" or fm.get("status") != "ready" or not project_name(fm):
         return None
-    project, channel, topic = link_name(fm["project"]), fm.get("channel"), link_name(fm.get("topic") or "")
+    if (found := topic_phase(fm.get("topic"))) and found[1] is None:
+        return None
+    project, channel, topic = project_name(fm), fm.get("channel"), link_name(fm.get("topic") or "")
     if not isinstance(channel, str) or any(link_name(p.get("topic") or "") == topic for p in channel_packages(project, channel)):
         return None
     return project, channel
@@ -710,17 +731,12 @@ def post_text(note):
     return POST_TEXT_END.split(body, maxsplit=1)[0].strip()
 
 
-# A ready Shorts package carries two captions in frontmatter: the Post text for YouTube and, for TikTok,
-# the same text opening with the first alternative hook, so the two platforms test two hooks.
-SHORTS_CAPTIONS = ["caption_youtube", "caption_tiktok"]
-
-
 def checked_texts(note):
-    """(name, text) pairs the text rules measure: a ready Shorts package's two captions (None when one is
-    missing), else the Post text."""
+    """(name, text) pairs the text rules measure: a ready Shorts package's captions (a missing one is
+    reported by shorts-captions), else the Post text."""
     fm = note["fm"]
-    if is_ready_package(note) and fm.get("channel") == "shorts":
-        return [(f, fm[f].strip() if is_text(fm.get(f)) else None) for f in SHORTS_CAPTIONS]
+    if is_ready_package(note) and shorts_rules(note):
+        return [(f, fm[f].strip()) for f in SHORTS_CAPTIONS if is_text(fm.get(f))]
     return [("post text", post_text(note))]
 
 
@@ -731,9 +747,7 @@ def check_draft_length(note):
     limit, messages = rules["text"]["max_length"], []
     for name, text in checked_texts(note):
         # URLs count as written: stricter than X, which counts each as 23 characters.
-        if text is None:
-            messages.append(f"shorts package has no {name}; run /package again")
-        elif len(text) > limit:
+        if len(text) > limit:
             messages.append(f"{name} is {len(text)} characters, {rules['channel']} allows {limit}")
     return messages
 
@@ -759,7 +773,7 @@ def check_hashtags(note):
         return []
     limit, messages = rules["hashtags"]["max"], []
     for name, text in checked_texts(note):
-        count = len(HASHTAG.findall(text or ""))  # a missing caption is reported by draft-length
+        count = len(HASHTAG.findall(text))
         if count > limit:
             messages.append(f"{name} has {count} hashtags, {rules['channel']} allows {limit}")
     return messages
@@ -966,6 +980,13 @@ def check_shorts_title(note):
     return [] if len(title) <= limit else [f"title is {len(title)} characters, shorts allows {limit}"]
 
 
+def check_shorts_captions(note):
+    """A ready Shorts Publish package carries both captions, one per site."""
+    if not (is_ready_package(note) and shorts_rules(note)):
+        return []
+    return [f"shorts package has no {f}; run /package again" for f in SHORTS_CAPTIONS if not is_text(note["fm"].get(f))]
+
+
 def check_shorts_video(note):
     """A ready Shorts Publish package carries its video; two or a wrong format are reported by
     attachment-count and attachment-format."""
@@ -1095,7 +1116,7 @@ RULES = [
     check_draft_topic, check_draft_passes, check_draft_length, check_hashtags, check_pinned_comment,
     check_private_repo_link, check_editor_rounds,
     check_topic_drafts, check_reddit_subreddit, check_reddit_title,
-    check_shorts_title, check_shorts_video, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,
+    check_shorts_title, check_shorts_captions, check_shorts_video, check_shorts_script, check_shorts_duration, check_shorts_on_screen_text,
     check_publish_on, check_schedule_slot, check_schedule_collision, check_phase_date, check_schedule_gap,
     check_post_folder, check_attachment_files, check_attachment_format, check_attachment_count,
     check_attachment_size, check_alt_text, check_mixed_attachments, check_owner_edits,

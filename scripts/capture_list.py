@@ -4,8 +4,8 @@
 # dependencies = ["pyyaml"]
 # ///
 """Capture list: writes `Capture list/<project>.md` for every Project in `Projects/`, one
-checkbox line per Shot list file of an approved Topic that is not in Attachments yet,
-grouped by the line's `scene:` tag. The note is regenerated on every run; never edit it.
+checkbox line per Shot list file of an approved Topic not captured yet (naming every Topic that
+needs it), grouped by the line's `scene:` tag. A Topic with a published Post on each of its Channels is done. The note is regenerated on every run; never edit it.
 
 A Shot list line names its file in backticks and may end in a scene tag:
     - `Attachments/<file>`: what to capture, <seconds> s; scene: <what is captured together>
@@ -17,29 +17,37 @@ import re
 import sys
 from pathlib import Path
 
-import vault_check
-from vault_check import attachment_path, link_name, read_note
+from vault_check import link_name, project_name, read_note
 
 SHOT_LINE = re.compile(r"^- `([^`]+)`:?\s*(.*)$")
-SCENE_TAG = re.compile(r";\s*scene:\s*(.+)$")
+SCENE_TAG = re.compile(r";\s*scene:\s*(.+)$", re.IGNORECASE)
 NO_SCENE = "No scene"
 
 
 def shot_list(text):
-    """The lines under a note's `## Shot list` heading, up to the next heading."""
-    match = re.search(r"^## Shot list[ \t]*\n(.*?)(?=^#|\Z)", text, re.MULTILINE | re.DOTALL)
+    """The lines under a note's `## Shot list` heading, up to the next `#` or `##` heading."""
+    match = re.search(r"^## Shot list[ \t]*\n(.*?)(?=^#{1,2}\s|\Z)", text, re.MULTILINE | re.DOTALL)
     return [line.strip() for line in match.group(1).splitlines()] if match else []
 
 
+def published_channels(vault):
+    """{(Topic name, channel)} of every published Post."""
+    notes = (read_note(p)["fm"] or {} for p in (vault / "Posts").rglob("*.md"))
+    return {(link_name(fm.get("topic") or ""), fm.get("channel")) for fm in notes if fm.get("kind") == "post" and fm.get("status") == "published"}
+
+
 def missing_shots(vault):
-    """Return ({project: {scene: [checkbox line]}}, [lines naming no file])."""
-    vault_check.VAULT_ROOT[:] = [vault]
+    """Return ({project: {file: {"scene", "topics", "what"}}}, [lines naming no file]) for the Shot list files
+    of approved Topics not captured yet. A Topic with a published Post on each of its Channels is done."""
+    published = published_channels(vault)
     lists, unnamed = {}, []
     for path in sorted((vault / "Topics").rglob("*.md")):
         note = read_note(path)
         fm = note["fm"] or {}
-        project = link_name(fm.get("project") or "")
+        project, channels = project_name(fm), fm.get("channels")
         if fm.get("kind") != "topic" or fm.get("status") != "approved" or not project:
+            continue  # a malformed project is reported by the Vault check
+        if isinstance(channels, list) and channels and all((path.stem, c) in published for c in channels):
             continue
         for line in shot_list(note["text"]):
             shot = SHOT_LINE.match(line)
@@ -48,21 +56,27 @@ def missing_shots(vault):
                     unnamed.append(f"{path.relative_to(vault)}: {line}")
                 continue
             file, what = shot.groups()
-            scene = SCENE_TAG.search(what)
-            if scene:
-                what = what[: scene.start()].rstrip()
-            if attachment_path({"file": file}).is_file():
+            if (vault / file).is_file():
                 continue
-            group = scene.group(1).strip() if scene else NO_SCENE
-            entry = f"- [ ] `{file}` for [[{path.stem}]]: {what}"
-            lists.setdefault(project, {}).setdefault(group, []).append(entry)
+            scene = SCENE_TAG.search(what)
+            # shortcut: a file two Topics name keeps the scene of the first Topic by path.
+            entry = lists.setdefault(project, {}).setdefault(
+                file, {"scene": scene.group(1).strip() if scene else NO_SCENE, "topics": [], "what": []})
+            entry["topics"].append(path.stem)
+            if what := (what[: scene.start()] if scene else what).strip():
+                entry["what"].append(what)
     return lists, unnamed
 
 
-def render(project, groups):
+def render(project, files):
+    scenes = {}
+    for file, entry in files.items():
+        topics = ", ".join(f"[[{t}]]" for t in entry["topics"])
+        what = "; ".join(entry["what"])
+        scenes.setdefault(entry["scene"], []).append(f"- [ ] `{file}` for {topics}" + (f": {what}" if what else ""))
     body = []
-    for scene in sorted(groups, key=lambda s: (s == NO_SCENE, s)):
-        body += ["", f"## {scene}", *groups[scene]]
+    for scene in sorted(scenes, key=lambda s: (s == NO_SCENE, s)):
+        body += ["", f"## {scene}", *scenes[scene]]
     return "\n".join([
         "---",
         "kind: capture-list",
@@ -71,7 +85,7 @@ def render(project, groups):
         "",
         f"# Capture list: {project}",
         "",
-        "Built by `scripts/capture_list.py` from the Shot lists of approved Topics, minus the files already in Attachments. "
+        "Built by `scripts/capture_list.py` from the Shot lists of approved Topics, minus the Attachments already captured. "
         "Do not edit: capture per `Channel rules/Shorts.md` (Capture), then rerun the script.",
         *(body or ["", "Nothing to capture."]),
         "",
@@ -87,9 +101,9 @@ def main(argv):
     projects = sorted({p.stem for p in (vault / "Projects").glob("*.md")} | set(lists))
     (vault / "Capture list").mkdir(exist_ok=True)
     for project in projects:
-        groups = lists.get(project, {})
-        (vault / "Capture list" / f"{project}.md").write_text(render(project, groups), encoding="utf-8")
-        print(f"Capture list/{project}.md: {sum(map(len, groups.values()))} file(s) to capture.")
+        files = lists.get(project, {})
+        (vault / "Capture list" / f"{project}.md").write_text(render(project, files), encoding="utf-8")
+        print(f"Capture list/{project}.md: {len(files)} file(s) to capture.")
     for line in unnamed:
         print(f"warning: {line} (Shot list line names no file in backticks)")
     return 0

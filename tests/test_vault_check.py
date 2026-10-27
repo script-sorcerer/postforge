@@ -111,6 +111,7 @@ BROKEN = {
     "metrics": ("Posts/Queue at the junction - shorts.md", "metrics"),
     "draft-length-tiktok": ("Publish packages/Queue at the junction - shorts.md", "draft-length"),
     "hashtags-tiktok": ("Publish packages/Queue at the junction - shorts.md", "hashtags"),
+    "shorts-captions": ("Publish packages/Queue at the junction - shorts.md", "shorts-captions"),
 }
 
 
@@ -120,11 +121,6 @@ BROKEN = {
 ])
 def test_shorts_package_names_the_caption_that_breaks_the_limit(fixture, message):
     assert run_check(FIXTURES / fixture)[1] == [f"Publish packages/Queue at the junction - shorts.md: [{BROKEN[fixture][1]}] {message}"]
-
-
-def test_shorts_package_without_tiktok_caption_fails(tmp_path):
-    vault = edited_valid_vault(tmp_path, "Publish packages/Queue at the junction - shorts.md", "caption_tiktok:", "caption_tiktok_old:")
-    assert run_check(vault) == (1, ["Publish packages/Queue at the junction - shorts.md: [draft-length] shorts package has no caption_tiktok; run /package again"])
 
 
 def test_phase_without_a_date_blocks_scheduling_and_says_so():
@@ -160,6 +156,13 @@ def test_publish_on_accepts_only_yyyy_mm_dd(tmp_path, value):
 def test_dated_phases_out_of_order_fail_fact_sheet(tmp_path):
     vault = edited_valid_vault(tmp_path, "Fact sheets/traffic_jam.md", "  - name: Reveal\n    starts:\n", "  - name: Reveal\n    starts: 2026-09-01\n")
     assert run_check(vault) == (1, ["Fact sheets/traffic_jam.md: [fact-sheet] Phase 2 starts 2026-09-01, before an earlier Phase starts on 2026-10-01"])
+
+
+def test_unquoted_compact_phase_start_fails_fact_sheet(tmp_path):
+    """YAML reads `starts: 20261001` as a number, which Python 3.11+ would parse as a date."""
+    vault = edited_valid_vault(tmp_path, "Fact sheets/traffic_jam.md", "starts: 2026-10-01", "starts: 20261001")
+    code, violations = run_check(vault)
+    assert code == 1 and len(violations) == 1 and "[fact-sheet] Phase 1 starts 20261001 is not an ISO date" in violations[0], violations
 
 
 def test_profile_link_channel_needs_no_pinned_comment():
@@ -240,6 +243,16 @@ def test_schedule_gap_is_a_warning_until_the_next_cadence_day_is_packaged(tmp_pa
     schedule.write_text(schedule.read_text().replace("[Monday, Thursday]", every_day))
     package = vault / "Publish packages" / "Lane change bug - x.md"
     package.write_text(package.read_text().replace("2026-10-19", datetime.date.today().isoformat()))
+    assert run_check(vault) == (0, [])
+
+
+def test_schedule_gap_skips_a_draft_whose_phase_has_no_date(tmp_path):
+    """/package refuses a Draft whose Topic's Phase is undated, so the gap is not worth a warning."""
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "schedule-gap", vault)
+    shutil.copytree(FIXTURES / "valid" / "Fact sheets", vault / "Fact sheets")
+    topic = vault / "Topics" / "Rush hour in one tap.md"
+    topic.write_text(topic.read_text().replace("phase: Pre-reveal", "phase: Reveal"))
     assert run_check(vault) == (0, [])
 
 
