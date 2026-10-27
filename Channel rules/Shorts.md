@@ -56,6 +56,16 @@ The Producer's check fails any caption inside the top or bottom band.
 - The game's own sound is welcome. No narration is required, and a Video script never needs a recorded voice.
 - Real footage only: the Owner's captured clips and screenshots, never generated video.
 
+## Capture
+
+How the Owner records footage so one session covers many Topics. Work from `Capture list/<project>.md`, one scene at a time, then rerun `scripts/capture_list.py`.
+
+- Frame: a 1080x1920 portrait capture window, or a crop around one junction from a landscape capture that still fills 9:16 at 1080x1920.
+- HUD hidden, unless the beat shows the HUD itself.
+- Game clock in the file name when it shows (`junction-4-0800.mp4`); save each file under the exact name its Shot list line gives, in `Attachments/`.
+- 60 fps where the engine allows.
+- No overlays: no cursor, debug text, watermark or recorder badge. Captions are burned in later by the Producer.
+
 ## Caption and hashtags
 
 - The caption's first line repeats the hook in words; only its first 80 to 100 characters show before "more".

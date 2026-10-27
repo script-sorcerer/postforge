@@ -231,8 +231,10 @@ Why this belongs in this Digest: the change that just landed, a date, a hook. Ci
 - `[[<Owner note title>]]`
 
 ## Shot list
-What footage or screenshots the Owner should capture, one per line. "None" when needs_media is false.
+- `Attachments/<file>`: what to capture, <seconds> s; scene: <what is captured together>
 ```
+
+Shot list: one line per file the Owner should capture, "None" (instead of lines) when needs_media is false. Each line names its file in backticks, `Attachments/<file>`, with a short lowercase name and its extension (`.mp4` for footage, `.png` for a screenshot); the Writer's Video script links that exact file, so the Producer finds it without renaming. Put the game clock in the file name when it shows (`junction-4-0800.mp4`). End the description with the duration in seconds. Add `; scene: <name>` when the file is captured together with others (the same level, the same junction, the same game clock), using the same scene name across Topics: `scripts/capture_list.py` groups the Capture list by it.
 
 Then the Digest, `Digests/<YYYY-MM-DD> <project>.md`, listing the Topics best first:
 

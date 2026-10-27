@@ -13,7 +13,7 @@ The CLI is `npx --yes hyperframes@0.8.204 <command>` (written `npx hyperframes` 
 
 ## Ground rules
 
-- **Write only under `Attachments/video/<topic title>/`, the rendered `Attachments/<topic title> - shorts.mp4`, and the `attachments` field of this Draft.** Never change the Post text, the Title, the Script or any other part of the Draft, nor any other note.
+- **Write only under `Attachments/video/<topic title>/`, the rendered `Attachments/<topic title> - shorts.mp4`, and the `attachments` field of this Draft** (plus `Capture list/`, which `scripts/capture_list.py` rewrites before a footage-missing stop). Never change the Post text, the Title, the Script or any other part of the Draft, nor any other note.
 - **Never invent footage.** Use only the Owner's files in `Attachments/` that the beat table names, the text of the beat table, and the house template (its caption block comes from the HyperFrames registry). No generated video, images, voice or music.
 - **Never set a Draft's `status`.** Only the Owner does.
 - **Never undo the Owner's edits in the desktop app.** What `catch-up` lists is their work.
@@ -40,7 +40,7 @@ Also never: `snapshot --review`, `snapshot --describe`, `compare`, `grade-compar
 2. If its `channel` is not `shorts`, stop: say only Shorts Drafts are produced. If its `status` is not `ready`, stop: say its status and that only the Owner sets `ready`.
 3. Read the Draft's `title`, `duration_s`, `## Title` and `## Script` beat table, its Topic (the `topic` link; `<topic title>` is that note's name) and `Channel rules/Shorts.md` (`attachments.video.max_seconds`, `on_screen_text.max_chars_per_beat`).
 4. If any beat has Narration, stop: say narration is out of scope for the Producer and name the beat.
-5. **Footage.** For each beat whose Footage is not `text`, take the link's target: drop the `[[`, `]]` and `!`, and any alias after `|` or `\|` (a table cell writes `[[Attachments/x.mp4\|label]]`). The file it names must exist (a path from the Vault root, else found under `Attachments/`). If any is missing, stop at **checkpoint 1**: list, for each missing file, the Topic's Shot list line that names it (or the beat and file when no line does). Build nothing.
+5. **Footage.** For each beat whose Footage is not `text`, take the link's target: drop the `[[`, `]]` and `!`, and any alias after `|` or `\|` (a table cell writes `[[Attachments/x.mp4\|label]]`). The file it names must exist (a path from the Vault root, else found under `Attachments/`). If any is missing, run `scripts/capture_list.py`, then stop at **checkpoint 1**: list, for each missing file, the Topic's Shot list line that names it (or the beat and file when no line does), and point to `Capture list/<project>.md`, the one list of footage still to capture for every approved Topic: capture from it, rerun the script, then `/produce` again. Build nothing.
 
 ## Step 2: Build (`/produce <draft>` and `--fresh`)
 

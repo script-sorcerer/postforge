@@ -19,6 +19,7 @@ Open this repository in Obsidian as its own Vault (ADR 0001). Its folders:
 | `Publish packages/` | Posts ready to publish |
 | `Posts/` | Published Posts |
 | `Owner notes/` | The Owner's free-form notes |
+| `Capture list/` | One Capture list per Project, built by `scripts/capture_list.py`; never edited by hand |
 | `Attachments/` | Images and videos (videos stay out of git) |
 
 Topic, Draft and Post notes carry YAML frontmatter (`kind`, `status`, `project`, `language`, plus `rubric` and `channels` on a Topic, `topic` and `channel` on a Draft or Post, `published_url` on a published Post).
@@ -93,6 +94,21 @@ metrics:
 
 Write `metrics: skipped` on a Post you chose not to measure. The Vault check fails a malformed entry (`metrics`) and warns, without failing, about a published Post more than seven days old with no `7d` entry and not skipped (`post-metrics`). The Scout reads every Post's metrics before ranking a Digest and writes a "What worked" section: Rubrics, Channels and hook levers ranked by views and comments per Post, each only once it has at least two Posts.
 
+### Capture list
+
+Each line of a Topic's `## Shot list` names one file in backticks, the name the Video script links, then what to capture and the duration, with an optional scene tag:
+
+```markdown
+- `Attachments/junction-4-0800.mp4`: cars queueing at junction 4, 4 s; scene: Junction 4 at 08:00
+```
+
+`scripts/capture_list.py` (needs uv; default: this repository, or pass a Vault path) reads the Shot lists of every approved Topic and writes `Capture list/<project>.md` (`kind: capture-list`) for each Project: one checkbox line per file not in `Attachments/` yet, with the Topic, the file name, what to capture and the duration, grouped by scene (untagged lines last). Capture per the "Capture" section of `Channel rules/Shorts.md`, save each file under its exact name, and rerun the script: the list shrinks. `/write` runs it at the end and `/produce` before it stops on missing footage. The note is regenerated on every run, so never edit it; the Vault check does not check it.
+
+```sh
+scripts/capture_list.py
+scripts/capture_list.py path/to/vault
+```
+
 ### Bring your own Topic
 
 To have the Office write a story you already have in mind, copy `docs/templates/Owner Topic.md` to `Topics/<title>.md` and fill it in. It is an Owner Topic: `status: approved` and `origin: owner` from the start, with no Digest and no `rank`. Run `/write` and it is drafted like any approved Topic; the Scout reads it too, so it never proposes the same story.
@@ -104,7 +120,7 @@ The Scout, the Writer, `/revise` and the Editor run on Opus at `effort: medium` 
 - `/scout`: the Scout (`.claude/skills/scout/`). On the first run it builds the Project's Fact sheet and stops for approval; it writes no Digest until the Fact sheet is approved. After that it first writes a Trend scan (hot subreddit threads, meme formats, gaming and mobile news, calendar hooks; a scan up to 14 days old is reused) and refreshes the subreddit rules in `Channel rules/Reddit.md`, then writes a Digest of 5 to 8 Topics from the git history since its reading position, the GitHub issues and their discussion (read-only `gh`), the Project's local docs and the Owner notes. It skips stories already rejected, published, approved or proposed, and may bring a parked Topic back as a new note marked `previously_parked`.
 - `/write`: the Writer (`.claude/skills/write/`). Turns every approved Topic into one Draft per target Channel (X, Reddit, LinkedIn, each in its register, and a Video script for Shorts) through the six Passes, then runs the Vault check. Each Draft then goes through the Editor (`.claude/agents/editor.md`, a fresh subagent per review, which holds the checklist and pass threshold): below the threshold it goes back to the Writer, and after at most two rounds it comes to the Owner at `in-review` with the Editor's remarks. Say "use hook 2" on a Draft to swap in an alternative hook (it becomes an Owner edit).
 - `/revise <draft> <prompt>`: applies your prompt, such as "shorter hook, no emoji", to one Draft (`.claude/skills/revise/`), marks the change as an Owner edit and seals it. It never changes `status`.
-- `/produce <draft>`: the Producer (`.claude/skills/produce/`, ADR 0002; no fixed model, add `--model <model>` to pick one). Takes a `ready` Shorts Draft, stops and lists the Shot list lines whose footage is not in `Attachments/` yet, else builds a HyperFrames Composition under `Attachments/video/<topic title>/` from the house template `docs/templates/shorts-composition/` and the beat table, checks it, looks at one frame per beat and opens it in the HyperFrames desktop app for your review. Edit it there by hand if you like, then `/produce <draft> render` renders it once (locally, free) to `Attachments/<topic title> - shorts.mp4` and sets it as the Draft's Attachment. `/produce <draft> --fresh` rebuilds the Composition from the Script, discarding your app edits. The Composition is committed; the MP4 is not. Setup and quota rules: `docs/producer-setup.md`.
+- `/produce <draft>`: the Producer (`.claude/skills/produce/`, ADR 0002; no fixed model, add `--model <model>` to pick one). Takes a `ready` Shorts Draft, stops and lists the Shot list lines whose footage is not in `Attachments/` yet and points to the Capture list, else builds a HyperFrames Composition under `Attachments/video/<topic title>/` from the house template `docs/templates/shorts-composition/` and the beat table, checks it, looks at one frame per beat and opens it in the HyperFrames desktop app for your review. Edit it there by hand if you like, then `/produce <draft> render` renders it once (locally, free) to `Attachments/<topic title> - shorts.mp4` and sets it as the Draft's Attachment. `/produce <draft> --fresh` rebuilds the Composition from the Script, discarding your app edits. The Composition is committed; the MP4 is not. Setup and quota rules: `docs/producer-setup.md`.
 - `/package <draft>`: the Packager (`.claude/skills/package/`, on Sonnet). Refuses a Draft that is not `ready`; writes its Publish package with the Attachments in order, alt text, the `missing` list and `publish_on` (the next free cadence day of the Channel's Schedule; it tells you the date) and `pinned_comment` (the Channel's destination text, which you paste after publishing; none on a `profile_link` Channel), then runs the Vault check. After you publish by hand, `/package published <publish package> <link>` records the link and moves the Post to `Posts/`, keeping `hook_lever` (the opening hook's lever) for your `metrics` entries.
 
 ## Vault check

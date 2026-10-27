@@ -13,7 +13,7 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 ## Ground rules
 
-- **Write only in `Drafts/`.** Read everything else; never change a Topic, the Voice guide, Channel rules or the Fact sheet.
+- **Write only in `Drafts/`** (and `Capture list/`, which `scripts/capture_list.py` rewrites in Step 5). Read everything else; never change a Topic, the Voice guide, Channel rules or the Fact sheet.
 - **Never move a Draft to `ready`.** Only the Owner does.
 - **Never change an Owner edit.** Text between `%% owner %%` and `%% /owner %%` is the Owner's: no Pass, revision or hook swap may change, move or remove it or its markers, and you never edit `owner_edits` or run `scripts/vault_check.py --seal`, except for a hook swap the Owner asks for (see "Switching hooks"). The Vault check fails a Draft whose Owner blocks no longer match `owner_edits` (`owner-edits`).
 - **Never touch an existing Draft** past `drafting` except to run its Editor loop (Step 4) or to swap a hook when the Owner asks (see "Switching hooks"). `/write` writes only missing or unfinished Drafts, so a rerun is safe.
@@ -204,4 +204,6 @@ For Shorts, the hook has two parts: replace beat 1's On-screen text in the `## S
 
 ## Step 5: Hand over
 
-Tell the Owner which Drafts you wrote, with their paths, each Draft's Editor score and rounds, which Topics or Channels you skipped and why, and any Vault check violations in other notes. They edit Drafts by hand in Obsidian or with `/revise`, and set `status: ready` themselves when a Draft is good to go.
+Run `scripts/capture_list.py`. It rewrites `Capture list/<project>.md`: the files of every approved Topic's Shot list still missing from Attachments. Never edit that note by hand.
+
+Tell the Owner how many files the Capture list names (point to `Capture list/<project>.md` when any), then which Drafts you wrote, with their paths, each Draft's Editor score and rounds, which Topics or Channels you skipped and why, and any Vault check violations in other notes. They edit Drafts by hand in Obsidian or with `/revise`, and set `status: ready` themselves when a Draft is good to go.

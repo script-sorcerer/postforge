@@ -26,4 +26,6 @@ Why tell it now: the change that just landed, a date, a reaction you saw.
 - `<commit hash>` what it changed, or a path to a doc, an issue number, an Owner note
 
 ## Shot list
-- `Attachments/<file>`: what to capture, or "None" when the Post needs no image or video
+- `Attachments/<file>`: what to capture, <seconds> s; scene: <what is captured together>
+<!-- One line per file, its name in backticks: the Video script links that exact file. End with the duration. "; scene: ..." is optional: lines with the same scene (same level, junction, game clock) are grouped in the Capture list. Write "None" instead of lines when the Post needs no image or video. -->
+

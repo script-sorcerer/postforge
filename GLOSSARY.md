@@ -143,8 +143,12 @@ One place a Post goes out: X, Reddit, LinkedIn, Shorts (one 9:16 video for YouTu
 _Avoid_: platform, network
 
 **Shot list**:
-The Office's description of the footage a Topic needs, for the Owner to capture. A Video script's beats name these files.
+The Office's description of the footage a Topic needs, for the Owner to capture: one line per file, its name in backticks, what to capture and the duration, with an optional `scene:` tag. A Video script's beats name these files.
 _Avoid_: storyboard, media request
+
+**Capture list**:
+The footage still to capture for every approved Topic of a Project, built from their Shot lists minus the files already in Attachments and grouped by scene (what is captured together). `scripts/capture_list.py` regenerates it as `Capture list/<project>.md`; nobody edits it by hand.
+_Avoid_: shooting list, footage backlog
 
 **Attachment**:
 An image or video file that the Owner supplies and a Post carries.
