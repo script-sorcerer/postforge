@@ -4,10 +4,14 @@
 
 **Blocked by:** 01 Schedule and `publish_on`
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] Fact sheet template and the existing Fact sheet carry `phases`; "Not public yet" items start with `[<Phase>]`
 - [x] Topic and Owner Topic template carry `phase`; `topic-phase` and `phase-date` have fixture Vaults; the valid fixture passes with Phases
 - [x] Scout prompt: current and next Phase only, reveal Topic rule, Source material checked against Phase order
 - [x] A package for a Topic in a Phase with empty `starts` fails `phase-date` with a message that says the Phase has no date
 - [x] Glossary entry "Phase"; README documents Phases
+
+## Comments
+
+- 2026-10-27: Resolved in commit 1831227; review fixes in b79f48e, 915b9c6 and 14032db (no crash on a list `phase`, Phase date order, strict `starts`). Fact sheet Phases (Pre-reveal 2026-10-27, Reveal and Launch undated) and the `[never]` tag are proposals for the Owner (Open question 9). The Packager refuses to schedule before a Phase starts.

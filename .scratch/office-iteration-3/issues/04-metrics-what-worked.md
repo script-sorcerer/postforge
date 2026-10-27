@@ -4,10 +4,14 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `metrics` schema validated: `at`, `platform`, integer counts, optional fields; a malformed entry is reported
 - [x] `post-metrics` fixture Vault (old Post without `7d`), and a skipped Post passes
 - [x] `/package` writes `hook_lever`; `/package published` keeps it on the Post
 - [x] Scout prompt: read metrics, "What worked" section, ranking rule with the two-Post minimum
 - [x] Glossary entry "Metrics"; README documents how the Owner records numbers
+
+## Comments
+
+- 2026-10-27: Resolved in commit 7b860c7; review fixes in 14032db, 165d528 and f9be5ee. `post-metrics` is a warning; any one `7d` entry satisfies it, also on a Short. The Scout ranks on `7d` entries only and counts a Short once toward its Rubric and lever. Glossary gained Hook lever. The Writer's hook swap now swaps the levers in the `Hooks:` line.

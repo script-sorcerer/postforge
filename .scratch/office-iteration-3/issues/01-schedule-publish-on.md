@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] A Schedule note (`kind: schedule`, `project`, `cadence` per Channel with `per_week` and `weekdays`) is read by the Vault check; a malformed one is reported under one rule
 - [x] A ready package without `publish_on`, or with a non-ISO value, fails
@@ -12,3 +12,7 @@
 - [x] `/package` writes `publish_on` from the next free slot and tells the Owner the date
 - [x] `/package published` carries `publish_on` onto the Post
 - [x] Glossary entry "Schedule"; README paragraph on scheduling
+
+## Comments
+
+- 2026-10-27: Resolved in commit 39449bc; review fixes in b79f48e and 915b9c6. Owner decisions: `schedule-gap` is a warning (new warning path, exit 0) and means a ready Draft with no Publish package while its Channel's next cadence day is empty; it skips Drafts in an undated Phase (14032db). `publish_on` must be YYYY-MM-DD. Without a Schedule note only `publish_on` is checked. `/package` not run end to end (ticket 07).

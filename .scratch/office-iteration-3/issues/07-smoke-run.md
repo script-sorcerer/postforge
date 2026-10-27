@@ -4,10 +4,14 @@
 
 **Blocked by:** 01, 02, 03, 04, 05, 06
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
 - [ ] Digest spreads Topics over the current and next Phase and proposes the reveal Topic
 - [ ] Packages carry `publish_on` on cadence days with no collisions, a `pinned_comment`, `hook_lever`, and both captions on Shorts
 - [ ] Capture list lists every missing file of the approved Topics, grouped by scene
 - [ ] Vault check passes on the whole Vault at the end
 - [ ] Findings recorded as comments on the tickets they concern
+
+## Comments
+
+- 2026-10-27: Open for the Owner: needs the Fact sheet approved and the five Shorts candidates of 2026-10-27. Tickets 01 to 06 are merged on `office-iteration-3`.

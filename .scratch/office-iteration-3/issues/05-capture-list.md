@@ -4,10 +4,14 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] Script runs on the Vault or a path, writes the note, exits zero; the note shrinks when a file appears in Attachments
 - [x] Test on a fixture Vault with two approved Topics and one captured file compares the written note to the expected text
 - [x] Scout prompt and Owner Topic template: file name in backticks per Shot list line, optional `scene:` tag
 - [x] `/write` runs the script at the end; `/produce` names the Capture list in its refusal
 - [x] Shorts rules "Capture" section; Glossary entry "Capture list"; README documents the script
+
+## Comments
+
+- 2026-10-27: Resolved in commit 4ef634f; review fixes in 14032db, 165d528 and f9be5ee: one line per file naming every Topic, Topics whose Channels are all published are skipped, `###` inside a Shot list no longer ends it, case-insensitive `scene:`, `/write` refreshes the list even with no work.

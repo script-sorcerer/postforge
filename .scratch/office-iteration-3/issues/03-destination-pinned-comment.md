@@ -4,10 +4,14 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] All four Channel rules notes carry a `destination` with template and fallback; `channel-rules` reports a malformed one
 - [x] Fact sheet carries `public_links`
 - [x] `/package` writes `pinned_comment`; with empty links it uses the fallback and says so to the Owner
 - [x] `pinned-comment` fixture Vault; a pinned comment linking the private repository fails `private-repo-link` (fixture)
 - [x] Glossary entry "Destination"; README documents the field and where the Owner pastes it
+
+## Comments
+
+- 2026-10-27: Resolved in commit 3742364; review fixes in b79f48e and 915b9c6. Owner decisions: the pinned comment drops template lines with an empty link and uses the fallback only when no line is left; a `profile_link` destination (Reddit) needs no per-package `pinned_comment`, the Owner sets the profile link once.
