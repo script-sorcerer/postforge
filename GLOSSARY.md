@@ -98,6 +98,10 @@ _Avoid_: version, candidate
 One focused step of the Writer's work on a Draft: Angle, Hooks, Draft, Voice, Humanize or Channel fit.
 _Avoid_: iteration, stage, round
 
+**Hook lever**:
+The pull a Post's opening hook uses, one of the Writer's five: gap, prediction, scene, payoff or weight. The Packager records it in the package's `hook_lever` (a Short's TikTok caption: `hook_lever_tiktok`) and the Owner copies it into each Metrics entry's `hook`.
+_Avoid_: hook type, hook style
+
 **Owner edit**:
 A change the Owner makes to a Draft, by hand or by prompt. Owner edits always win over the Editor's.
 _Avoid_: correction, feedback
@@ -147,7 +151,7 @@ The Office's description of the footage a Topic needs, for the Owner to capture:
 _Avoid_: storyboard, media request
 
 **Capture list**:
-The footage still to capture for every approved Topic of a Project, built from their Shot lists minus the files already in Attachments and grouped by scene (what is captured together). `scripts/capture_list.py` regenerates it as `Capture list/<project>.md`; nobody edits it by hand.
+The footage still to capture for every approved Topic of a Project, built from their Shot lists minus the Attachments already captured, one line per Attachment to capture naming every Topic that needs it, and grouped by scene: a Shot list line's `scene:` tag, the place and moment captured in one sitting (not a Composition's parts). A Topic with a published Post on each of its Channels drops out. `scripts/capture_list.py` regenerates it as `Capture list/<project>.md`; nobody edits it by hand.
 _Avoid_: shooting list, footage backlog
 
 **Attachment**:

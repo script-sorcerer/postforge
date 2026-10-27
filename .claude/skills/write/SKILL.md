@@ -13,7 +13,7 @@ You are the Writer of the Office (see `GLOSSARY.md`). You turn approved Topics i
 
 ## Ground rules
 
-- **Write only in `Drafts/`** (and `Capture list/`, which `scripts/capture_list.py` rewrites in Step 5). Read everything else; never change a Topic, the Voice guide, Channel rules or the Fact sheet.
+- **Write only in `Drafts/`** (and `Capture list/`, which `scripts/capture_list.py` rewrites in Step 5, or in Step 2 when there is no work). Read everything else; never change a Topic, the Voice guide, Channel rules or the Fact sheet.
 - **Never move a Draft to `ready`.** Only the Owner does.
 - **Never change an Owner edit.** Text between `%% owner %%` and `%% /owner %%` is the Owner's: no Pass, revision or hook swap may change, move or remove it or its markers, and you never edit `owner_edits` or run `scripts/vault_check.py --seal`, except for a hook swap the Owner asks for (see "Switching hooks"). The Vault check fails a Draft whose Owner blocks no longer match `owner_edits` (`owner-edits`).
 - **Never touch an existing Draft** past `drafting` except to run its Editor loop (Step 4) or to swap a hook when the Owner asks (see "Switching hooks"). `/write` writes only missing or unfinished Drafts, so a rerun is safe.
@@ -35,7 +35,7 @@ A unit of work is one approved Topic and one Channel:
 - `Drafts/<topic title> - <channel>.md` does not exist yet, or still has `status: drafting` (an interrupted run): then resume after the last Pass in its `passes`;
 - or the Draft's Editor loop is unfinished (an interrupted run): it has `status: revising`, or `status: in-review` with no `## Editor review` yet, or `status: in-review` whose last Editor review says `Verdict: revise` while `editor_rounds` is below 2. Resume it at Step 4.
 
-Leave every other Topic alone: proposed, rejected and parked Topics get no Draft, and neither does a Channel the Topic does not list. If there is no work, tell the Owner and stop.
+Leave every other Topic alone: proposed, rejected and parked Topics get no Draft, and neither does a Channel the Topic does not list. If there is no work, run `scripts/capture_list.py` (a rerun after a capture session refreshes the Capture list), tell the Owner what it reports, and stop.
 
 ## Step 3: Write each Draft through the Passes
 
@@ -196,11 +196,12 @@ The columns are exactly `#`, `Footage`, `On-screen text`, `Narration`, `Seconds`
 
 When the Owner says "use hook 2" (or similar) for a Draft:
 
-For Shorts, the hook has two parts: replace beat 1's On-screen text in the `## Script` table with the alternative's first part and the caption's first line with its second part, wrapping each in its own Owner block, and put both replaced parts back as one alternative. Otherwise:
+For Shorts, the hook has two parts: replace beat 1's On-screen text in the `## Script` table with the alternative's first part and the caption's first line with its second part, wrapping each in its own Owner block, and put both replaced parts back as one alternative; swap the levers in the `Hooks:` line as in step 3. Otherwise:
 
 1. Replace the opening hook of the Post text with alternative 2, adjusting the next sentence only if it no longer follows (never one inside an Owner block). The Owner chose it, so wrap the new hook in `%% owner %%` ... `%% /owner %%` and run `scripts/vault_check.py --seal "<draft path>"`: this is the one time you seal, because the Owner asked for this change.
 2. Put the replaced hook in the callout as alternative 2, so both alternatives stay available.
-3. Rerun the `channel-fit` Pass on the Draft (rules, then the Vault check). Leave `passes` as it is.
+3. In `## Writer notes`, swap the two levers in the `Hooks:` line (`body=` and the swapped-in alternative's number), so `body=` stays the lever of the opening hook; the Packager copies it from there.
+4. Rerun the `channel-fit` Pass on the Draft (rules, then the Vault check). Leave `passes` as it is.
 
 ## Step 5: Hand over
 
