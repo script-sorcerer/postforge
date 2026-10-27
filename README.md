@@ -67,6 +67,32 @@ The Fact sheet lists the Project's Phases in order under `phases`: each has a `n
 
 Each Channel rules note may carry a `destination`: `kind` (`pinned_comment`, `profile_link` or `description`), `template` (text with `{store}`, `{pre_registration}` and `{landing}` placeholders) and `fallback` (text used when no template line has all its links, for example "more clips on this channel"); write the template one line per link. The Fact sheet holds `public_links` (`store`, `pre_registration`, `landing`), each empty until it is public; fill them as they go live. The package field `pinned_comment` holds the destination text for both kinds that carry one (`pinned_comment`, `description`). `/package` writes it from the template and those links: it keeps each template line whose links are all filled and drops each line with an empty link, uses the fallback only when no line is left, and tells you which. Paste it right after you publish, by the destination's `kind`: `pinned_comment` as your own first comment, pinned (X: your first reply; YouTube and TikTok: pin it), `description` into the post's description. A `profile_link` Channel (Reddit, where subreddits ban self-promotion) gets no `pinned_comment`: set the Channel profile's link once from its template (or its fallback while the link is empty), and update it when `public_links` change. The Vault check fails a ready package without `pinned_comment` on a Channel whose destination is `pinned_comment` or `description` (`pinned-comment`), a malformed `destination` (`channel-rules`) or `public_links` (`fact-sheet`), and a pinned comment that links the private repository (`private-repo-link`). The Voice guide still bans calls to action in the Post text: the destination lives only in the pinned comment, the description and the profile link.
 
+### Metrics
+
+Record a published Post's numbers by hand in its `metrics` list in `Posts/`, about two days and about seven days after it went out: one entry per point (`at: 2d` or `7d`) and `platform` (the Channel, or `youtube` and `tiktok` for a Short, one entry each). `views`, `likes`, `comments` and `shares` are whole numbers; add `retention` (percent) and `link_clicks` where the site shows them. `hook` is the lever of the hook that went out: copy it from the Post's `hook_lever`, which `/package` fills from the Draft's Writer notes.
+
+```yaml
+hook_lever: scene
+metrics:
+  - at: 2d
+    platform: youtube
+    views: 3200
+    likes: 140
+    comments: 11
+    shares: 6
+    retention: 68
+    hook: scene
+  - at: 2d
+    platform: tiktok
+    views: 900
+    likes: 40
+    comments: 3
+    shares: 1
+    hook: gap      # the TikTok caption opens with the first alternative hook
+```
+
+Write `metrics: skipped` on a Post you chose not to measure. The Vault check fails a malformed entry (`metrics`) and warns, without failing, about a published Post more than seven days old with no `7d` entry and not skipped (`post-metrics`). The Scout reads every Post's metrics before ranking a Digest and writes a "What worked" section: Rubrics, Channels and hook levers ranked by views and comments per Post, each only once it has at least two Posts.
+
 ### Bring your own Topic
 
 To have the Office write a story you already have in mind, copy `docs/templates/Owner Topic.md` to `Topics/<title>.md` and fill it in. It is an Owner Topic: `status: approved` and `origin: owner` from the start, with no Digest and no `rank`. Run `/write` and it is drafted like any approved Topic; the Scout reads it too, so it never proposes the same story.
@@ -79,7 +105,7 @@ The Scout, the Writer, `/revise` and the Editor run on Opus at `effort: medium` 
 - `/write`: the Writer (`.claude/skills/write/`). Turns every approved Topic into one Draft per target Channel (X, Reddit, LinkedIn, each in its register, and a Video script for Shorts) through the six Passes, then runs the Vault check. Each Draft then goes through the Editor (`.claude/agents/editor.md`, a fresh subagent per review, which holds the checklist and pass threshold): below the threshold it goes back to the Writer, and after at most two rounds it comes to the Owner at `in-review` with the Editor's remarks. Say "use hook 2" on a Draft to swap in an alternative hook (it becomes an Owner edit).
 - `/revise <draft> <prompt>`: applies your prompt, such as "shorter hook, no emoji", to one Draft (`.claude/skills/revise/`), marks the change as an Owner edit and seals it. It never changes `status`.
 - `/produce <draft>`: the Producer (`.claude/skills/produce/`, ADR 0002; no fixed model, add `--model <model>` to pick one). Takes a `ready` Shorts Draft, stops and lists the Shot list lines whose footage is not in `Attachments/` yet, else builds a HyperFrames Composition under `Attachments/video/<topic title>/` from the house template `docs/templates/shorts-composition/` and the beat table, checks it, looks at one frame per beat and opens it in the HyperFrames desktop app for your review. Edit it there by hand if you like, then `/produce <draft> render` renders it once (locally, free) to `Attachments/<topic title> - shorts.mp4` and sets it as the Draft's Attachment. `/produce <draft> --fresh` rebuilds the Composition from the Script, discarding your app edits. The Composition is committed; the MP4 is not. Setup and quota rules: `docs/producer-setup.md`.
-- `/package <draft>`: the Packager (`.claude/skills/package/`, on Sonnet). Refuses a Draft that is not `ready`; writes its Publish package with the Attachments in order, alt text, the `missing` list and `publish_on` (the next free cadence day of the Channel's Schedule; it tells you the date) and `pinned_comment` (the Channel's destination text, which you paste after publishing; none on a `profile_link` Channel), then runs the Vault check. After you publish by hand, `/package published <publish package> <link>` records the link and moves the Post to `Posts/`.
+- `/package <draft>`: the Packager (`.claude/skills/package/`, on Sonnet). Refuses a Draft that is not `ready`; writes its Publish package with the Attachments in order, alt text, the `missing` list and `publish_on` (the next free cadence day of the Channel's Schedule; it tells you the date) and `pinned_comment` (the Channel's destination text, which you paste after publishing; none on a `profile_link` Channel), then runs the Vault check. After you publish by hand, `/package published <publish package> <link>` records the link and moves the Post to `Posts/`, keeping `hook_lever` (the opening hook's lever) for your `metrics` entries.
 
 ## Vault check
 
@@ -90,7 +116,7 @@ scripts/vault_check.py
 scripts/vault_check.py path/to/vault
 ```
 
-It fails any Topic, Draft or Post that links to a Project's `github` repository (`private-repo-link`): that repository is private. It prints each violation as `note: [rule] message` and exits non-zero on any violation. A warning (`schedule-gap`) prints as `warning: note: [rule] message` and does not fail the check.
+It fails any Topic, Draft or Post that links to a Project's `github` repository (`private-repo-link`): that repository is private. It prints each violation as `note: [rule] message` and exits non-zero on any violation. A warning (`schedule-gap`, `post-metrics`) prints as `warning: note: [rule] message` and does not fail the check.
 
 Run the tests (fixture Vaults live in `tests/fixtures/`, one folder per broken rule):
 

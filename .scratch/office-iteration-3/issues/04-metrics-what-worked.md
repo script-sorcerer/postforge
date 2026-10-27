@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] `metrics` schema validated: `at`, `platform`, integer counts, optional fields; a malformed entry is reported
-- [ ] `post-metrics` fixture Vault (old Post without `7d`), and a skipped Post passes
-- [ ] `/package` writes `hook_lever`; `/package published` keeps it on the Post
-- [ ] Scout prompt: read metrics, "What worked" section, ranking rule with the two-Post minimum
-- [ ] Glossary entry "Metrics"; README documents how the Owner records numbers
+- [x] `metrics` schema validated: `at`, `platform`, integer counts, optional fields; a malformed entry is reported
+- [x] `post-metrics` fixture Vault (old Post without `7d`), and a skipped Post passes
+- [x] `/package` writes `hook_lever`; `/package published` keeps it on the Post
+- [x] Scout prompt: read metrics, "What worked" section, ranking rule with the two-Post minimum
+- [x] Glossary entry "Metrics"; README documents how the Owner records numbers

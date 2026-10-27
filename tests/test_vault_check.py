@@ -108,6 +108,7 @@ BROKEN = {
     "pinned-comment": ("Publish packages/Lane change bug - x.md", "pinned-comment"),
     "fact-sheet-public-links": ("Fact sheets/traffic_jam.md", "fact-sheet"),
     "private-repo-link-pinned-comment": ("Publish packages/Lane change bug - x.md", "private-repo-link"),
+    "metrics": ("Posts/Queue at the junction - shorts.md", "metrics"),
 }
 
 
@@ -225,3 +226,57 @@ def test_schedule_gap_is_a_warning_until_the_next_cadence_day_is_packaged(tmp_pa
     package = vault / "Publish packages" / "Lane change bug - x.md"
     package.write_text(package.read_text().replace("2026-10-19", datetime.date.today().isoformat()))
     assert run_check(vault) == (0, [])
+
+
+def test_post_metrics_is_a_warning_on_an_old_post_without_7d():
+    assert run_check(FIXTURES / "post-metrics") == (0, [
+        "warning: Posts/Road capacity explained - x.md: [post-metrics] published 2026-10-01, more than seven days ago, "
+        "and has no 7d metrics entry; record the numbers or set metrics: skipped"
+    ])
+
+
+def test_skipped_metrics_stop_the_reminder(tmp_path):
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "post-metrics", vault)
+    post = vault / "Posts" / "Road capacity explained - x.md"
+    text = post.read_text()
+    post.write_text(text[: text.index("metrics:")] + "metrics: skipped\n---\n\nFinal text.\n")
+    assert run_check(vault) == (0, [])
+
+
+def test_post_metrics_waits_seven_days(tmp_path):
+    """Published three days ago with only a 2d entry: no reminder yet."""
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "post-metrics", vault)
+    post = vault / "Posts" / "Road capacity explained - x.md"
+    recent = (datetime.date.today() - datetime.timedelta(days=3)).isoformat()
+    post.write_text(post.read_text().replace("published_on: 2026-10-01", f"published_on: {recent}"))
+    assert run_check(vault) == (0, [])
+
+
+@pytest.mark.parametrize("old, new, message", [
+    ("    platform: tiktok", "    platform: x", "platform must be youtube or tiktok"),
+    ("    likes: 80", "    likes: true", "likes must be a whole number"),
+    ("  - at: 7d\n    platform: tiktok", "  - at: 30d\n    platform: tiktok", "at must be one of 2d, 7d"),
+    ("    hook: gap", "    hook: curiosity", "hook must be one of gap, prediction, scene, payoff, weight"),
+    ("    retention: 71.5", "    retention: 140", "retention must be a percent from 0 to 100"),
+])
+def test_malformed_metrics_entry_fails(tmp_path, old, new, message):
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "metrics", vault)
+    post = vault / "Posts" / "Queue at the junction - shorts.md"
+    text = post.read_text().replace("    views: 1k", "    views: 1000")
+    assert old in text
+    post.write_text(text.replace(old, new, 1))
+    code, violations = run_check(vault)
+    assert code == 1 and len(violations) == 1 and "[metrics] " in violations[0] and message in violations[0], violations
+
+
+def test_metrics_not_a_list_is_reported_not_crashed_on(tmp_path):
+    vault = tmp_path / "vault"
+    shutil.copytree(FIXTURES / "post-metrics", vault)
+    post = vault / "Posts" / "Road capacity explained - x.md"
+    text = post.read_text()
+    post.write_text(text[: text.index("metrics:")] + "metrics: 5\n---\n\nFinal text.\n")
+    result = subprocess.run([sys.executable, str(SCRIPT), str(vault)], capture_output=True, text=True)
+    assert "Traceback" not in result.stderr and result.returncode == 1 and "[metrics] metrics 5 must be" in result.stdout

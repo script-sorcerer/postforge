@@ -33,7 +33,7 @@ CHANNEL_RULES_FOLDER = "Channel rules"
 # Schedule notes (one per Project) carry each Channel's cadence; see load_schedules.
 SCHEDULE_FOLDER = "Schedule"
 # Rules reported as warnings: printed, but the check still passes.
-WARNING_RULES = {"schedule-gap"}
+WARNING_RULES = {"schedule-gap", "post-metrics"}
 # ISO weekday names, indexed by date.weekday(); Schedule notes may write them in any case.
 WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
@@ -82,6 +82,14 @@ PUBLIC_LINKS = ["store", "pre_registration", "landing"]
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 # Destination kinds whose text goes with each Post; a profile link is set once, from the template, by the Owner.
 PER_POST_DESTINATIONS = ["pinned_comment", "description"]
+
+# A published Post's `metrics` entries: taken about two and about seven days after publishing, per platform
+# (a Short goes out to YouTube and TikTok; any other Post's platform is its Channel), naming the hook lever
+# that went out (the Writer's five levers, copied by the Packager into `hook_lever`).
+METRIC_POINTS = ["2d", "7d"]
+SHORTS_PLATFORMS = ["youtube", "tiktok"]
+METRIC_COUNTS = ["views", "likes", "comments", "shares"]
+HOOK_LEVERS = ["gap", "prediction", "scene", "payoff", "weight"]
 
 # A Digest's `trend_scan` may be at most this many days older than the Digest.
 TREND_SCAN_MAX_AGE_DAYS = 14
@@ -181,6 +189,47 @@ def check_published_link(note):
 
 def is_text(value):
     return isinstance(value, str) and bool(value.strip())
+
+
+def check_metrics(note):
+    """A Post's `metrics`: `skipped`, or a list of entries the Owner records at about 2 and 7 days."""
+    fm = note["fm"]
+    if kind_of(note) != "post" or fm.get("metrics") in (None, "skipped"):
+        return []
+    entries = fm["metrics"]
+    if not isinstance(entries, list):
+        return [f"metrics {entries!r} must be a list of entries or skipped"]
+    platforms = SHORTS_PLATFORMS if fm.get("channel") == "shorts" else [fm.get("channel")]
+    messages = []
+    for n, entry in enumerate(entries, 1):
+        entry = entry if isinstance(entry, dict) else {}
+        problems = []
+        if entry.get("at") not in METRIC_POINTS:
+            problems.append(f"at must be one of {', '.join(METRIC_POINTS)}")
+        if entry.get("platform") not in platforms:
+            problems.append(f"platform must be {' or '.join(map(str, platforms))}")
+        problems += [f"{k} must be a whole number" for k in METRIC_COUNTS if not is_count(entry.get(k), minimum=0)]
+        if "link_clicks" in entry and not is_count(entry["link_clicks"], minimum=0):
+            problems.append("link_clicks must be a whole number")
+        retention = entry.get("retention")
+        if "retention" in entry and (isinstance(retention, bool) or not isinstance(retention, (int, float)) or not 0 <= retention <= 100):
+            problems.append("retention must be a percent from 0 to 100")
+        if entry.get("hook") not in HOOK_LEVERS:
+            problems.append(f"hook must be one of {', '.join(HOOK_LEVERS)} (the package's hook_lever)")
+        messages += [f"metrics entry {n}: {p}" for p in problems]
+    return messages
+
+
+def check_post_metrics(note):
+    """A published Post more than seven days old records its `7d` numbers, or `metrics: skipped`."""
+    fm = note["fm"]
+    published = as_date(fm.get("published_on") or "") if kind_of(note) == "post" and fm.get("status") == "published" else None
+    if not published or (datetime.date.today() - published).days <= 7 or fm.get("metrics") == "skipped":
+        return []
+    entries = fm.get("metrics") if isinstance(fm.get("metrics"), list) else []
+    if any(isinstance(e, dict) and e.get("at") == "7d" for e in entries):
+        return []
+    return [f"published {published}, more than seven days ago, and has no 7d metrics entry; record the numbers or set metrics: skipped"]
 
 
 def check_fact_sheet(note):
@@ -1017,6 +1066,7 @@ def seal(path):
 
 RULES = [
     check_frontmatter, check_kind, check_required_fields, check_status, check_published_link,
+    check_metrics, check_post_metrics,
     check_fact_sheet, check_rubric, check_rejection_reason, check_topic_origin, check_topic_channels, check_topic_sections, check_topic_phase,
     check_digest_links, check_digest_size, check_digest_ranks, check_digest_rubrics, check_digest_promotional,
     check_trend_scan_date, check_digest_trend_scan,

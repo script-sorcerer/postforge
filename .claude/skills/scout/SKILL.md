@@ -181,6 +181,8 @@ The reading position lives in the Project note's frontmatter: `last_read_commit`
 
 A story is the same when it makes the same point from the same Source material, whatever its title or Rubric.
 
+**Then, read what worked.** Read the `metrics` of every Post in `Posts/` (skip `metrics: skipped` and Posts with none). Per Post take its latest entry per platform (`7d` over `2d`); a Short has one per platform, YouTube and TikTok, each counted as its own Post. Take the Rubric from the Post's Topic, the Channel from `channel` (`shorts` per platform) and the lever from the entry's `hook`. For each Rubric, Channel and lever, average views and comments per Post. Rank only a kind with at least two Posts; a kind with one Post is not evidence, say so and leave it out. Let the ranking lean towards the Rubrics, Channels and levers that did best (rank a Topic of a winning Rubric higher, list a winning Channel first, name a winning lever in the Angle) without breaking the rules below. Write what you found in the Digest's `## What worked` section, with the numbers you drew on.
+
 Pick 5 to 8 Topics, ranked by strength (1 is the strongest). Rules the Vault check enforces:
 
 - at most two Topics of one Rubric;
@@ -249,6 +251,9 @@ topics:
 # Digest <YYYY-MM-DD>: <project>
 
 One line per Topic: rank, title, Rubric, Channels, needs media.
+
+## What worked
+Per Rubric, Channel and hook lever with at least two Posts: Posts counted, average views and comments, best first. One line on how it moved this Digest's ranking. While no kind has two Posts with metrics yet: "Not enough metrics yet (N Posts with numbers)".
 ```
 
 ## Step 7: Check, move the position, hand over

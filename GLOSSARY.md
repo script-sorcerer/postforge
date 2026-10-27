@@ -134,6 +134,10 @@ _Avoid_: stage, milestone, wave
 Where a Channel sends a viewer after a Post: the pinned comment, the profile link or the description. Its Channel rules note holds the template, one line per link, filled from the Fact sheet's public links, and the fallback text used when no line has all its links. The Packager keeps the filled lines and writes them in the package's `pinned_comment` field, which holds the destination text for both kinds that carry one (pinned comment, description); the Owner pins it as the first comment or pastes it into the description. A profile link is set once by the Owner from the template, so its packages carry none. The Post text itself never asks for anything.
 _Avoid_: call to action, CTA, link in bio
 
+**Metrics**:
+The numbers a published Post records by hand in its `metrics`, at about two days (`2d`) and about seven days (`7d`) after publishing: views, likes, comments, shares and, where shown, retention and link clicks, plus the hook lever that went out. A Short records one entry per site it went out to (YouTube, TikTok). `metrics: skipped` marks a Post the Owner chose not to measure. The Scout ranks Rubrics, Channels and hook levers by them in each Digest's "What worked" section.
+_Avoid_: stats, analytics, KPIs
+
 **Channel**:
 One place a Post goes out: X, Reddit, LinkedIn, Shorts (one 9:16 video for YouTube Shorts and TikTok) or Article (long-form: dev.to for English, Habr for Russian Adaptations).
 _Avoid_: platform, network
