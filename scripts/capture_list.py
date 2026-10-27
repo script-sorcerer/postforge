@@ -33,7 +33,8 @@ def shot_list(text):
 def published_channels(vault):
     """{(Topic name, channel)} of every published Post."""
     notes = (read_note(p)["fm"] or {} for p in (vault / "Posts").rglob("*.md"))
-    return {(link_name(fm.get("topic") or ""), fm.get("channel")) for fm in notes if fm.get("kind") == "post" and fm.get("status") == "published"}
+    return {(link_name(fm.get("topic") or ""), fm.get("channel")) for fm in notes
+            if fm.get("kind") == "post" and fm.get("status") == "published" and isinstance(fm.get("channel"), str)}
 
 
 def missing_shots(vault):
@@ -47,7 +48,7 @@ def missing_shots(vault):
         project, channels = project_name(fm), fm.get("channels")
         if fm.get("kind") != "topic" or fm.get("status") != "approved" or not project:
             continue  # a malformed project is reported by the Vault check
-        if isinstance(channels, list) and channels and all((path.stem, c) in published for c in channels):
+        if isinstance(channels, list) and channels and all(isinstance(c, str) and (path.stem, c) in published for c in channels):
             continue
         for line in shot_list(note["text"]):
             shot = SHOT_LINE.match(line)
